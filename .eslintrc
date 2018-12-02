@@ -1,0 +1,21 @@
+{
+  "parser": "babel-eslint",
+  "plugins": [
+      "prettier"
+  ],
+  "extends": ["prettier"],
+  "rules": {
+    'prettier/prettier': [
+      'warn',
+      {
+        singleQuote: true,
+        printWidth: 140,
+        trailingComma: 'all'
+      }
+    ]
+  },
+  "env":{
+    "es6": true
+  },
+  "globals": { "fetch": false }
+}
