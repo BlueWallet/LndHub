@@ -10,7 +10,7 @@ var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 redis.monitor(function(err, monitor) {
   monitor.on('monitor', function(time, args, source, database) {
-    console.log('---MONITOR', args);
+    console.log('REDIS', args);
   });
 });
 
@@ -34,14 +34,14 @@ if (process.env.TLSCERT) {
 }
 console.log('using tls.cert', lndCert.toString('hex'));
 let sslCreds = grpc.credentials.createSsl(lndCert);
+let macaroon;
+if (process.env.MACAROON) {
+  macaroon = process.env.MACAROON;
+} else {
+  macaroon = fs.readFileSync('admin.macaroon').toString('hex');
+}
+console.log('using macaroon', macaroon);
 let macaroonCreds = grpc.credentials.createFromMetadataGenerator(function(args, callback) {
-  let macaroon;
-  if (process.env.MACAROON) {
-    macaroon = process.env.MACAROON;
-  } else {
-    macaroon = fs.readFileSync('admin.macaroon').toString('hex');
-  }
-  console.log('using macaroon', macaroon);
   let metadata = new grpc.Metadata();
   metadata.add('macaroon', macaroon);
   callback(null, metadata);

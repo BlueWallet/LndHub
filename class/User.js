@@ -56,13 +56,13 @@ export class User {
   }
 
   async create() {
-    let buffer = crypto.randomBytes(20);
+    let buffer = crypto.randomBytes(10);
     let login = buffer.toString('hex');
 
-    buffer = crypto.randomBytes(20);
+    buffer = crypto.randomBytes(10);
     let password = buffer.toString('hex');
 
-    buffer = crypto.randomBytes(48);
+    buffer = crypto.randomBytes(24);
     let userid = buffer.toString('hex');
     this._login = login;
     this._password = password;
