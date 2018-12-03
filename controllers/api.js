@@ -203,6 +203,7 @@ router.get('/gettxs', async function(req, res) {
     return errorBadAuth(res);
   }
 
+  await u.accountForPosibleTxids();
   let txs = await u.getTxs();
   res.send(txs);
 });
@@ -213,6 +214,7 @@ router.get('/getpending', async function(req, res) {
     return errorBadAuth(res);
   }
 
+  await u.accountForPosibleTxids();
   let txs = await u.getPendingTxs();
   res.send(txs);
 });

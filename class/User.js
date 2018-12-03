@@ -126,6 +126,7 @@ export class User {
       invoice.type = 'paid_invoice';
       invoice.fee = parseInt(invoice.payment_route.total_fees_msat / 1000);
       invoice.value = parseInt((invoice.payment_route.total_fees_msat + invoice.payment_route.total_amt_msat) / 1000);
+      invoice.timestamp = invoice.decoded.timestamp;
       result.push(invoice);
     }
 
