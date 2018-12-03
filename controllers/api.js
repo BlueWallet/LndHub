@@ -135,7 +135,6 @@ router.post('/payinvoice', async function(req, res) {
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
           userBalance -= parseInt((payment.payment_route.total_fees_msat + payment.payment_route.total_amt_msat) / 1000);
           u.saveBalance(userBalance);
-          payment.description = info.description;
           payment.pay_req = req.body.invoice;
           payment.decoded = info;
           u.savePaidLndInvoice(payment);
