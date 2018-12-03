@@ -4,11 +4,11 @@
 
 # Basics
 
-1. Blitz API is standalone software and needs LND client syncronized and running. Blitz API is not a Lightning wallet 
+1. LndHub API is standalone software and needs LND client syncronized and running. LndHub API is not a Lightning wallet 
 in terms of funds storage, it operates whole amout of available funds on channels. User's balances and transactions 
 stored in internal database.
 
-2. Blitz API is accessible for everyone, but only `/create` can be called without authorization token. 
+2. LndHub API is accessible for everyone, but only `/create` can be called without authorization token. 
 
 3. To start sending lightning payments user should top-up his Bitcoin balance, by sending Bitcoins to address 
 assigned to corresponding user id. User should wait for 3 confirmations after which funds will be available 
@@ -28,7 +28,7 @@ associated with corresponding user id.
 
 9. All json keys should be in snake_case
 
-# Blitz API Calls
+# LndHub API Calls
 
 | Call          | Method        |       Handler |        Params |   Return      |   Description |
 | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
@@ -372,7 +372,7 @@ Response:
 
 ##  GET /gettx
 
-Get info on successfull lighning transaction user made. TXID is an internal Blitz identifier,
+Get info on successfull lighning transaction user made. TXID is an internal LndHub identifier,
 no relation to onchain bitcoin txid.
 
 Request:
