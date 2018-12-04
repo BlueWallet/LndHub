@@ -124,8 +124,8 @@ export class User {
     for (let invoice of range) {
       invoice = JSON.parse(invoice);
       invoice.type = 'paid_invoice';
-      invoice.fee = parseInt(invoice.payment_route.total_fees_msat / 1000);
-      invoice.value = parseInt((invoice.payment_route.total_fees_msat + invoice.payment_route.total_amt_msat) / 1000);
+      invoice.fee = +invoice.payment_route.total_fees;
+      invoice.value = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
       invoice.timestamp = invoice.decoded.timestamp;
       invoice.memo = invoice.decoded.description;
       result.push(invoice);
