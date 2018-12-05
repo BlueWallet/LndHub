@@ -10,7 +10,7 @@ var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 redis.monitor(function(err, monitor) {
   monitor.on('monitor', function(time, args, source, database) {
-    console.log('REDIS', args);
+    console.log('REDIS', JSON.stringify(args));
   });
 });
 
@@ -153,7 +153,7 @@ router.post('/payinvoice', async function(req, res) {
 });
 
 router.get('/getbtc', async function(req, res) {
-  let u = new User(redis);
+  let u = new User(redis, bitcoinclient, lightning);
   await u.loadByAuthorization(req.headers.authorization);
 
   if (!u.getUserId()) {
@@ -162,23 +162,20 @@ router.get('/getbtc', async function(req, res) {
 
   let address = await u.getAddress();
   if (!address) {
-    lightning.newAddress({ type: 0 }, async function(err, response) {
-      if (err) return errorLnd(res);
-      await u.addAddress(response.address);
-      res.send([{ address: response.address }]);
-      bitcoinclient.request('importaddress', [response.address, response.address, false]);
-    });
-  } else {
-    res.send([{ address }]);
-    bitcoinclient.request('importaddress', [address, address, false]);
+    await u.generateAddress();
+    address = await u.getAddress();
   }
+
+  res.send([{ address }]);
 });
 
 router.get('/balance', async function(req, res) {
-  let u = new User(redis, bitcoinclient);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
+
+  if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
   await u.accountForPosibleTxids();
   let balance = await u.getBalance();
   res.send({ BTC: { AvailableBalance: balance } });
@@ -197,22 +194,24 @@ router.get('/getinfo', async function(req, res) {
 });
 
 router.get('/gettxs', async function(req, res) {
-  let u = new User(redis, bitcoinclient);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
 
+  if (!(await u.getAddress())) await u.generateAddress(); // onchain addr needed further
   await u.accountForPosibleTxids();
   let txs = await u.getTxs();
   res.send(txs);
 });
 
 router.get('/getpending', async function(req, res) {
-  let u = new User(redis, bitcoinclient);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
 
+  if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
   await u.accountForPosibleTxids();
   let txs = await u.getPendingTxs();
   res.send(txs);

@@ -6,9 +6,10 @@ export class User {
    *
    * @param {Redis} redis
    */
-  constructor(redis, bitcoindrpc) {
+  constructor(redis, bitcoindrpc, lightning) {
     this._redis = redis;
     this._bitcoindrpc = bitcoindrpc;
+    this._lightning = lightning;
     this._userid = false;
     this._login = false;
     this._password = false;
@@ -87,6 +88,23 @@ export class User {
     return await this._redis.get('bitcoin_address_for_' + this._userid);
   }
 
+  /**
+   * Asks LND for new address, and imports it to bitcoind
+   *
+   * @returns {Promise<any>}
+   */
+  async generateAddress() {
+    let self = this;
+    return new Promise(function(resolve, reject) {
+      self._lightning.newAddress({ type: 0 }, async function(err, response) {
+        if (err) return reject('LND failure');
+        await self.addAddress(response.address);
+        self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
+        resolve();
+      });
+    });
+  }
+
   async getBalance() {
     return (await this._redis.get('balance_for_' + this._userid)) * 1;
   }
@@ -110,6 +128,7 @@ export class User {
    */
   async getTxs() {
     let addr = await this.getAddress();
+    if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
     let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
     txs = txs.result;
     let result = [];
@@ -141,6 +160,7 @@ export class User {
    */
   async getPendingTxs() {
     let addr = await this.getAddress();
+    if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
     let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
     txs = txs.result;
     let result = [];
@@ -179,7 +199,6 @@ export class User {
    */
   async accountForPosibleTxids() {
     let imported_txids = await this._redis.lrange('imported_txids_for_' + this._userid, 0, -1);
-    console.log(':::::::::::imported_txids', imported_txids);
     let onchain_txs = await this.getTxs();
     for (let tx of onchain_txs) {
       if (tx.type !== 'bitcoind_tx') continue;
