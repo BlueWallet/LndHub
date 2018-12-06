@@ -21,3 +21,8 @@ Add config vars :
 * `CONFIG` : json serialized config object
 * `MACAROON`: hex-encoded `admin.macaroon`
 * `TLSCERT`: hex-encoded `tls.cert`
+
+
+### Tests
+
+Acceptance tests are in https://github.com/BlueWallet/BlueWallet/blob/master/LightningCustodianWallet.test.js
