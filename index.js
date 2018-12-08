@@ -30,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-
 app.use(bodyParser.json(null)); // parse application/json
 
 app.use(require('./controllers/api'));
+app.use(require('./controllers/website'));
 
 let server = app.listen(process.env.PORT || 3000, function() {
   logger.log('BOOTING UP', 'Listening on port ' + (process.env.PORT || 3000));
