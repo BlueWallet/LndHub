@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="LNDhub - Open source Bank on top of the lightning network">
+    <meta name="author" content="Nuno Coelho">
+    <meta content="http://lndhub.io" property="og:url">
+    <meta content="lndhub.io" property="og:title">
+    <meta content="lndhub" property="og:description">
+    <meta content="http://lndhub.io/img/lndhub.svg" property="og:image">
+    <meta content="800" property="og:image:width">
+    <meta content="800" property="og:image:height">
+    <link rel="icon" href="/static/favicon.png">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>LNDhub - Open source Bank</title>
+    <!-- Custom styles for this template -->
+    <link href="/static/css/lndhub.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <div class="cover-container mx-auto">
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <h3 class="masthead-brand"><img src="/static/img/lndhub.svg"></h3>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+        <h1 class="cover-heading">An open source bank</h1>
+
+        <p class="lead"><strong>LNDHub is an opensource wrapper for Lightning Network Daemon. It provides <br/>
+          separate accounts and trust minimization for end users.</strong></p>
+
+        <p class="lead">We want to hide the complexity of running a node, and take over the work of a hub operator. Users want to make payments without the hassle of operating a node, opening channels, take care of liquidity or watching these channels.</p> 
+        <p class="lead">We want to bring Lightning payments to everyone and speed up Bitcoin adoption.</p>
+        <p class="lead">We called it <strong>LNDhub</strong>.</p>
+        <div class="github">
+          <!-- Place this tag where you want the button to render. -->
+          <a class="github-button" href="https://github.com/bluewallet/lndhub" data-size="large" data-show-count="true" aria-label="Star bluewallet/lndhub on GitHub">Star</a>
+        </div>
+        <div class="clear"></div>
+      </main>
+    </div>
+      <div class="explain">
+        <div class="cover-container mx-auto">
+          <h2>How does it work?</h2>
+          <img class="lndhub-graph" src="/static/img/lndhub-graph.png">
+          <p class="lead">When the user sends Bitcoin to a dedicated top-up address, this balance is added to his account on LNDhub. Then, the user can use this balance to pay Lightning invoices, from everything to coffees to any micro-transaction he wants. But under the hood, it’s actually LNDhub who pays the invoice, deducting the user’s account balance. It works the same way when the user wants to receive a Lightning payment - it’s LNDhub who creates a Lightning invoice and actually receives the value on one of its channels.</p>
+        </div>
+      </div>
+      <div class="promote">
+        <div class="cover-container mx-auto">
+          <h2>Where can I test it?</h1>
+          <div class="row">
+          <div class="col-md-6 text-center">
+            <img class="lndhub-graph" src="/static/img/iphoneX.png">
+          </div>
+          <div class="col-md-6">
+            <p class="lead">Live on <strong>Blue wallet</strong>, a bitcoin wallet for iOS and android. <strong>LNDhub</strong> implementation on Blue wallet takes full advantage of this revolutionary payments network.</p>
+            <p>Enabling Blue wallet users to have unfairly cheap and fast Bitcoin transactions..
+            </p>
+            <ul class="list-unstyled cta">
+              <li><a class="badge-link2" href="https://itunes.apple.com/us/app/bluewallet-bitcoin-wallet/id1376878040?l=ru&amp;ls=1&amp;mt=8" target="_blank">
+              <img src="/static/img/app-store-badge.svg" alt="app store link"></a></li>
+              <li><a href="https://play.google.com/store/apps/details?id=io.bluewallet.bluewallet" target="_blank">
+              <img src="/static/img/play-store-badge.svg" alt="play store link"></a></li>
+            </ul>
+          </div>
+          </div>
+          
+        </div>
+      </div>
+      <div class="promote">
+        <div class="cover-container mx-auto">
+          <h2>Why should you use it?</h1>
+          <div class="row">
+          <div class="col-md-8">
+            <p class="lead">Read our article on Medium on the reasoning behind the system and the pros and cons.</p>
+          </div>
+          <div class="col-md-4">
+            <a href="#" class="btn btn-lg btn-block btn-dark">read here &rarr;</a>
+          </div>
+        </div>
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <p>&nbsp;</p>
+        </div>
+      </footer>
+    
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  </body>
+</html>

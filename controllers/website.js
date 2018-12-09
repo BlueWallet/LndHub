@@ -16,6 +16,12 @@ router.get('/', function(req, res) {
   });
 });
 
+router.get('/about', function(req, res) {
+  let html = fs.readFileSync('./templates/about.html').toString('utf8');
+  res.setHeader('Content-Type', 'text/html');
+  return res.status(200).send(mustache.render(html, {}));
+});
+
 router.use(function(req, res) {
   res.status(404).send('404');
 });
