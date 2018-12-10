@@ -19,6 +19,6 @@ User storage schema
 * balance_for_{userid} = {int}
 * txs_for_{userid} = [] `serialized paid lnd invoices in a list`
 * imported_txids_for_{userid} = [] `list of txids processed for this user`
-
+* metadata_for_{userid}= {serialized json}
  
  

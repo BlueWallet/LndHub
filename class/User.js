@@ -71,6 +71,10 @@ export class User {
     await this._saveUserToDatabase();
   }
 
+  async saveMetadata(metadata) {
+    return await this._redis.set('metadata_for_' + this._userid, JSON.stringify(metadata));
+  }
+
   async loadByLoginAndPassword(login, password) {
     let userid = await this._redis.get('user_' + login + '_' + this._hash(password));
 
