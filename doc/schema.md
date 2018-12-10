@@ -20,5 +20,8 @@ User storage schema
 * txs_for_{userid} = [] `serialized paid lnd invoices in a list`
 * imported_txids_for_{userid} = [] `list of txids processed for this user`
 * metadata_for_{userid}= {serialized json}
+* userinvoices_for_{userid} = []
+* payment_hash_{payment_hash} = {userid}
+* ispaid_{payment_hash} = 1
  
  

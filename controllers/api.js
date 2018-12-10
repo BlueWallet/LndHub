@@ -15,7 +15,7 @@ redis.monitor(function(err, monitor) {
 
 let bitcoinclient = require('../bitcoin');
 let lightning = require('../lightning');
-
+let identity_pubkey = false;
 // ###################### SMOKE TESTS ########################
 
 bitcoinclient.request('getblockchaininfo', false, function(err, info) {
@@ -40,6 +40,7 @@ lightning.getInfo({}, function(err, info) {
       console.error('lnd not synced');
       process.exit(4);
     }
+    identity_pubkey = info.identity_pubkey;
   }
 });
 
@@ -83,6 +84,25 @@ router.post('/auth', async function(req, res) {
   }
 });
 
+router.post('/addinvoice', async function(req, res) {
+  let u = new User(redis);
+  if (!(await u.loadByAuthorization(req.headers.authorization))) {
+    return errorBadAuth(res);
+  }
+
+  assert.ok(req.body.amt);
+
+  lightning.addInvoice({ memo: req.body.memo, value: req.body.amt }, async function(err, info) {
+    if (err) return errorLnd(res);
+
+    info.pay_req = info.payment_request; // client backwards compatibility
+    console.log(info);
+    await u.saveUserInvoice(info);
+
+    res.send(info);
+  });
+});
+
 router.post('/payinvoice', async function(req, res) {
   let u = new User(redis);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
@@ -92,11 +112,34 @@ router.post('/payinvoice', async function(req, res) {
 
   let userBalance = await u.getBalance();
 
-  lightning.decodePayReq({ pay_req: req.body.invoice }, function(err, info) {
+  lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
     if (err) return errorNotAValidInvoice(res);
 
-    if (userBalance > info.num_satoshis) {
+    if (userBalance >= info.num_satoshis) {
       // got enough balance
+
+      console.log('infoinfoinfoinfoinfoinfoinfoinfoinfoinfo', info);
+      if (identity_pubkey === info.destination) {
+        // this is internal invoice
+        // now, receiver add balance
+        let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
+        if (!userid_payee) return errorGeneralServerError(res);
+
+        let UserPayee = new User(redis);
+        UserPayee._userid = userid_payee; // hacky, fixme
+        let payee_balance = await UserPayee.getBalance();
+        payee_balance += info.num_satoshis * 1;
+        await UserPayee.saveBalance(payee_balance);
+
+        // sender spent his balance:
+        userBalance -= info.num_satoshis * 1;
+        await u.saveBalance(userBalance);
+
+        await u.setPaymentHashPaid(info.payment_hash);
+
+        return res.send(info);
+      }
+
       var call = lightning.sendPayment();
       call.on('data', function(payment) {
         // payment callback
@@ -171,6 +214,16 @@ router.get('/gettxs', async function(req, res) {
   await u.accountForPosibleTxids();
   let txs = await u.getTxs();
   res.send(txs);
+});
+
+router.get('/getuserinvoices', async function(req, res) {
+  let u = new User(redis, bitcoinclient, lightning);
+  if (!(await u.loadByAuthorization(req.headers.authorization))) {
+    return errorBadAuth(res);
+  }
+
+  let invoices = await u.getUserInvoices();
+  res.send(invoices);
 });
 
 router.get('/getpending', async function(req, res) {

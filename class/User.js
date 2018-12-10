@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var lightningPayReq = require('bolt11');
 import { BigNumber } from 'bignumber.js';
 
 export class User {
@@ -119,6 +120,63 @@ export class User {
 
   async savePaidLndInvoice(doc) {
     return await this._redis.rpush('txs_for_' + this._userid, JSON.stringify(doc));
+  }
+
+  async saveUserInvoice(doc) {
+    let decoded = lightningPayReq.decode(doc.payment_request);
+    let payment_hash;
+    for (let tag of decoded.tags) {
+      if (tag.tagName === 'payment_hash') {
+        payment_hash = tag.data;
+      }
+    }
+
+    await this._redis.set('payment_hash_' + payment_hash, this._userid);
+    return await this._redis.rpush('userinvoices_for_' + this._userid, JSON.stringify(doc));
+  }
+
+  /**
+   * Doent belong here, FIXME
+   */
+  async getUseridByPaymentHash(payment_hash) {
+    return await this._redis.get('payment_hash_' + payment_hash);
+  }
+
+  /**
+   * Doent belong here, FIXME
+   */
+  async setPaymentHashPaid(payment_hash) {
+    return await this._redis.set('ispaid_' + payment_hash, 1);
+  }
+
+  /**
+   * Doent belong here, FIXME
+   */
+  async getPaymentHashPaid(payment_hash) {
+    return await this._redis.get('ispaid_' + payment_hash);
+  }
+
+  async getUserInvoices() {
+    let range = await this._redis.lrange('userinvoices_for_' + this._userid, 0, -1);
+    let result = [];
+    for (let invoice of range) {
+      invoice = JSON.parse(invoice);
+      let decoded = lightningPayReq.decode(invoice.payment_request);
+      invoice.description = '';
+      for (let tag of decoded.tags) {
+        if (tag.tagName === 'description') {
+          invoice.description += decodeURIComponent(tag.data);
+        }
+        if (tag.tagName === 'payment_hash') {
+          invoice.payment_hash = tag.data;
+        }
+      }
+      invoice.ispaid = !!(await this.getPaymentHashPaid(invoice.payment_hash));
+      invoice.amt = decoded.satoshis;
+      result.push(invoice);
+    }
+
+    return result;
   }
 
   async addAddress(address) {
