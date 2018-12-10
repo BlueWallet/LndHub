@@ -149,6 +149,16 @@ export class User {
     return await this._redis.set('ispaid_' + payment_hash, 1);
   }
 
+  async lookupInvoice(payment_hash) {
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that._lightning.lookupInvoice({ r_hash_str: payment_hash }, function(err, response) {
+        if (err) resolve({});
+        resolve(response);
+      });
+    });
+  }
+
   /**
    * Doent belong here, FIXME
    */
@@ -172,6 +182,12 @@ export class User {
         }
       }
       invoice.ispaid = !!(await this.getPaymentHashPaid(invoice.payment_hash));
+      if (!invoice.ispaid) {
+        // attempting to lookup invoice
+        let lookup_info = await this.lookupInvoice(invoice.payment_hash);
+        invoice.ispaid = lookup_info.settled;
+      }
+
       invoice.amt = decoded.satoshis;
       result.push(invoice);
     }

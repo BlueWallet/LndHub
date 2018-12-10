@@ -96,7 +96,6 @@ router.post('/addinvoice', async function(req, res) {
     if (err) return errorLnd(res);
 
     info.pay_req = info.payment_request; // client backwards compatibility
-    console.log(info);
     await u.saveUserInvoice(info);
 
     res.send(info);
@@ -118,7 +117,6 @@ router.post('/payinvoice', async function(req, res) {
     if (userBalance >= info.num_satoshis) {
       // got enough balance
 
-      console.log('infoinfoinfoinfoinfoinfoinfoinfoinfoinfo', info);
       if (identity_pubkey === info.destination) {
         // this is internal invoice
         // now, receiver add balance
