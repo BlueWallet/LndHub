@@ -1,7 +1,7 @@
 LndHub
 ======
 
-Wrapper for Lightning Network Daemon. It provides separate accounts and trust minimization for end users 
+Wrapper for Lightning Network Daemon. It provides separate accounts with minimum trust for end users
 
 INSTALLATION
 ------------
