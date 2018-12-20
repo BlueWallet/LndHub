@@ -2,7 +2,6 @@ import { User } from '../class/User';
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
-let assert = require('assert');
 console.log('using config', JSON.stringify(config));
 
 var Redis = require('ioredis');
@@ -54,9 +53,7 @@ redis.info(function(err, info) {
 // ######################## ROUTES ########################
 
 router.post('/create', async function(req, res) {
-  assert.ok(req.body.partnerid);
-  assert.ok(req.body.partnerid === 'bluewallet');
-  assert.ok(req.body.accounttype);
+  if (!(req.body.partnerid && req.body.partnerid === 'bluewallet' && req.body.accounttype)) return errorBadArguments(res);
 
   let u = new User(redis);
   await u.create();
@@ -65,7 +62,7 @@ router.post('/create', async function(req, res) {
 });
 
 router.post('/auth', async function(req, res) {
-  assert.ok((req.body.login && req.body.password) || req.body.refresh_token);
+  if (!((req.body.login && req.body.password) || req.body.refresh_token)) return errorBadArguments(res);
 
   let u = new User(redis);
 
@@ -90,7 +87,7 @@ router.post('/addinvoice', async function(req, res) {
     return errorBadAuth(res);
   }
 
-  assert.ok(req.body.amt);
+  if (!req.body.amt) return errorBadArguments(res);
 
   lightning.addInvoice({ memo: req.body.memo, value: req.body.amt }, async function(err, info) {
     if (err) return errorLnd(res);
@@ -107,7 +104,8 @@ router.post('/payinvoice', async function(req, res) {
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
-  assert.ok(req.body.invoice);
+
+  if (!req.body.invoice) return errorBadArguments(res);
 
   let userBalance = await u.getBalance();
 
@@ -307,5 +305,13 @@ function errorGeneralServerError(res) {
     error: true,
     code: 6,
     message: 'Server fault',
+  });
+}
+
+function errorBadArguments(res) {
+  return res.send({
+    error: true,
+    code: 8,
+    message: 'Bad arguments',
   });
 }
