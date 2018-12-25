@@ -194,6 +194,8 @@ export class User {
       }
 
       invoice.amt = decoded.satoshis;
+      invoice.expire_time = 3600;
+      // ^^^default; will keep for now. if we want to un-hardcode it - it should be among tags (`expire_time`)
       invoice.timestamp = decoded.timestamp;
       invoice.type = 'user_invoice';
       result.push(invoice);
