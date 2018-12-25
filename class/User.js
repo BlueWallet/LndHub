@@ -194,6 +194,7 @@ export class User {
       }
 
       invoice.amt = decoded.satoshis;
+      invoice.type = 'user_invoice';
       result.push(invoice);
     }
 
