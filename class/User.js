@@ -186,6 +186,11 @@ export class User {
         // attempting to lookup invoice
         let lookup_info = await this.lookupInvoice(invoice.payment_hash);
         invoice.ispaid = lookup_info.settled;
+        if (invoice.ispaid) {
+          // so invoice was paid after all
+          await this.setPaymentHashPaid(invoice.payment_hash);
+          await this.saveBalance((await this.getBalance()) + decoded.satoshis);
+        }
       }
 
       invoice.amt = decoded.satoshis;
