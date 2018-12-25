@@ -45,6 +45,19 @@
             <pre class="line">{{.}}</pre>
             {{/uris}}
             <pre class="line"> </pre>
+            <pre class="line"><span class="dyer-white">Channels:</span></pre>
+
+            <table>
+            {{#channels}}
+                <tr>
+                    <td><pre class="line">{{ascii}}</pre></td>
+                    <td><pre class="line">{{capacity_btc}} BTC  </pre></td>
+                    <td><pre class="line"><a href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">{{remote_pubkey}}</a> {{name}}  </pre></td>
+                </tr>
+            {{/channels}}
+            </table>
+
+            <pre class="line"> </pre>
             <pre class="line"><span class="dyer-white">num_active_channels:</span></pre>
             <pre class="line">{{num_active_channels}}</pre>
             <pre class="line"> </pre>
