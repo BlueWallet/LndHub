@@ -230,10 +230,18 @@ export class User {
     for (let invoice of range) {
       invoice = JSON.parse(invoice);
       invoice.type = 'paid_invoice';
-      invoice.fee = +invoice.payment_route.total_fees;
-      invoice.value = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
-      invoice.timestamp = invoice.decoded.timestamp;
-      invoice.memo = invoice.decoded.description;
+
+      // for internal invoices it might not have properties `payment_route`  and `decoded`...
+      if (invoice.payment_route) {
+        invoice.fee = +invoice.payment_route.total_fees;
+        invoice.value = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
+      } else {
+        invoice.fee = 0;
+      }
+      if (invoice.decoded) {
+        invoice.timestamp = invoice.decoded.timestamp;
+        invoice.memo = invoice.decoded.description;
+      }
       result.push(invoice);
     }
 

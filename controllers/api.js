@@ -130,8 +130,15 @@ router.post('/payinvoice', async function(req, res) {
         // sender spent his balance:
         userBalance -= info.num_satoshis * 1;
         await u.saveBalance(userBalance);
+        await u.savePaidLndInvoice({
+          timestamp: parseInt(+new Date() / 1000),
+          type: 'paid_invoice',
+          value: info.num_satoshis * 1,
+          fee: 0, // internal invoices are free
+          memo: decodeURIComponent(info.description),
+        });
 
-        await u.setPaymentHashPaid(info.payment_hash);
+        await UserPayee.setPaymentHashPaid(info.payment_hash);
 
         return res.send(info);
       }
