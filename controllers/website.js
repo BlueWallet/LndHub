@@ -3,43 +3,47 @@ let router = express.Router();
 let fs = require('fs');
 let mustache = require('mustache');
 let lightning = require('../lightning');
+let logger = require('../utils/logger');
 
 let lightningGetInfo = {};
 let lightningListChannels = {};
 function updateLightning() {
-  lightning.getInfo({}, function(err, info) {
-    if (err) {
-      console.error('lnd failure');
-      process.exit(3);
-    }
-    lightningGetInfo = info;
-  });
-
-  lightning.listChannels({}, function(err, response) {
-    if (err) {
-      console.error('lnd failure');
-      process.exit(3);
-    }
-    lightningListChannels = response;
-    let channels = [];
-    for (let channel of lightningListChannels.channels) {
-      let divider = 524287;
-      let ascii_length1 = channel.local_balance / divider;
-      let ascii_length2 = channel.remote_balance / divider;
-      channel.ascii = '[';
-      channel.ascii += '-'.repeat(Math.round(ascii_length1));
-      channel.ascii += '/' + '-'.repeat(Math.round(ascii_length2));
-      channel.ascii += ']';
-      channel.capacity_btc = channel.capacity / 100000000;
-      channel.name = pubkey2name[channel.remote_pubkey];
-      if (channel.name) {
-        channels.unshift(channel);
-      } else {
-        channels.push(channel);
+  console.log('updateLightning()');
+  try {
+    lightning.getInfo({}, function(err, info) {
+      if (err) {
+        console.error('lnd failure');
       }
-    }
-    lightningListChannels.channels = channels;
-  });
+      lightningGetInfo = info;
+    });
+
+    lightning.listChannels({}, function(err, response) {
+      if (err) {
+        console.error('lnd failure');
+      }
+      lightningListChannels = response;
+      let channels = [];
+      for (let channel of lightningListChannels.channels) {
+        let divider = 524287;
+        let ascii_length1 = channel.local_balance / divider;
+        let ascii_length2 = channel.remote_balance / divider;
+        channel.ascii = '[';
+        channel.ascii += '-'.repeat(Math.round(ascii_length1));
+        channel.ascii += '/' + '-'.repeat(Math.round(ascii_length2));
+        channel.ascii += ']';
+        channel.capacity_btc = channel.capacity / 100000000;
+        channel.name = pubkey2name[channel.remote_pubkey];
+        if (channel.name) {
+          channels.unshift(channel);
+        } else {
+          channels.push(channel);
+        }
+      }
+      lightningListChannels.channels = channels;
+    });
+  } catch (Err) {
+    console.log(Err);
+  }
 }
 updateLightning();
 setInterval(updateLightning, 60000);
@@ -59,6 +63,7 @@ const pubkey2name = {
 };
 
 router.get('/', function(req, res) {
+  logger.log('/', [req.id]);
   if (!lightningGetInfo) {
     console.error('lnd failure');
     process.exit(3);
@@ -69,6 +74,7 @@ router.get('/', function(req, res) {
 });
 
 router.get('/about', function(req, res) {
+  logger.log('/about', [req.id]);
   let html = fs.readFileSync('./templates/about.html').toString('utf8');
   res.setHeader('Content-Type', 'text/html');
   return res.status(200).send(mustache.render(html, {}));

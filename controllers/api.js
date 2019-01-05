@@ -2,6 +2,7 @@ import { User } from '../class/User';
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
+let logger = require('../utils/logger');
 console.log('using config', JSON.stringify(config));
 
 var Redis = require('ioredis');
@@ -53,6 +54,7 @@ redis.info(function(err, info) {
 // ######################## ROUTES ########################
 
 router.post('/create', async function(req, res) {
+  logger.log('/create', [req.id]);
   if (!(req.body.partnerid && req.body.partnerid === 'bluewallet' && req.body.accounttype)) return errorBadArguments(res);
 
   let u = new User(redis);
@@ -62,6 +64,7 @@ router.post('/create', async function(req, res) {
 });
 
 router.post('/auth', async function(req, res) {
+  logger.log('/auth', [req.id]);
   if (!((req.body.login && req.body.password) || req.body.refresh_token)) return errorBadArguments(res);
 
   let u = new User(redis);
@@ -82,6 +85,7 @@ router.post('/auth', async function(req, res) {
 });
 
 router.post('/addinvoice', async function(req, res) {
+  logger.log('/addinvoice', [req.id]);
   let u = new User(redis);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -100,6 +104,7 @@ router.post('/addinvoice', async function(req, res) {
 });
 
 router.post('/payinvoice', async function(req, res) {
+  logger.log('/payinvoice', [req.id]);
   let u = new User(redis);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -174,6 +179,7 @@ router.post('/payinvoice', async function(req, res) {
 });
 
 router.get('/getbtc', async function(req, res) {
+  logger.log('/getbtc', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   await u.loadByAuthorization(req.headers.authorization);
 
@@ -191,6 +197,7 @@ router.get('/getbtc', async function(req, res) {
 });
 
 router.get('/balance', async function(req, res) {
+  logger.log('/balance', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -203,6 +210,7 @@ router.get('/balance', async function(req, res) {
 });
 
 router.get('/getinfo', async function(req, res) {
+  logger.log('/getinfo', [req.id]);
   let u = new User(redis);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -215,6 +223,7 @@ router.get('/getinfo', async function(req, res) {
 });
 
 router.get('/gettxs', async function(req, res) {
+  logger.log('/gettxs', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -232,6 +241,7 @@ router.get('/gettxs', async function(req, res) {
 });
 
 router.get('/getuserinvoices', async function(req, res) {
+  logger.log('/getuserinvoices', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -247,6 +257,7 @@ router.get('/getuserinvoices', async function(req, res) {
 });
 
 router.get('/getpending', async function(req, res) {
+  logger.log('/getpending', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -259,6 +270,7 @@ router.get('/getpending', async function(req, res) {
 });
 
 router.get('/decodeinvoice', async function(req, res) {
+  logger.log('/decodeinvoice', [req.id]);
   let u = new User(redis, bitcoinclient);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
@@ -273,6 +285,7 @@ router.get('/decodeinvoice', async function(req, res) {
 });
 
 router.get('/checkrouteinvoice', async function(req, res) {
+  logger.log('/checkrouteinvoice', [req.id]);
   let u = new User(redis, bitcoinclient);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
