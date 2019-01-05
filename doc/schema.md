@@ -9,6 +9,7 @@ User storage schema
 * access_token_for_{userid} = {access_token}
 * userid_for_{refresh_token} = {userid}
 * refresh_token_for_{userid} = {access_token}
+* importing_{txid} = 1 `atomic lock when processing topup tx`
 
 
 

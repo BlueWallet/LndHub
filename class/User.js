@@ -294,8 +294,8 @@ export class User {
    * @returns {Promise<void>}
    */
   async accountForPosibleTxids() {
-    let imported_txids = await this._redis.lrange('imported_txids_for_' + this._userid, 0, -1);
     let onchain_txs = await this.getTxs();
+    let imported_txids = await this._redis.lrange('imported_txids_for_' + this._userid, 0, -1);
     for (let tx of onchain_txs) {
       if (tx.type !== 'bitcoind_tx') continue;
       let already_imported = false;
@@ -304,6 +304,16 @@ export class User {
       }
 
       if (!already_imported && tx.category === 'receive') {
+        let locked = await this._redis.get('importing_' + tx.txid);
+        if (locked) {
+          // race condition, someone's already importing this tx
+          return;
+        }
+
+        // locking...
+        await this._redis.set('importing_' + tx.txid, 1);
+        await this._redis.expire('importing_' + tx.txid, 3600);
+
         let userBalance = await this.getBalance();
         userBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
         await this.saveBalance(userBalance);
