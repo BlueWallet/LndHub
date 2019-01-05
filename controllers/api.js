@@ -106,11 +106,18 @@ router.post('/payinvoice', async function(req, res) {
   }
 
   if (!req.body.invoice) return errorBadArguments(res);
+  let freeAmount = false;
+  if (req.body.amount) freeAmount = parseInt(req.body.amount);
 
   let userBalance = await u.getBalance();
 
   lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
     if (err) return errorNotAValidInvoice(res);
+
+    if (+info.num_satoshis === 0) {
+      // 'tip' invoices
+      info.num_satoshis = freeAmount;
+    }
 
     if (userBalance >= info.num_satoshis) {
       // got enough balance
@@ -158,7 +165,7 @@ router.post('/payinvoice', async function(req, res) {
           return errorLnd(res);
         }
       });
-      let inv = { payment_request: req.body.invoice };
+      let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
       call.write(inv);
     } else {
       return errorNotEnougBalance(res);
