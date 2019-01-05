@@ -237,8 +237,13 @@ router.get('/getuserinvoices', async function(req, res) {
     return errorBadAuth(res);
   }
 
-  let invoices = await u.getUserInvoices();
-  res.send(invoices);
+  try {
+    let invoices = await u.getUserInvoices();
+    res.send(invoices);
+  } catch (Err) {
+    console.log(Err);
+    res.send([]);
+  }
 });
 
 router.get('/getpending', async function(req, res) {
