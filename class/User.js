@@ -35,6 +35,7 @@ export class User {
   }
 
   async loadByAuthorization(authorization) {
+    if (!authorization) return false;
     let access_token = authorization.replace('Bearer ', '');
     let userid = await this._redis.get('userid_for_' + access_token);
 
