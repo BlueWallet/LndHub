@@ -32,7 +32,11 @@ function updateLightning() {
       channel.ascii += ']';
       channel.capacity_btc = channel.capacity / 100000000;
       channel.name = pubkey2name[channel.remote_pubkey];
-      channels.push(channel);
+      if (channel.name) {
+        channels.unshift(channel);
+      } else {
+        channels.push(channel);
+      }
     }
     lightningListChannels.channels = channels;
   });
@@ -51,6 +55,7 @@ const pubkey2name = {
   '0279c22ed7a068d10dc1a38ae66d2d6461e269226c60258c021b1ddcdfe4b00bc4': 'ln1.satoshilabs.com',
   '02c91d6aa51aa940608b497b6beebcb1aec05be3c47704b682b3889424679ca490': 'lnd-21.LNBIG.com',
   '024655b768ef40951b20053a5c4b951606d4d86085d51238f2c67c7dec29c792ca': 'satoshis.place',
+  '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda': 'tippin.me',
 };
 
 router.get('/', function(req, res) {

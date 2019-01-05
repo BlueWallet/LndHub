@@ -52,7 +52,7 @@
                 <tr>
                     <td><pre class="line">{{ascii}}</pre></td>
                     <td><pre class="line">{{capacity_btc}} BTC  </pre></td>
-                    <td><pre class="line"><a href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">{{remote_pubkey}}</a> {{name}}  </pre></td>
+                    <td><pre class="line"><a href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">{{remote_pubkey}}</a> {{name}} {{^active}}<span class="dyer-orange">[INACTIVE]</span>{{/active}}   </pre></td>
                 </tr>
             {{/channels}}
             </table>
