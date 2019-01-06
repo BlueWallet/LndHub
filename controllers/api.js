@@ -113,6 +113,7 @@ router.post('/payinvoice', async function(req, res) {
   if (!req.body.invoice) return errorBadArguments(res);
   let freeAmount = false;
   if (req.body.amount) freeAmount = parseInt(req.body.amount);
+  const lock_key = 'invoice_paying_for_' + u.getUserId();
 
   let userBalance = await u.getBalance();
 
@@ -133,6 +134,12 @@ router.post('/payinvoice', async function(req, res) {
         let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
         if (!userid_payee) return errorGeneralServerError(res);
 
+        if (await redis.get(lock_key)) {
+          return errorTryAgainLater(res);
+        }
+        await redis.set(lock_key, 1);
+        await redis.expire(lock_key, 2 * 60);
+
         let UserPayee = new User(redis);
         UserPayee._userid = userid_payee; // hacky, fixme
         let payee_balance = await UserPayee.getBalance();
@@ -152,6 +159,7 @@ router.post('/payinvoice', async function(req, res) {
 
         await UserPayee.setPaymentHashPaid(info.payment_hash);
 
+        await redis.del(lock_key, 1);
         return res.send(info);
       }
 
@@ -164,9 +172,11 @@ router.post('/payinvoice', async function(req, res) {
           payment.pay_req = req.body.invoice;
           payment.decoded = info;
           u.savePaidLndInvoice(payment);
+          redis.del(lock_key);
           res.send(payment);
         } else {
           // payment failed
+          redis.del(lock_key);
           return errorLnd(res);
         }
       });
@@ -176,6 +186,11 @@ router.post('/payinvoice', async function(req, res) {
       }
       let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
       try {
+        if (await redis.get(lock_key)) {
+          return errorTryAgainLater(res);
+        }
+        await redis.set(lock_key, 1);
+        await redis.expire(lock_key, 2 * 60);
         logger.log('/payinvoice', [req.id, 'before write', JSON.stringify(inv)]);
         call.write(inv);
       } catch (Err) {
@@ -360,5 +375,13 @@ function errorBadArguments(res) {
     error: true,
     code: 8,
     message: 'Bad arguments',
+  });
+}
+
+function errorTryAgainLater(res) {
+  return res.send({
+    error: true,
+    code: 9,
+    message: 'Try again later',
   });
 }
