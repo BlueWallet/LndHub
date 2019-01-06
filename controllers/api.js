@@ -171,7 +171,12 @@ router.post('/payinvoice', async function(req, res) {
         }
       });
       let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
-      call.write(inv);
+      try {
+        call.write(inv);
+      } catch (Err) {
+        logger.log('/payinvoice', [req.id, 'exception', JSON.stringify(Err)]);
+        return errorLnd(res);
+      }
     } else {
       return errorNotEnougBalance(res);
     }
