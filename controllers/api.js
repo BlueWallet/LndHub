@@ -172,6 +172,10 @@ router.post('/payinvoice', async function(req, res) {
             return errorLnd(res);
           }
         });
+        if (!info.num_satoshis && !info.num_satoshis) {
+          // tip invoice, but someone forgot to specify amount
+          return errorBadArguments(res);
+        }
         let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
         try {
           logger.log('/payinvoice', [req.id, 'before write', JSON.stringify(inv)]);
