@@ -116,71 +116,77 @@ router.post('/payinvoice', async function(req, res) {
 
   let userBalance = await u.getBalance();
 
-  lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
-    if (err) return errorNotAValidInvoice(res);
+  try {
+    // TODO: refactor
+    lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
+      if (err) return errorNotAValidInvoice(res);
 
-    if (+info.num_satoshis === 0) {
-      // 'tip' invoices
-      info.num_satoshis = freeAmount;
-    }
-
-    if (userBalance >= info.num_satoshis) {
-      // got enough balance
-
-      if (identity_pubkey === info.destination) {
-        // this is internal invoice
-        // now, receiver add balance
-        let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
-        if (!userid_payee) return errorGeneralServerError(res);
-
-        let UserPayee = new User(redis);
-        UserPayee._userid = userid_payee; // hacky, fixme
-        let payee_balance = await UserPayee.getBalance();
-        payee_balance += info.num_satoshis * 1;
-        await UserPayee.saveBalance(payee_balance);
-
-        // sender spent his balance:
-        userBalance -= info.num_satoshis * 1;
-        await u.saveBalance(userBalance);
-        await u.savePaidLndInvoice({
-          timestamp: parseInt(+new Date() / 1000),
-          type: 'paid_invoice',
-          value: info.num_satoshis * 1,
-          fee: 0, // internal invoices are free
-          memo: decodeURIComponent(info.description),
-        });
-
-        await UserPayee.setPaymentHashPaid(info.payment_hash);
-
-        return res.send(info);
+      if (+info.num_satoshis === 0) {
+        // 'tip' invoices
+        info.num_satoshis = freeAmount;
       }
 
-      var call = lightning.sendPayment();
-      call.on('data', function(payment) {
-        // payment callback
-        if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
-          userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
-          u.saveBalance(userBalance);
-          payment.pay_req = req.body.invoice;
-          payment.decoded = info;
-          u.savePaidLndInvoice(payment);
-          res.send(payment);
-        } else {
-          // payment failed
+      if (userBalance >= info.num_satoshis) {
+        // got enough balance
+
+        if (identity_pubkey === info.destination) {
+          // this is internal invoice
+          // now, receiver add balance
+          let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
+          if (!userid_payee) return errorGeneralServerError(res);
+
+          let UserPayee = new User(redis);
+          UserPayee._userid = userid_payee; // hacky, fixme
+          let payee_balance = await UserPayee.getBalance();
+          payee_balance += info.num_satoshis * 1;
+          await UserPayee.saveBalance(payee_balance);
+
+          // sender spent his balance:
+          userBalance -= info.num_satoshis * 1;
+          await u.saveBalance(userBalance);
+          await u.savePaidLndInvoice({
+            timestamp: parseInt(+new Date() / 1000),
+            type: 'paid_invoice',
+            value: info.num_satoshis * 1,
+            fee: 0, // internal invoices are free
+            memo: decodeURIComponent(info.description),
+          });
+
+          await UserPayee.setPaymentHashPaid(info.payment_hash);
+
+          return res.send(info);
+        }
+
+        var call = lightning.sendPayment();
+        call.on('data', function(payment) {
+          // payment callback
+          if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
+            userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
+            u.saveBalance(userBalance);
+            payment.pay_req = req.body.invoice;
+            payment.decoded = info;
+            u.savePaidLndInvoice(payment);
+            res.send(payment);
+          } else {
+            // payment failed
+            return errorLnd(res);
+          }
+        });
+        let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
+        try {
+          logger.log('/payinvoice', [req.id, 'before write', JSON.stringify(inv)]);
+          call.write(inv);
+        } catch (Err) {
+          logger.log('/payinvoice', [req.id, 'exception', JSON.stringify(Err)]);
           return errorLnd(res);
         }
-      });
-      let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
-      try {
-        call.write(inv);
-      } catch (Err) {
-        logger.log('/payinvoice', [req.id, 'exception', JSON.stringify(Err)]);
-        return errorLnd(res);
+      } else {
+        return errorNotEnougBalance(res);
       }
-    } else {
-      return errorNotEnougBalance(res);
-    }
-  });
+    });
+  } catch (Err) {
+    return errorLnd(res);
+  }
 });
 
 router.get('/getbtc', async function(req, res) {
