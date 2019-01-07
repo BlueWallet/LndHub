@@ -1,3 +1,5 @@
+import { Lock } from './Lock';
+
 var crypto = require('crypto');
 var lightningPayReq = require('bolt11');
 import { BigNumber } from 'bignumber.js';
@@ -304,20 +306,18 @@ export class User {
       }
 
       if (!already_imported && tx.category === 'receive') {
-        let locked = await this._redis.get('importing_' + tx.txid);
-        if (locked) {
-          // race condition, someone's already importing this tx
+        // first, locking...
+        let lock = new Lock(this._redis, 'importing_' + tx.txid);
+        if (!(await lock.obtainLock())) {
+          // someone's already importing this tx
           return;
         }
-
-        // locking...
-        await this._redis.set('importing_' + tx.txid, 1);
-        await this._redis.expire('importing_' + tx.txid, 3600);
 
         let userBalance = await this.getBalance();
         userBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
         await this.saveBalance(userBalance);
         await this._redis.rpush('imported_txids_for_' + this._userid, tx.txid);
+        await lock.releaseLock();
       }
     }
   }
