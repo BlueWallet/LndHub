@@ -1,4 +1,4 @@
-import { User } from '../class/User';
+import { User, Lock } from '../class/';
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
@@ -113,12 +113,20 @@ router.post('/payinvoice', async function(req, res) {
   if (!req.body.invoice) return errorBadArguments(res);
   let freeAmount = false;
   if (req.body.amount) freeAmount = parseInt(req.body.amount);
-  const lock_key = 'invoice_paying_for_' + u.getUserId();
+
+  // obtaining a lock
+  let lock = new Lock(redis, 'invoice_paying_for_' + u.getUserId());
+  if (!(await lock.obtainLock())) {
+    return errorTryAgainLater(res);
+  }
 
   let userBalance = await u.getBalance();
 
   lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
-    if (err) return errorNotAValidInvoice(res);
+    if (err) {
+      await lock.releaseLock();
+      return errorNotAValidInvoice(res);
+    }
 
     if (+info.num_satoshis === 0) {
       // 'tip' invoices
@@ -132,13 +140,10 @@ router.post('/payinvoice', async function(req, res) {
         // this is internal invoice
         // now, receiver add balance
         let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
-        if (!userid_payee) return errorGeneralServerError(res);
-
-        if (await redis.get(lock_key)) {
-          return errorTryAgainLater(res);
+        if (!userid_payee) {
+          await lock.releaseLock();
+          return errorGeneralServerError(res);
         }
-        await redis.set(lock_key, 1);
-        await redis.expire(lock_key, 2 * 60);
 
         let UserPayee = new User(redis);
         UserPayee._userid = userid_payee; // hacky, fixme
@@ -159,9 +164,11 @@ router.post('/payinvoice', async function(req, res) {
 
         await UserPayee.setPaymentHashPaid(info.payment_hash);
 
-        await redis.del(lock_key, 1);
+        await lock.releaseLock();
         return res.send(info);
       }
+
+      // else - regular lightning network payment:
 
       var call = lightning.sendPayment();
       call.on('data', function(payment) {
@@ -172,32 +179,30 @@ router.post('/payinvoice', async function(req, res) {
           payment.pay_req = req.body.invoice;
           payment.decoded = info;
           u.savePaidLndInvoice(payment);
-          redis.del(lock_key);
+          lock.releaseLock();
           res.send(payment);
         } else {
           // payment failed
-          redis.del(lock_key);
+          lock.releaseLock();
           return errorLnd(res);
         }
       });
       if (!info.num_satoshis && !info.num_satoshis) {
         // tip invoice, but someone forgot to specify amount
+        await lock.releaseLock();
         return errorBadArguments(res);
       }
       let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
       try {
-        if (await redis.get(lock_key)) {
-          return errorTryAgainLater(res);
-        }
-        await redis.set(lock_key, 1);
-        await redis.expire(lock_key, 2 * 60);
         logger.log('/payinvoice', [req.id, 'before write', JSON.stringify(inv)]);
         call.write(inv);
       } catch (Err) {
         logger.log('/payinvoice', [req.id, 'exception', JSON.stringify(Err)]);
+        await lock.releaseLock();
         return errorLnd(res);
       }
     } else {
+      await lock.releaseLock();
       return errorNotEnougBalance(res);
     }
   });
