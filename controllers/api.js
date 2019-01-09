@@ -145,6 +145,12 @@ router.post('/payinvoice', async function(req, res) {
           return errorGeneralServerError(res);
         }
 
+        if (await u.getPaymentHashPaid(info.payment_hash)) {
+          // this internal invoice was paid, no sense paying it again
+          await lock.releaseLock();
+          return errorLnd(res);
+        }
+
         let UserPayee = new User(redis);
         UserPayee._userid = userid_payee; // hacky, fixme
         let payee_balance = await UserPayee.getBalance();
