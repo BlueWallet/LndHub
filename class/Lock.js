@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-
 export class Lock {
   /**
    *
@@ -18,20 +16,10 @@ export class Lock {
    * @returns {Promise<boolean>}
    */
   async obtainLock() {
-    if (await this._redis.get(this._lock_key)) {
-      // someone already has the lock
-      return false;
-    }
-
-    // trying to set the lock:
-    let buffer = crypto.randomBytes(10);
-    const randomValue = buffer.toString('hex');
-    await this._redis.set(this._lock_key, randomValue);
-
-    // checking if it was set:
-    let value = await this._redis.get(this._lock_key);
-    if (value !== randomValue) {
-      // someone else managed to obtain this lock
+    const timestamp = +new Date();
+    let setResult = await this._redis.setnx(this._lock_key, timestamp);
+    if (!setResult) {
+      // it already held a value - failed locking
       return false;
     }
 
