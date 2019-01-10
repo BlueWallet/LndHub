@@ -285,7 +285,11 @@ router.get('/getuserinvoices', async function(req, res) {
 
   try {
     let invoices = await u.getUserInvoices();
-    res.send(invoices);
+    if (req.query.limit && !isNaN(parseInt(req.query.limit))) {
+      res.send(invoices.slice(parseInt(req.query.limit) * -1));
+    } else {
+      res.send(invoices);
+    }
   } catch (Err) {
     console.log(Err);
     res.send([]);
