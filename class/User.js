@@ -138,7 +138,7 @@ export class User {
     for (let tx of txs) {
       if (tx.type === 'bitcoind_tx') {
         // topup
-        calculatedBalance += tx.amount * 100000000;
+        calculatedBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
       } else {
         calculatedBalance -= +tx.value;
       }
@@ -353,7 +353,8 @@ export class User {
         }
 
         let userBalance = await this.getCalculatedBalance();
-        userBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
+        // userBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
+        // no need to add since it was accounted for in `this.getCalculatedBalance()`
         await this.saveBalance(userBalance);
         await this._redis.rpush('imported_txids_for_' + this._userid, tx.txid);
         await lock.releaseLock();
