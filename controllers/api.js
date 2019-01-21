@@ -9,7 +9,7 @@ var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 redis.monitor(function(err, monitor) {
   monitor.on('monitor', function(time, args, source, database) {
-    console.log('REDIS', JSON.stringify(args));
+    // console.log('REDIS', JSON.stringify(args));
   });
 });
 
