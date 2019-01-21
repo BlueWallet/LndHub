@@ -114,11 +114,42 @@ export class User {
   }
 
   async getBalance() {
-    return (await this._redis.get('balance_for_' + this._userid)) * 1;
+    let balance = (await this._redis.get('balance_for_' + this._userid)) * 1;
+    console.log('balance from db ', balance);
+    if (!balance) {
+      balance = await this.getCalculatedBalance();
+      console.log('calculated balance', balance);
+      await this.saveBalance(balance);
+    }
+    return balance;
+  }
+
+  async getCalculatedBalance() {
+    let calculatedBalance = 0;
+    let userinvoices = await this.getUserInvoices();
+
+    for (let invo of userinvoices) {
+      if (invo && invo.ispaid) {
+        calculatedBalance += +invo.amt;
+      }
+    }
+
+    let txs = await this.getTxs();
+    for (let tx of txs) {
+      if (tx.type === 'bitcoind_tx') {
+        // topup
+        calculatedBalance += tx.amount * 100000000;
+      } else {
+        calculatedBalance -= +tx.value;
+      }
+    }
+    return calculatedBalance;
   }
 
   async saveBalance(balance) {
-    return await this._redis.set('balance_for_' + this._userid, balance);
+    const key = 'balance_for_' + this._userid;
+    await this._redis.set(key, balance);
+    await this._redis.expire(key, 3600 * 24);
   }
 
   async savePaidLndInvoice(doc) {
