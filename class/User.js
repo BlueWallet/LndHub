@@ -352,7 +352,7 @@ export class User {
           return;
         }
 
-        let userBalance = await this.getBalance();
+        let userBalance = await this.getCalculatedBalance();
         userBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
         await this.saveBalance(userBalance);
         await this._redis.rpush('imported_txids_for_' + this._userid, tx.txid);

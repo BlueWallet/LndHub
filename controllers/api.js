@@ -120,7 +120,7 @@ router.post('/payinvoice', async function(req, res) {
     return errorTryAgainLater(res);
   }
 
-  let userBalance = await u.getBalance();
+  let userBalance = await u.getCalculatedBalance();
 
   lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
     if (err) {
