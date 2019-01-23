@@ -113,17 +113,27 @@ export class User {
     });
   }
 
+  /**
+   * LndHub no longer relies on redis balance as source of truth, this is
+   * more a cache now. See `this.getCalculatedBalance()` to get correct balance.
+   *
+   * @returns {Promise<number>} Balance available to spend
+   */
   async getBalance() {
     let balance = (await this._redis.get('balance_for_' + this._userid)) * 1;
-    console.log('balance from db ', balance);
     if (!balance) {
       balance = await this.getCalculatedBalance();
-      console.log('calculated balance', balance);
       await this.saveBalance(balance);
     }
     return balance;
   }
 
+  /**
+   * Accounts for all possible transactions in user's account and
+   * sums their amounts.
+   *
+   * @returns {Promise<number>} Balance available to spend
+   */
   async getCalculatedBalance() {
     let calculatedBalance = 0;
     let userinvoices = await this.getUserInvoices();
@@ -146,6 +156,13 @@ export class User {
     return calculatedBalance;
   }
 
+  /**
+   * LndHub no longer relies on redis balance as source of truth, this is
+   * more a cache now. See `this.getCalculatedBalance()` to get correct balance.
+   *
+   * @param balance
+   * @returns {Promise<void>}
+   */
   async saveBalance(balance) {
     const key = 'balance_for_' + this._userid;
     await this._redis.set(key, balance);
@@ -223,7 +240,7 @@ export class User {
         if (invoice.ispaid) {
           // so invoice was paid after all
           await this.setPaymentHashPaid(invoice.payment_hash);
-          await this.saveBalance((await this.getBalance()) + decoded.satoshis);
+          await this.saveBalance(await this.getCalculatedBalance());
         }
       }
 
