@@ -12,14 +12,15 @@ function updateLightning() {
   try {
     lightning.getInfo({}, function(err, info) {
       if (err) {
-        console.error('lnd failure');
+        console.error('lnd failure:', err);
       }
       lightningGetInfo = info;
     });
 
     lightning.listChannels({}, function(err, response) {
       if (err) {
-        console.error('lnd failure');
+        console.error('lnd failure:', err);
+        return;
       }
       lightningListChannels = response;
       let channels = [];
