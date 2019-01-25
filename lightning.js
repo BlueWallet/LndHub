@@ -25,4 +25,22 @@ let macaroonCreds = grpc.credentials.createFromMetadataGenerator(function(args, 
   callback(null, metadata);
 });
 let creds = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
+
+// trying to unlock the wallet:
+if (config.lnd.password) {
+  var walletUnlocker = new lnrpc.WalletUnlocker(config.lnd.url, creds);
+  walletUnlocker.unlockWallet(
+    {
+      wallet_password: config.lnd.password,
+    },
+    function(err, response) {
+      if (err) {
+        console.log('unlockWallet failed, probably because its been aleady unlocked');
+      } else {
+        console.log('unlockWallet:', response);
+      }
+    },
+  );
+}
+
 module.exports = new lnrpc.Lightning(config.lnd.url, creds);

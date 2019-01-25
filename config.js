@@ -11,6 +11,7 @@ let config = {
   },
   lnd: {
     url: '1.1.1.1:10009',
+    password: '',
   },
 };
 

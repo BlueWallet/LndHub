@@ -45,6 +45,7 @@ function updateLightning() {
   } catch (Err) {
     console.log(Err);
   }
+  console.log('updated');
 }
 updateLightning();
 setInterval(updateLightning, 60000);
