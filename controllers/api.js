@@ -200,10 +200,8 @@ router.post('/payinvoice', async function(req, res) {
       }
       let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
       try {
-        logger.log('/payinvoice', [req.id, 'before write', JSON.stringify(inv)]);
         call.write(inv);
       } catch (Err) {
-        logger.log('/payinvoice', [req.id, 'exception', JSON.stringify(Err)]);
         await lock.releaseLock();
         return errorLnd(res);
       }
@@ -271,7 +269,7 @@ router.get('/gettxs', async function(req, res) {
     let txs = await u.getTxs();
     res.send(txs);
   } catch (Err) {
-    console.log(Err);
+    logger.log('', [req.id, 'error:', Err]);
     res.send([]);
   }
 });
@@ -291,7 +289,7 @@ router.get('/getuserinvoices', async function(req, res) {
       res.send(invoices);
     }
   } catch (Err) {
-    console.log(Err);
+    logger.log('', [req.id, 'error:', Err]);
     res.send([]);
   }
 });
