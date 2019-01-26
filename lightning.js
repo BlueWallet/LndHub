@@ -28,6 +28,7 @@ let creds = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
 
 // trying to unlock the wallet:
 if (config.lnd.password) {
+  console.log('trying to unlock the wallet');
   var walletUnlocker = new lnrpc.WalletUnlocker(config.lnd.url, creds);
   walletUnlocker.unlockWallet(
     {
