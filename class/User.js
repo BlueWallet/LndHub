@@ -297,6 +297,12 @@ export class User {
         invoice.timestamp = invoice.decoded.timestamp;
         invoice.memo = invoice.decoded.description;
       }
+      // removing unsued by client fields to reduce size
+      delete invoice.payment_error;
+      delete invoice.payment_preimage;
+      delete invoice.payment_route;
+      delete invoice.pay_req;
+      delete invoice.decoded;
       result.push(invoice);
     }
 
