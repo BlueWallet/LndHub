@@ -112,7 +112,10 @@ router.post('/payinvoice', async function(req, res) {
 
   if (!req.body.invoice) return errorBadArguments(res);
   let freeAmount = false;
-  if (req.body.amount) freeAmount = parseInt(req.body.amount);
+  if (req.body.amount) {
+    freeAmount = parseInt(req.body.amount);
+    if (freeAmount <= 0) return errorBadArguments(res);
+  }
 
   // obtaining a lock
   let lock = new Lock(redis, 'invoice_paying_for_' + u.getUserId());
