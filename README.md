@@ -28,3 +28,8 @@ Add config vars :
 ### Tests
 
 Acceptance tests are in https://github.com/BlueWallet/BlueWallet/blob/master/LightningCustodianWallet.test.js
+
+## Responsible disclosure
+
+Found critical bugs/vulnerabilities? Please email them bluewallet@bluewallet.io
+Thanks!
