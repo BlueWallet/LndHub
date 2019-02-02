@@ -104,11 +104,12 @@ router.post('/addinvoice', async function(req, res) {
 });
 
 router.post('/payinvoice', async function(req, res) {
-  logger.log('/payinvoice', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
+
+  logger.log('/payinvoice', [req.id, 'userid: ' + u.getUserId()]);
 
   if (!req.body.invoice) return errorBadArguments(res);
   let freeAmount = false;
