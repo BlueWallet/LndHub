@@ -285,11 +285,11 @@ export class User {
       addr = await this.getAddress();
     }
     if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
-    let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
+    let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations >= 3) {
+      if (tx.confirmations >= 3 && tx.address === addr) {
         tx.type = 'bitcoind_tx';
         result.push(tx);
       }
@@ -335,11 +335,11 @@ export class User {
       addr = await this.getAddress();
     }
     if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
-    let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
+    let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations < 3) {
+      if (tx.confirmations < 3 && tx.address === addr) {
         result.push(tx);
       }
     }
