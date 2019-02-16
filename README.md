@@ -6,6 +6,11 @@ Wrapper for Lightning Network Daemon. It provides separate accounts with minimum
 INSTALLATION
 ------------
 
+You can use those guides or follow instructions below:
+
+* https://github.com/dangeross/guides/blob/master/raspibolt/raspibolt_6B_lndhub.md
+* https://medium.com/@jpthor/running-lndhub-on-mac-osx-5be6671b2e0c
+
 ```
 git clone git@github.com:BlueWallet/LndHub.git
 cd LndHub
