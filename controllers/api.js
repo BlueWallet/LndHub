@@ -401,6 +401,6 @@ function errorTryAgainLater(res) {
   return res.send({
     error: true,
     code: 9,
-    message: 'Try again later',
+    message: 'Your previous payment is in transit. Try again in 5 minutes',
   });
 }

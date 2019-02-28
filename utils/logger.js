@@ -23,13 +23,10 @@ const logger = createLogger({
   level: 'info',
   format: combine(timestamp(), logFormat),
   transports: [
-    new transports.File({
-      filename: './logs/error.log',
+    new transports.Console({
       level: 'error',
     }),
-    new transports.File({
-      filename: './logs/out.log',
-    }),
+    new transports.Console(),
   ],
 });
 
@@ -45,7 +42,6 @@ if (!fs.existsSync('logs')) {
  * @param {string} message log message
  */
 function log(label, message) {
-  console.log(new Date(), label, message);
   logger.log({
     level: 'info',
     label: label,
