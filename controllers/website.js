@@ -67,6 +67,7 @@ const pubkey2name = {
   '036a54f02d2186de192e4bcec3f7b47adb43b1fa965793387cd2471990ce1d236b': 'capacity.network',
   '026c7d28784791a4b31a64eb34d9ab01552055b795919165e6ae886de637632efb': 'LivingRoomOfSatoshi.com_LND_1',
   '02816caed43171d3c9854e3b0ab2cf0c42be086ff1bd4005acc2a5f7db70d83774': 'ln.pizza',
+  '024a2e265cd66066b78a788ae615acdc84b5b0dec9efac36d7ac87513015eaf6ed': 'Bitrefill.com/lightning',
 };
 
 router.get('/', function(req, res) {

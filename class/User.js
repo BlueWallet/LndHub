@@ -261,6 +261,7 @@ export class User {
 
   /**
    * User's onchain txs that are >= 3 confs
+   * Queries bitcoind RPC.
    *
    * @returns {Promise<Array>}
    */

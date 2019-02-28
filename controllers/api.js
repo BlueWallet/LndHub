@@ -109,7 +109,7 @@ router.post('/payinvoice', async function(req, res) {
     return errorBadAuth(res);
   }
 
-  logger.log('/payinvoice', [req.id, 'userid: ' + u.getUserId()]);
+  logger.log('/payinvoice', [req.id, 'userid: ' + u.getUserId(), 'invoice: ' + req.body.invoice]);
 
   if (!req.body.invoice) return errorBadArguments(res);
   let freeAmount = false;
@@ -136,6 +136,8 @@ router.post('/payinvoice', async function(req, res) {
       // 'tip' invoices
       info.num_satoshis = freeAmount;
     }
+
+    logger.log('/payinvoice', [req.id, 'userBalance: ' + userBalance, 'num_satoshis: ' + info.num_satoshis]);
 
     if (userBalance >= info.num_satoshis) {
       // got enough balance
@@ -181,14 +183,14 @@ router.post('/payinvoice', async function(req, res) {
       // else - regular lightning network payment:
 
       var call = lightning.sendPayment();
-      call.on('data', function(payment) {
+      call.on('data', async function(payment) {
         // payment callback
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
           userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
           u.saveBalance(userBalance);
           payment.pay_req = req.body.invoice;
           payment.decoded = info;
-          u.savePaidLndInvoice(payment);
+          await u.savePaidLndInvoice(payment);
           lock.releaseLock();
           res.send(payment);
         } else {
