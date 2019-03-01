@@ -24,7 +24,7 @@ export class Lock {
     }
 
     // success - got lock
-    await this._redis.expire(this._lock_key, 10 * 60);
+    await this._redis.expire(this._lock_key, 3600);
     // lock expires in 5 mins just for any case
     return true;
   }
