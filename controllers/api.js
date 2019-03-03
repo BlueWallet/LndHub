@@ -185,6 +185,7 @@ router.post('/payinvoice', async function(req, res) {
       var call = lightning.sendPayment();
       call.on('data', async function(payment) {
         // payment callback
+        await u.unlockFunds(req.body.invoice);
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
           userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
           u.saveBalance(userBalance);
@@ -206,6 +207,7 @@ router.post('/payinvoice', async function(req, res) {
       }
       let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
       try {
+        await u.lockFunds(req.body.invoice, info);
         call.write(inv);
       } catch (Err) {
         await lock.releaseLock();

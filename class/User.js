@@ -153,6 +153,13 @@ export class User {
         calculatedBalance -= +tx.value;
       }
     }
+
+    let lockedPayments = await this.getLockedPayments();
+    for (let paym of lockedPayments) {
+      // TODO: check if payment in determined state and actually evict it from this list
+      calculatedBalance -= +paym.amount;
+    }
+
     return calculatedBalance;
   }
 
@@ -384,6 +391,59 @@ export class User {
         await lock.releaseLock();
       }
     }
+  }
+
+  /**
+   * Adds invoice to a list of user's locked payments.
+   * Used to calculate balance till the lock is lifted (payment is in
+   * determined state - succeded or failed).
+   *
+   * @param {String} pay_req
+   * @param {Object} decodedInvoice
+   * @returns {Promise<void>}
+   */
+  async lockFunds(pay_req, decodedInvoice) {
+    let doc = {
+      pay_req,
+      amount: +decodedInvoice.num_satoshis,
+      timestamp: Math.floor(+new Date() / 1000),
+    };
+
+    return this._redis.rpush('locked_payments_for_' + this._userid, JSON.stringify(doc));
+  }
+
+  /**
+   * Strips specific payreq from the list of locked payments
+   * @param pay_req
+   * @returns {Promise<void>}
+   */
+  async unlockFunds(pay_req) {
+    let payments = await this.getLockedPayments();
+    let saveBack = [];
+    for (let paym of payments) {
+      if (paym.pay_req !== pay_req) {
+        saveBack.push(paym);
+      }
+    }
+
+    await this._redis.del('locked_payments_for_' + this._userid);
+    for (let doc of saveBack) {
+      await this._redis.rpush('locked_payments_for_' + this._userid, JSON.stringify(doc));
+    }
+  }
+
+  async getLockedPayments() {
+    let payments = await this._redis.lrange('locked_payments_for_' + this._userid, 0, -1);
+    let result = [];
+    for (let paym of payments) {
+      let json;
+      try {
+        json = JSON.parse(paym);
+        result.push(json);
+      } catch (_) {}
+    }
+
+    return result;
   }
 
   _hash(string) {
