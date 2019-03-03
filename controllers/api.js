@@ -169,8 +169,8 @@ router.post('/payinvoice', async function(req, res) {
         await u.savePaidLndInvoice({
           timestamp: parseInt(+new Date() / 1000),
           type: 'paid_invoice',
-          value: info.num_satoshis * 1,
-          fee: 0, // internal invoices are free
+          value: +info.num_satoshis + Math.floor(info.num_satoshis * 0.01),
+          fee: Math.floor(info.num_satoshis * 0.01),
           memo: decodeURIComponent(info.description),
         });
 
@@ -187,6 +187,7 @@ router.post('/payinvoice', async function(req, res) {
         // payment callback
         await u.unlockFunds(req.body.invoice);
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
+          payment.payment_route.total_fees += Math.floor(+payment.payment_route.total_amt * 0.01);
           userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
           u.saveBalance(userBalance);
           payment.pay_req = req.body.invoice;
@@ -205,7 +206,11 @@ router.post('/payinvoice', async function(req, res) {
         await lock.releaseLock();
         return errorBadArguments(res);
       }
-      let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
+      let inv = {
+        payment_request: req.body.invoice,
+        amt: info.num_satoshis, // amt is used only for 'tip' invoices
+        fee_limit: { fixed: Math.floor(info.num_satoshis * 0.005) },
+      };
       try {
         await u.lockFunds(req.body.invoice, info);
         call.write(inv);
