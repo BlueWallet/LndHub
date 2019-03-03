@@ -139,8 +139,8 @@ router.post('/payinvoice', async function(req, res) {
 
     logger.log('/payinvoice', [req.id, 'userBalance: ' + userBalance, 'num_satoshis: ' + info.num_satoshis]);
 
-    if (userBalance >= info.num_satoshis) {
-      // got enough balance
+    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * 0.01)) {
+      // got enough balance, including 1% of payment amount - reserve for fees
 
       if (identity_pubkey === info.destination) {
         // this is internal invoice
