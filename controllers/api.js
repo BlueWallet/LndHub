@@ -253,6 +253,7 @@ router.get('/balance', async function(req, res) {
   if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
   await u.accountForPosibleTxids();
   let balance = await u.getBalance();
+  if (balance < 0) balance = 0;
   res.send({ BTC: { AvailableBalance: balance } });
 });
 
