@@ -113,12 +113,67 @@ export class User {
     });
   }
 
+  /**
+   * LndHub no longer relies on redis balance as source of truth, this is
+   * more a cache now. See `this.getCalculatedBalance()` to get correct balance.
+   *
+   * @returns {Promise<number>} Balance available to spend
+   */
   async getBalance() {
-    return (await this._redis.get('balance_for_' + this._userid)) * 1;
+    let balance = (await this._redis.get('balance_for_' + this._userid)) * 1;
+    if (!balance) {
+      balance = await this.getCalculatedBalance();
+      await this.saveBalance(balance);
+    }
+    return balance;
   }
 
+  /**
+   * Accounts for all possible transactions in user's account and
+   * sums their amounts.
+   *
+   * @returns {Promise<number>} Balance available to spend
+   */
+  async getCalculatedBalance() {
+    let calculatedBalance = 0;
+    let userinvoices = await this.getUserInvoices();
+
+    for (let invo of userinvoices) {
+      if (invo && invo.ispaid) {
+        calculatedBalance += +invo.amt;
+      }
+    }
+
+    let txs = await this.getTxs();
+    for (let tx of txs) {
+      if (tx.type === 'bitcoind_tx') {
+        // topup
+        calculatedBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
+      } else {
+        calculatedBalance -= +tx.value;
+      }
+    }
+
+    let lockedPayments = await this.getLockedPayments();
+    for (let paym of lockedPayments) {
+      // TODO: check if payment in determined state and actually evict it from this list
+      calculatedBalance -= +paym.amount;
+    }
+
+    return calculatedBalance;
+  }
+
+  /**
+   * LndHub no longer relies on redis balance as source of truth, this is
+   * more a cache now. See `this.getCalculatedBalance()` to get correct balance.
+   *
+   * @param balance
+   * @returns {Promise<void>}
+   */
   async saveBalance(balance) {
-    return await this._redis.set('balance_for_' + this._userid, balance);
+    const key = 'balance_for_' + this._userid;
+    await this._redis.set(key, balance);
+    await this._redis.expire(key, 3600 * 24);
   }
 
   async savePaidLndInvoice(doc) {
@@ -192,7 +247,7 @@ export class User {
         if (invoice.ispaid) {
           // so invoice was paid after all
           await this.setPaymentHashPaid(invoice.payment_hash);
-          await this.saveBalance((await this.getBalance()) + decoded.satoshis);
+          await this.saveBalance(await this.getCalculatedBalance());
         }
       }
 
@@ -213,11 +268,16 @@ export class User {
 
   /**
    * User's onchain txs that are >= 3 confs
+   * Queries bitcoind RPC.
    *
    * @returns {Promise<Array>}
    */
   async getTxs() {
     let addr = await this.getAddress();
+    if (!addr) {
+      await this.generateAddress();
+      addr = await this.getAddress();
+    }
     if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
     let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
     txs = txs.result;
@@ -245,6 +305,12 @@ export class User {
         invoice.timestamp = invoice.decoded.timestamp;
         invoice.memo = invoice.decoded.description;
       }
+      // removing unsued by client fields to reduce size
+      delete invoice.payment_error;
+      delete invoice.payment_preimage;
+      delete invoice.payment_route;
+      delete invoice.pay_req;
+      delete invoice.decoded;
       result.push(invoice);
     }
 
@@ -258,6 +324,10 @@ export class User {
    */
   async getPendingTxs() {
     let addr = await this.getAddress();
+    if (!addr) {
+      await this.generateAddress();
+      addr = await this.getAddress();
+    }
     if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
     let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
     txs = txs.result;
@@ -313,13 +383,67 @@ export class User {
           return;
         }
 
-        let userBalance = await this.getBalance();
-        userBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
+        let userBalance = await this.getCalculatedBalance();
+        // userBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
+        // no need to add since it was accounted for in `this.getCalculatedBalance()`
         await this.saveBalance(userBalance);
         await this._redis.rpush('imported_txids_for_' + this._userid, tx.txid);
         await lock.releaseLock();
       }
     }
+  }
+
+  /**
+   * Adds invoice to a list of user's locked payments.
+   * Used to calculate balance till the lock is lifted (payment is in
+   * determined state - succeded or failed).
+   *
+   * @param {String} pay_req
+   * @param {Object} decodedInvoice
+   * @returns {Promise<void>}
+   */
+  async lockFunds(pay_req, decodedInvoice) {
+    let doc = {
+      pay_req,
+      amount: +decodedInvoice.num_satoshis,
+      timestamp: Math.floor(+new Date() / 1000),
+    };
+
+    return this._redis.rpush('locked_payments_for_' + this._userid, JSON.stringify(doc));
+  }
+
+  /**
+   * Strips specific payreq from the list of locked payments
+   * @param pay_req
+   * @returns {Promise<void>}
+   */
+  async unlockFunds(pay_req) {
+    let payments = await this.getLockedPayments();
+    let saveBack = [];
+    for (let paym of payments) {
+      if (paym.pay_req !== pay_req) {
+        saveBack.push(paym);
+      }
+    }
+
+    await this._redis.del('locked_payments_for_' + this._userid);
+    for (let doc of saveBack) {
+      await this._redis.rpush('locked_payments_for_' + this._userid, JSON.stringify(doc));
+    }
+  }
+
+  async getLockedPayments() {
+    let payments = await this._redis.lrange('locked_payments_for_' + this._userid, 0, -1);
+    let result = [];
+    for (let paym of payments) {
+      let json;
+      try {
+        json = JSON.parse(paym);
+        result.push(json);
+      } catch (_) {}
+    }
+
+    return result;
   }
 
   _hash(string) {

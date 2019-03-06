@@ -20,6 +20,8 @@ User storage schema
 * bitcoin_address_for_{userid} = {address}
 * balance_for_{userid} = {int}
 * txs_for_{userid} = [] `serialized paid lnd invoices in a list`
+* locked_invoices_for_{userod} = [] `serialized attempts to pay invoice. used in calculating user's balance`
+    : {pay_req:..., amount:666, timestamp:666}
 * imported_txids_for_{userid} = [] `list of txids processed for this user`
 * metadata_for_{userid}= {serialized json}
 * userinvoices_for_{userid} = []

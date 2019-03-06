@@ -9,7 +9,7 @@ var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 redis.monitor(function(err, monitor) {
   monitor.on('monitor', function(time, args, source, database) {
-    console.log('REDIS', JSON.stringify(args));
+    // console.log('REDIS', JSON.stringify(args));
   });
 });
 
@@ -58,7 +58,7 @@ router.post('/create', async function(req, res) {
   logger.log('/create', [req.id]);
   if (!(req.body.partnerid && req.body.partnerid === 'bluewallet' && req.body.accounttype)) return errorBadArguments(res);
 
-  let u = new User(redis);
+  let u = new User(redis, bitcoinclient, lightning);
   await u.create();
   await u.saveMetadata({ partnerid: req.body.partnerid, accounttype: req.body.accounttype, created_at: new Date().toISOString() });
   res.send({ login: u.getLogin(), password: u.getPassword() });
@@ -68,7 +68,7 @@ router.post('/auth', async function(req, res) {
   logger.log('/auth', [req.id]);
   if (!((req.body.login && req.body.password) || req.body.refresh_token)) return errorBadArguments(res);
 
-  let u = new User(redis);
+  let u = new User(redis, bitcoinclient, lightning);
 
   if (req.body.refresh_token) {
     // need to refresh token
@@ -87,7 +87,7 @@ router.post('/auth', async function(req, res) {
 
 router.post('/addinvoice', async function(req, res) {
   logger.log('/addinvoice', [req.id]);
-  let u = new User(redis);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
@@ -105,15 +105,19 @@ router.post('/addinvoice', async function(req, res) {
 });
 
 router.post('/payinvoice', async function(req, res) {
-  logger.log('/payinvoice', [req.id]);
-  let u = new User(redis);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
 
+  logger.log('/payinvoice', [req.id, 'userid: ' + u.getUserId(), 'invoice: ' + req.body.invoice]);
+
   if (!req.body.invoice) return errorBadArguments(res);
   let freeAmount = false;
-  if (req.body.amount) freeAmount = parseInt(req.body.amount);
+  if (req.body.amount) {
+    freeAmount = parseInt(req.body.amount);
+    if (freeAmount <= 0) return errorBadArguments(res);
+  }
 
   // obtaining a lock
   let lock = new Lock(redis, 'invoice_paying_for_' + u.getUserId());
@@ -121,7 +125,7 @@ router.post('/payinvoice', async function(req, res) {
     return errorTryAgainLater(res);
   }
 
-  let userBalance = await u.getBalance();
+  let userBalance = await u.getCalculatedBalance();
 
   lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
     if (err) {
@@ -134,8 +138,10 @@ router.post('/payinvoice', async function(req, res) {
       info.num_satoshis = freeAmount;
     }
 
-    if (userBalance >= info.num_satoshis) {
-      // got enough balance
+    logger.log('/payinvoice', [req.id, 'userBalance: ' + userBalance, 'num_satoshis: ' + info.num_satoshis]);
+
+    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * 0.01)) {
+      // got enough balance, including 1% of payment amount - reserve for fees
 
       if (identity_pubkey === info.destination) {
         // this is internal invoice
@@ -152,7 +158,7 @@ router.post('/payinvoice', async function(req, res) {
           return errorLnd(res);
         }
 
-        let UserPayee = new User(redis);
+        let UserPayee = new User(redis, bitcoinclient, lightning);
         UserPayee._userid = userid_payee; // hacky, fixme
         let payee_balance = await UserPayee.getBalance();
         payee_balance += info.num_satoshis * 1;
@@ -164,8 +170,8 @@ router.post('/payinvoice', async function(req, res) {
         await u.savePaidLndInvoice({
           timestamp: parseInt(+new Date() / 1000),
           type: 'paid_invoice',
-          value: info.num_satoshis * 1,
-          fee: 0, // internal invoices are free
+          value: +info.num_satoshis + Math.floor(info.num_satoshis * 0.01),
+          fee: Math.floor(info.num_satoshis * 0.01),
           memo: decodeURIComponent(info.description),
         });
 
@@ -178,14 +184,16 @@ router.post('/payinvoice', async function(req, res) {
       // else - regular lightning network payment:
 
       var call = lightning.sendPayment();
-      call.on('data', function(payment) {
+      call.on('data', async function(payment) {
         // payment callback
+        await u.unlockFunds(req.body.invoice);
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
+          payment.payment_route.total_fees += Math.floor(+payment.payment_route.total_amt * 0.01);
           userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
           u.saveBalance(userBalance);
           payment.pay_req = req.body.invoice;
           payment.decoded = info;
-          u.savePaidLndInvoice(payment);
+          await u.savePaidLndInvoice(payment);
           lock.releaseLock();
           res.send(payment);
         } else {
@@ -199,12 +207,15 @@ router.post('/payinvoice', async function(req, res) {
         await lock.releaseLock();
         return errorBadArguments(res);
       }
-      let inv = { payment_request: req.body.invoice, amt: info.num_satoshis }; // amt is used only for 'tip' invoices
+      let inv = {
+        payment_request: req.body.invoice,
+        amt: info.num_satoshis, // amt is used only for 'tip' invoices
+        fee_limit: { fixed: Math.floor(info.num_satoshis * 0.005) },
+      };
       try {
-        logger.log('/payinvoice', [req.id, 'before write', JSON.stringify(inv)]);
+        await u.lockFunds(req.body.invoice, info);
         call.write(inv);
       } catch (Err) {
-        logger.log('/payinvoice', [req.id, 'exception', JSON.stringify(Err)]);
         await lock.releaseLock();
         return errorLnd(res);
       }
@@ -243,12 +254,13 @@ router.get('/balance', async function(req, res) {
   if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
   u.accountForPosibleTxids();
   let balance = await u.getBalance();
+  if (balance < 0) balance = 0;
   res.send({ BTC: { AvailableBalance: balance } });
 });
 
 router.get('/getinfo', async function(req, res) {
   logger.log('/getinfo', [req.id]);
-  let u = new User(redis);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
@@ -272,7 +284,7 @@ router.get('/gettxs', async function(req, res) {
     let txs = await u.getTxs();
     res.send(txs);
   } catch (Err) {
-    console.log(Err);
+    logger.log('', [req.id, 'error:', Err]);
     res.send([]);
   }
 });
@@ -292,7 +304,7 @@ router.get('/getuserinvoices', async function(req, res) {
       res.send(invoices);
     }
   } catch (Err) {
-    console.log(Err);
+    logger.log('', [req.id, 'error:', Err]);
     res.send([]);
   }
 });
@@ -312,7 +324,7 @@ router.get('/getpending', async function(req, res) {
 
 router.get('/decodeinvoice', async function(req, res) {
   logger.log('/decodeinvoice', [req.id]);
-  let u = new User(redis, bitcoinclient);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
@@ -327,7 +339,7 @@ router.get('/decodeinvoice', async function(req, res) {
 
 router.get('/checkrouteinvoice', async function(req, res) {
   logger.log('/checkrouteinvoice', [req.id]);
-  let u = new User(redis, bitcoinclient);
+  let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
@@ -398,6 +410,6 @@ function errorTryAgainLater(res) {
   return res.send({
     error: true,
     code: 9,
-    message: 'Try again later',
+    message: 'Your previous payment is in transit. Try again in 5 minutes',
   });
 }
