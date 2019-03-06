@@ -18,8 +18,7 @@ let lightning = require('../lightning');
 let identity_pubkey = false;
 // ###################### SMOKE TESTS ########################
 
-bitcoinclient.request('getinfo', false, function(err, info) {
- console.log(err)	
+bitcoinclient.request('getblockchaininfo', false, function(err, info) {
   if (info && info.result && info.result.blocks) {
     if (info.result.blocks < 550000) {
       console.error('bitcoind is not caught up');
@@ -252,7 +251,7 @@ router.get('/balance', async function(req, res) {
   }
 
   if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
-  u.accountForPosibleTxids();
+  await u.accountForPosibleTxids();
   let balance = await u.getBalance();
   if (balance < 0) balance = 0;
   res.send({ BTC: { AvailableBalance: balance } });
@@ -280,7 +279,7 @@ router.get('/gettxs', async function(req, res) {
 
   if (!(await u.getAddress())) await u.generateAddress(); // onchain addr needed further
   try {
-    u.accountForPosibleTxids();
+  await u.accountForPosibleTxids();
     let txs = await u.getTxs();
     res.send(txs);
   } catch (Err) {
@@ -317,7 +316,7 @@ router.get('/getpending', async function(req, res) {
   }
 
   if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
-  u.accountForPosibleTxids();
+  await u.accountForPosibleTxids();
   let txs = await u.getPendingTxs();
   res.send(txs);
 });
