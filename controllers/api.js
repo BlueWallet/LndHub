@@ -198,7 +198,7 @@ router.post('/payinvoice', async function(req, res) {
         } else {
           // payment failed
           lock.releaseLock();
-          return errorLnd(res);
+          return errorPaymentFailed(res);
         }
       });
       if (!info.num_satoshis && !info.num_satoshis) {
@@ -216,7 +216,7 @@ router.post('/payinvoice', async function(req, res) {
         call.write(inv);
       } catch (Err) {
         await lock.releaseLock();
-        return errorLnd(res);
+        return errorPaymentFailed(res);
       }
     } else {
       await lock.releaseLock();
@@ -410,5 +410,13 @@ function errorTryAgainLater(res) {
     error: true,
     code: 9,
     message: 'Your previous payment is in transit. Try again in 5 minutes',
+  });
+}
+
+function errorPaymentFailed(res) {
+  return res.send({
+    error: true,
+    code: 10,
+    message: 'Payment failed. Does the receiver have enough inbound capacity?',
   });
 }
