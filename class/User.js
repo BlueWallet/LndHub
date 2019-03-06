@@ -282,14 +282,13 @@ export class User {
     let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
     txs = txs.result;
     let result = [];
-    if(!txs===null) {	  
-      for (let tx of txs) {
-        if (tx.confirmations >= 3) {
-          tx.type = 'bitcoind_tx';
-          result.push(tx);
-        }
+    for (let tx of txs) {
+      if (tx.confirmations >= 3) {
+        tx.type = 'bitcoind_tx';
+        result.push(tx);
       }
     }
+
     let range = await this._redis.lrange('txs_for_' + this._userid, 0, -1);
     for (let invoice of range) {
       invoice = JSON.parse(invoice);
@@ -314,6 +313,7 @@ export class User {
       delete invoice.decoded;
       result.push(invoice);
     }
+
     return result;
   }
 
@@ -332,11 +332,9 @@ export class User {
     let txs = await this._bitcoindrpc.request('listtransactions', [addr, 100500, 0, true]);
     txs = txs.result;
     let result = [];
-    if(!txs === null) {	  
-      for (let tx of txs) {
-        if (tx.confirmations < 3) {
-          result.push(tx);
-        }
+    for (let tx of txs) {
+      if (tx.confirmations < 3) {
+        result.push(tx);
       }
     }
     return result;
