@@ -312,7 +312,7 @@ export class User {
       delete invoice.payment_route;
       delete invoice.pay_req;
       delete invoice.decoded;
-      result.push(invoice);	    
+      result.push(invoice);
     }
     return result;
   }

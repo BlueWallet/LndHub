@@ -279,7 +279,7 @@ router.get('/gettxs', async function(req, res) {
 
   if (!(await u.getAddress())) await u.generateAddress(); // onchain addr needed further
   try {
-  await u.accountForPosibleTxids();
+    await u.accountForPosibleTxids();
     let txs = await u.getTxs();
     res.send(txs);
   } catch (Err) {
