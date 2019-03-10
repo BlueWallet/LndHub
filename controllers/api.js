@@ -1,4 +1,4 @@
-import { User, Lock } from '../class/';
+import { User, Lock, Paym } from '../class/';
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
@@ -187,7 +187,8 @@ router.post('/payinvoice', async function(req, res) {
         // payment callback
         await u.unlockFunds(req.body.invoice);
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
-          payment.payment_route.total_fees = +payment.payment_route.total_fees + Math.floor(+payment.payment_route.total_amt * 0.01);
+          let PaymentShallow = new Paym(false, false, false);
+          payment = PaymentShallow.processSendPaymentResponse(payment);
           userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
           u.saveBalance(userBalance);
           payment.pay_req = req.body.invoice;
