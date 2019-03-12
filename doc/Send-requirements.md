@@ -1,11 +1,11 @@
 # User story
 - *As a user, I want to have ability to topup my balance with Bitcoin and send payments within Lightning network.*
-- *As a product owner, I want to have transparent usage statistic and run-time information on payment channels and environment.*
+- *As a product owner, I want to have transparent usage statistics and run-time information on payment channels and environment.*
 
 # Basics
 
-1. LndHub API is standalone software and needs LND client syncronized and running. LndHub API is not a Lightning wallet 
-in terms of funds storage, it operates whole amout of available funds on channels. User's balances and transactions 
+1. LndHub API is standalone software and needs LND client synchronized and running. LndHub API is not a Lightning wallet 
+in terms of funds storage, it operates whole amount of available funds on channels. User's balances and transactions 
 stored in internal database.
 
 2. LndHub API is accessible for everyone, but only `/create` can be called without authorization token. 
@@ -16,13 +16,13 @@ for Lightning payments.
 
 4. gRPC RPC framework is used for communication with LND. See https://github.com/lightningnetwork/lnd/tree/master/lnrpc
 
-5. Outh2 library, MongoDB and Golang backend is used for API implementation. Every request from user is sighned and
+5. Outh2 library, MongoDB and Golang backend is used for API implementation. Every request from user is signed and
 associated with corresponding user id.
 
 6. Double entry system is used for internal accounting https://en.wikipedia.org/wiki/Double-entry_bookkeeping_system
 6.1. Internal accounting requirements https://github.com/matveyco/lnd-wallet-api-spec/edit/master/Accounting-requirements.md
 
-7. All amounts are satoshis (int), althrough millisatoshis are used in LND internally (rounding is up to server implementation).
+7. All amounts are satoshis (int), although millisatoshis are used in LND internally (rounding is up to server implementation).
 
 8. Every account has its separate Lightning, BTC addresses and unique session. If user runs few accounts from one device or wallet, corresponding amount of sessions should be opened.
 
@@ -36,7 +36,7 @@ associated with corresponding user id.
 | Authorize | POST | /auth  | auth params (login/password of refresh_token) | JSON token data | Authorize user with Oauth. When user use refresh_token to auth, then this refresh_token not available for access once again. Use new refresh_token |
 | Get token | POST | /oauth2/token  | user id, secret, grant_type and scope | token data | Get token data from user id, secret, grant_type and scope |
 | Get BTC Addr | GET | /getbtc  | {none} | Text address | Get user's BTC address to top-up his account |
-| New BTC Addr | POST | /newbtc  | {none} | Text address | Create new BTC address for user. Old addresses should remain valid, so if user accidentialy sends money to old address transaction will be assigned to his account |
+| New BTC Addr | POST | /newbtc  | {none} | Text address | Create new BTC address for user. Old addresses should remain valid, so if user accidentaly sends money to old address transaction will be assigned to his account |
 | Get Pending Balance | GET | /getpending  | {none} | JSON | Get information about BTC pending transactions which have less than 3 confirmations |
 | Decode Invoice | GET | /decodeinvoice  | Invoice string | JSON | Decode invoice from invoice string. If invoice is represented as QR-code, fronted device should decode it first |
 | Check Route | GET | /checkroute  | Payment destination | Success | Check if payment destination is available and invoice could be paid |
@@ -45,7 +45,7 @@ associated with corresponding user id.
 | Get transactions | GET | /gettxs  | Offset, limit | JSON array | Get transactions for a wallet. With load offset at limit |
 | Get transaction | GET | /gettx  | Tx id | JSON | Get tx info by its ID |
 | Get balance| GET | /balance | {none} | int64 | Available unspent internal balance (in Satoshis)
-| Get info | GET | /getinfo | {none} | JSON | Tech info. Fee on transactions for current user (0 for a start), availble actual funds on channel, maximum tx size, service status etc.
+| Get info | GET | /getinfo | {none} | JSON | Tech info. Fee on transactions for current user (0 for a start), available actual funds on channel, maximum tx size, service status etc.
 | Get info | POST | /addinvoice | JSON | JSON | Create invoice.
 | Get info | GET | /getuserinvoices | {none} | JSON | List of invoices created by user.
 
@@ -185,7 +185,7 @@ Response:
 
 ## POST /newbtc
 
-Create new BTC address for user. Old addresses should remain valid, so if user accidentialy sends 
+Create new BTC address for user. Old addresses should remain valid, so if user accidentaly sends 
 money to old address transaction will be assigned to his account
 
 Request:
@@ -351,7 +351,7 @@ Response:
     
 ##  GET /gettxs
 
-Get successfull lightning and btc transactions user made. Order newest to oldest.
+Get successful lightning and btc transactions user made. Order newest to oldest.
 
 Request:
 
@@ -372,7 +372,7 @@ Response:
 
 ##  GET /gettx
 
-Get info on successfull lighning transaction user made. TXID is an internal LndHub identifier,
+Get info on successful lightning transaction user made. TXID is an internal LndHub identifier,
 no relation to onchain bitcoin txid.
 
 Request:
@@ -508,8 +508,8 @@ Response:
 ## Oauth2 processes
 Oauth2 process consists of such stages as:
 - Client (someone, who use api), make request to Authorization service with credentials (POST /auth?type=auth)
-- Authorization service checks credentials and searchs for appropriate user id and secret (stored on Authoriztion service and Token service) and sends user id and secret to Token service (for example POST /getinfo/oauth2/token)
-- Token service checks user id and secret and sends token data with refresh token to Authorization sevice which sends it to Client
+- Authorization service checks credentials and searches for appropriate user id and secret (stored on Authorization service and Token service) and sends user id and secret to Token service (for example POST /getinfo/oauth2/token)
+- Token service checks user id and secret and sends token data with refresh token to Authorization service which sends it to Client
 - Client uses token to access protected resources (GET ?access_token=XXXXXXXXXXXXXX)
 - When token expires or needs to refresh token for security issues Client sends refresh_token to Token service (POST /auth?type=refresh_token), which sends new token data with refresh_token and disables to access old
 
