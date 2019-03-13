@@ -12,6 +12,10 @@ export class Paym {
     this._isPaid = null;
   }
 
+  get fee() {
+    return 0.003;
+  }
+
   setInvoice(bolt11) {
     this._bolt11 = bolt11;
   }
@@ -69,7 +73,7 @@ export class Paym {
     if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
       // paid just now
       this._isPaid = true;
-      payment.payment_route.total_fees = +payment.payment_route.total_fees + Math.floor(+payment.payment_route.total_amt * 0.01);
+      payment.payment_route.total_fees = +payment.payment_route.total_fees + Math.floor(+payment.payment_route.total_amt * Paym.fee);
       if (this._bolt11) payment.pay_req = this._bolt11;
       if (this._decoded) payment.decoded = this._decoded;
     }

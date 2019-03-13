@@ -170,7 +170,7 @@ router.post('/payinvoice', async function(req, res) {
           timestamp: parseInt(+new Date() / 1000),
           type: 'paid_invoice',
           value: +info.num_satoshis + Math.floor(info.num_satoshis * 0.01),
-          fee: Math.floor(info.num_satoshis * 0.01),
+          fee: Math.floor(info.num_satoshis * Paym.fee),
           memo: decodeURIComponent(info.description),
         });
 
@@ -189,11 +189,10 @@ router.post('/payinvoice', async function(req, res) {
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
           let PaymentShallow = new Paym(false, false, false);
           payment = PaymentShallow.processSendPaymentResponse(payment);
-          userBalance -= +payment.payment_route.total_fees + +payment.payment_route.total_amt;
-          u.saveBalance(userBalance);
           payment.pay_req = req.body.invoice;
           payment.decoded = info;
           await u.savePaidLndInvoice(payment);
+          await u.clearBalanceCache();
           lock.releaseLock();
           res.send(payment);
         } else {

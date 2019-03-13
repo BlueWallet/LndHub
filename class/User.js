@@ -173,7 +173,12 @@ export class User {
   async saveBalance(balance) {
     const key = 'balance_for_' + this._userid;
     await this._redis.set(key, balance);
-    await this._redis.expire(key, 3600 * 24);
+    await this._redis.expire(key, 3600);
+  }
+
+  async clearBalanceCache() {
+    const key = 'balance_for_' + this._userid;
+    return this._redis.del(key);
   }
 
   async savePaidLndInvoice(doc) {
