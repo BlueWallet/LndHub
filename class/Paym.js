@@ -12,7 +12,7 @@ export class Paym {
     this._isPaid = null;
   }
 
-  get fee() {
+  static get fee() {
     return 0.003;
   }
 
