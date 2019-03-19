@@ -30,6 +30,7 @@ let lightning = require('../lightning');
           sendResult = await payment.attemptPayToRoute();
         } catch (_) {
           console.log(_);
+          console.log('evict lock');
           await user.unlockFunds(lockedPayment.pay_req);
           continue;
         }
@@ -38,7 +39,7 @@ let lightning = require('../lightning');
         if (payment.getIsPaid() === true) {
           console.log('paid successfully');
           sendResult = payment.processSendPaymentResponse(sendResult); // adds fees
-          console.log('sendResult=', sendResult);
+          console.log('saving paid invoice:', sendResult);
           await user.savePaidLndInvoice(sendResult);
           await user.unlockFunds(lockedPayment.pay_req);
         } else if (payment.getIsPaid() === false) {

@@ -40,7 +40,7 @@ export class Paym {
       amt: this._decoded.num_satoshis,
       num_routes: 1,
       final_cltv_delta: 144,
-      fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * 0.01) },
+      fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * 0.01) + 1 },
     };
     let that = this;
     return new Promise(function(resolve, reject) {
@@ -86,7 +86,7 @@ export class Paym {
         if (this._bolt11) payment.pay_req = this._bolt11;
         // trying to guess the fee
         payment.payment_route = payment.payment_route || {};
-        payment.payment_route.total_fees = Math.floor(this._decoded.num_satoshis * 0.01);
+        payment.payment_route.total_fees = Math.floor(this._decoded.num_satoshis * 0.01); // we dont know the exact fee, so we use max (same as fee_limit)
         payment.payment_route.total_amt = this._decoded.num_satoshis;
       }
     }
