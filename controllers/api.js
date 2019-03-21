@@ -53,7 +53,14 @@ redis.info(function(err, info) {
 
 // ######################## ROUTES ########################
 
-router.post('/create', async function(req, res) {
+const rateLimit = require('express-rate-limit');
+const postLimiter = rateLimit({
+  windowMs: 30 * 60 * 1000,
+  max: 50,
+  message: 'You are going too fast',
+});
+
+router.post('/create', postLimiter, async function(req, res) {
   logger.log('/create', [req.id]);
   if (!(req.body.partnerid && req.body.partnerid === 'bluewallet' && req.body.accounttype)) return errorBadArguments(res);
 
@@ -63,7 +70,7 @@ router.post('/create', async function(req, res) {
   res.send({ login: u.getLogin(), password: u.getPassword() });
 });
 
-router.post('/auth', async function(req, res) {
+router.post('/auth', postLimiter, async function(req, res) {
   logger.log('/auth', [req.id]);
   if (!((req.body.login && req.body.password) || req.body.refresh_token)) return errorBadArguments(res);
 
@@ -84,12 +91,13 @@ router.post('/auth', async function(req, res) {
   }
 });
 
-router.post('/addinvoice', async function(req, res) {
+router.post('/addinvoice', postLimiter, async function(req, res) {
   logger.log('/addinvoice', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
+  logger.log('/addinvoice', [req.id, 'userid: ' + u.getUserId()]);
 
   if (!req.body.amt) return errorBadArguments(res);
 
@@ -243,7 +251,7 @@ router.get('/getbtc', async function(req, res) {
   res.send([{ address }]);
 });
 
-router.get('/balance', async function(req, res) {
+router.get('/balance', postLimiter, async function(req, res) {
   logger.log('/balance', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
@@ -257,7 +265,7 @@ router.get('/balance', async function(req, res) {
   res.send({ BTC: { AvailableBalance: balance } });
 });
 
-router.get('/getinfo', async function(req, res) {
+router.get('/getinfo', postLimiter, async function(req, res) {
   logger.log('/getinfo', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
