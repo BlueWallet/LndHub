@@ -57,7 +57,6 @@ const rateLimit = require('express-rate-limit');
 const postLimiter = rateLimit({
   windowMs: 30 * 60 * 1000,
   max: 50,
-  message: 'You are going too fast',
 });
 
 router.post('/create', postLimiter, async function(req, res) {

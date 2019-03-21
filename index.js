@@ -14,6 +14,14 @@ morgan.token('id', function getId(req) {
 });
 
 let app = express();
+app.enable('trust proxy');
+
+const rateLimit = require('express-rate-limit');
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+app.use(limiter);
 
 app.use(function(req, res, next) {
   req.id = uuid.v4();
@@ -25,8 +33,6 @@ app.use(
     ':id :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
   ),
 );
-
-app.set('trust proxy', 'loopback');
 
 let bodyParser = require('body-parser');
 let config = require('./config');
