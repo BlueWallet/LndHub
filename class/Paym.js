@@ -100,6 +100,10 @@ export class Paym {
       this._isPaid = false;
     }
 
+    if (payment.payment_error && payment.payment_error.indexOf('UnknownPaymentHash') !== -1) {
+      this._isPaid = false;
+    }
+
     if (payment.payment_error && payment.payment_error.indexOf('payment is in transition') !== -1) {
       this._isPaid = null; // null is default, but lets set it anyway
     }
