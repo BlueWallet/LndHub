@@ -166,13 +166,10 @@ router.post('/payinvoice', async function(req, res) {
 
         let UserPayee = new User(redis, bitcoinclient, lightning);
         UserPayee._userid = userid_payee; // hacky, fixme
-        let payee_balance = await UserPayee.getBalance();
-        payee_balance += info.num_satoshis * 1;
-        await UserPayee.saveBalance(payee_balance);
+        await UserPayee.clearBalanceCache();
 
         // sender spent his balance:
-        userBalance -= info.num_satoshis * 1;
-        await u.saveBalance(userBalance);
+        await u.clearBalanceCache();
         await u.savePaidLndInvoice({
           timestamp: parseInt(+new Date() / 1000),
           type: 'paid_invoice',
