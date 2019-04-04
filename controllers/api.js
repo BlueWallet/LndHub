@@ -176,7 +176,7 @@ router.post('/payinvoice', async function(req, res) {
         await u.savePaidLndInvoice({
           timestamp: parseInt(+new Date() / 1000),
           type: 'paid_invoice',
-          value: +info.num_satoshis + Math.floor(info.num_satoshis * 0.01),
+          value: +info.num_satoshis + Math.floor(info.num_satoshis * Paym.fee),
           fee: Math.floor(info.num_satoshis * Paym.fee),
           memo: decodeURIComponent(info.description),
           pay_req: req.body.invoice,
