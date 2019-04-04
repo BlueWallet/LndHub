@@ -98,7 +98,7 @@ router.post('/addinvoice', postLimiter, async function(req, res) {
   }
   logger.log('/addinvoice', [req.id, 'userid: ' + u.getUserId()]);
 
-  if (!req.body.amt) return errorBadArguments(res);
+  if (!req.body.amt || req.body.amt < 1) return errorBadArguments(res);
 
   lightning.addInvoice({ memo: req.body.memo, value: req.body.amt }, async function(err, info) {
     if (err) return errorLnd(res);
@@ -179,6 +179,7 @@ router.post('/payinvoice', async function(req, res) {
           value: +info.num_satoshis + Math.floor(info.num_satoshis * 0.01),
           fee: Math.floor(info.num_satoshis * Paym.fee),
           memo: decodeURIComponent(info.description),
+          pay_req: req.body.invoice,
         });
 
         await UserPayee.setPaymentHashPaid(info.payment_hash);

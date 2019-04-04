@@ -246,13 +246,14 @@ export class User {
       }
       invoice.ispaid = !!(await this.getPaymentHashPaid(invoice.payment_hash));
       if (!invoice.ispaid) {
+        // TODO: check if expired
         // attempting to lookup invoice
         let lookup_info = await this.lookupInvoice(invoice.payment_hash);
         invoice.ispaid = lookup_info.settled;
         if (invoice.ispaid) {
           // so invoice was paid after all
           await this.setPaymentHashPaid(invoice.payment_hash);
-          await this.saveBalance(await this.getCalculatedBalance());
+          await this.clearBalanceCache();
         }
       }
 
