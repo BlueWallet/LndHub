@@ -285,7 +285,7 @@ export class User {
       addr = await this.getAddress();
     }
     if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
-    let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
+    let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
@@ -324,6 +324,42 @@ export class User {
   }
 
   /**
+   * Simple caching for this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
+   * since its too much to fetch from bitcoind every time
+   *
+   * @returns {Promise<*>}
+   * @private
+   */
+  async _listtransactions() {
+    const key = 'listtransactions';
+    let response = await this._redis.get(key);
+    if (response) {
+      try {
+        let json = JSON.parse(response);
+        return json;
+      } catch (_) {
+        // nop
+      }
+    }
+
+    let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
+    // now, compacting response a bit
+    let ret = { result: [] };
+    for (const tx of txs.result) {
+      ret.result.push({
+        category: tx.category,
+        amount: tx.amount,
+        confirmations: tx.confirmations,
+        address: tx.address,
+        time: tx.time,
+      });
+    }
+    await this._redis.set(key, JSON.stringify(ret));
+    await this._redis.expire(key, 5 * 60);
+    return ret;
+  }
+
+  /**
    * Returning onchain txs for user's address that are less than 3 confs
    *
    * @returns {Promise<Array>}
@@ -335,7 +371,7 @@ export class User {
       addr = await this.getAddress();
     }
     if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
-    let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
+    let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
@@ -372,6 +408,7 @@ export class User {
    * @returns {Promise<void>}
    */
   async accountForPosibleTxids() {
+    return; // TODO: remove
     let onchain_txs = await this.getTxs();
     let imported_txids = await this._redis.lrange('imported_txids_for_' + this._userid, 0, -1);
     for (let tx of onchain_txs) {

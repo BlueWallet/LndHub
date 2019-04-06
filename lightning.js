@@ -32,7 +32,7 @@ if (config.lnd.password) {
   var walletUnlocker = new lnrpc.WalletUnlocker(config.lnd.url, creds);
   walletUnlocker.unlockWallet(
     {
-      wallet_password: config.lnd.password,
+      wallet_password: Buffer.from(config.lnd.password).toString('base64'),
     },
     function(err, response) {
       if (err) {
