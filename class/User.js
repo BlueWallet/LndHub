@@ -275,7 +275,7 @@ export class User {
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations >= 3 && tx.address === addr) {
+      if (tx.confirmations >= 3 && tx.address === addr && tx.category === 'receive') {
         tx.type = 'bitcoind_tx';
         result.push(tx);
       }
@@ -325,7 +325,7 @@ export class User {
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations < 3 && tx.address === addr) {
+      if (tx.confirmations < 3 && tx.address === addr && tx.category === 'receive') {
         result.push(tx);
       }
     }
