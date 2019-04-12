@@ -126,13 +126,29 @@ export class Paym {
     return await this.sendToRouteSync(routes.routes);
   }
 
+  async listPayments() {
+    return new Promise((resolve, reject) => {
+      this._lightning.listPayments({}, function(err, response) {
+        if (err) return reject(err);
+        resolve(response);
+      });
+    });
+  }
+
   async isExpired() {
     if (!this._bolt11) throw new Error('bolt11 is not provided');
     const decoded = await this.decodePayReqViaRpc(this._bolt11);
     return +decoded.timestamp + +decoded.expiry < +new Date() / 1000;
   }
 
-  decodePayReq(payReq) {
-    this._decoded = lightningPayReq.decode(payReq);
+  decodePayReqLocally(payReq) {
+    this._decoded_locally = lightningPayReq.decode(payReq);
+  }
+
+  async getPaymentHash() {
+    if (!this._bolt11) throw new Error('bolt11 is not provided');
+    if (!this._decoded) await this.decodePayReqViaRpc(this._bolt11);
+
+    return this._decoded['payment_hash'];
   }
 }

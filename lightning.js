@@ -44,4 +44,4 @@ if (config.lnd.password) {
   );
 }
 
-module.exports = new lnrpc.Lightning(config.lnd.url, creds);
+module.exports = new lnrpc.Lightning(config.lnd.url, creds, { 'grpc.max_receive_message_length': 1024 * 1024 * 1024 });
