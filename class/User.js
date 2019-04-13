@@ -156,8 +156,8 @@ export class User {
 
     let lockedPayments = await this.getLockedPayments();
     for (let paym of lockedPayments) {
-      // TODO: check if payment in determined state and actually evict it from this list
-      calculatedBalance -= +paym.amount;
+      // locked payments are processed in scripts/process-locked-payments.js
+      calculatedBalance -= +paym.amount + /* feelimit */ Math.floor(paym.amount * 0.01);
     }
 
     return calculatedBalance;
@@ -173,7 +173,7 @@ export class User {
   async saveBalance(balance) {
     const key = 'balance_for_' + this._userid;
     await this._redis.set(key, balance);
-    await this._redis.expire(key, 3600);
+    await this._redis.expire(key, 1800);
   }
 
   async clearBalanceCache() {

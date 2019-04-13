@@ -286,6 +286,16 @@ router.get('/gettxs', async function(req, res) {
   try {
     await u.accountForPosibleTxids();
     let txs = await u.getTxs();
+    let lockedPayments = await u.getLockedPayments();
+    for (let locked of lockedPayments) {
+      txs.push({
+        type: 'paid_invoice',
+        fee: Math.floor(locked.amount * 0.01) /* feelimit */,
+        value: locked.amount + Math.floor(locked.amount * 0.01) /* feelimit */,
+        timestamp: locked.timestamp,
+        memo: 'Payment in transition',
+      });
+    }
     res.send(txs);
   } catch (Err) {
     logger.log('', [req.id, 'error:', Err]);
