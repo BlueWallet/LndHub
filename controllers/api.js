@@ -98,7 +98,7 @@ router.post('/addinvoice', postLimiter, async function(req, res) {
   }
   logger.log('/addinvoice', [req.id, 'userid: ' + u.getUserId()]);
 
-  if (!req.body.amt || req.body.amt < 1) return errorBadArguments(res);
+  if (!req.body.amt || /*stupid NaN*/ !(req.body.amt > 0)) return errorBadArguments(res);
 
   lightning.addInvoice({ memo: req.body.memo, value: req.body.amt }, async function(err, info) {
     if (err) return errorLnd(res);
