@@ -64,12 +64,12 @@ const pubkey2name = {
   '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda': 'tippin.me',
   '022c699df736064b51a33017abfc4d577d133f7124ac117d3d9f9633b6297a3b6a': 'globee.com',
   '0237fefbe8626bf888de0cad8c73630e32746a22a2c4faa91c1d9877a3826e1174': '1.ln.aantonop.com',
-  '036a54f02d2186de192e4bcec3f7b47adb43b1fa965793387cd2471990ce1d236b': 'capacity.network',
   '026c7d28784791a4b31a64eb34d9ab01552055b795919165e6ae886de637632efb': 'LivingRoomOfSatoshi',
   '02816caed43171d3c9854e3b0ab2cf0c42be086ff1bd4005acc2a5f7db70d83774': 'ln.pizza',
   '024a2e265cd66066b78a788ae615acdc84b5b0dec9efac36d7ac87513015eaf6ed': 'Bitrefill.com/lightning',
   '02a0bc43557fae6af7be8e3a29fdebda819e439bea9c0f8eb8ed6a0201f3471ca9': 'LightningPeachHub',
   '02d4531a2f2e6e5a9033d37d548cff4834a3898e74c3abe1985b493c42ebbd707d': 'coinfinity.co',
+  '02d23fa6794d8fd056c757f3c8f4877782138dafffedc831fc570cab572620dc61': 'paywithmoon.com',
 };
 
 router.get('/', function(req, res) {
