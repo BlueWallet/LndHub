@@ -1,8 +1,10 @@
 // setup lnd rpc
 const config = require('./config');
-var fs = require('fs');
-var grpc = require('grpc');
-var lnrpc = grpc.load('rpc.proto').lnrpc;
+const fs = require('fs');
+const grpc = require('grpc');
+const protoLoader = require('@grpc/proto-loader');
+const packageDefinition = protoLoader.loadSync('rpc.proto');
+const lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;
 process.env.GRPC_SSL_CIPHER_SUITES = 'HIGH+ECDSA';
 var lndCert;
 if (process.env.TLSCERT) {
