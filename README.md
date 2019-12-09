@@ -31,6 +31,12 @@ Add config vars :
 * `MACAROON`: hex-encoded `admin.macaroon`
 * `TLSCERT`: hex-encoded `tls.cert`
 
+### Reference client implementation
+
+Can be used in ReactNative or Nodejs environment
+
+* https://github.com/BlueWallet/BlueWallet/blob/master/class/lightning-custodian-wallet.js
+
 
 ### Tests
 
