@@ -100,7 +100,7 @@ router.post('/addinvoice', postLimiter, async function(req, res) {
 
   if (!req.body.amt || /*stupid NaN*/ !(req.body.amt > 0)) return errorBadArguments(res);
 
-  lightning.addInvoice({ memo: req.body.memo, value: req.body.amt }, async function(err, info) {
+  lightning.addInvoice({ memo: req.body.memo, value: req.body.amt, expiry: 3600 * 24 }, async function(err, info) {
     if (err) return errorLnd(res);
 
     info.pay_req = info.payment_request; // client backwards compatibility
