@@ -66,7 +66,7 @@ const pubkey2name = {
   '0237fefbe8626bf888de0cad8c73630e32746a22a2c4faa91c1d9877a3826e1174': '1.ln.aantonop.com',
   '026c7d28784791a4b31a64eb34d9ab01552055b795919165e6ae886de637632efb': 'LivingRoomOfSatoshi',
   '02816caed43171d3c9854e3b0ab2cf0c42be086ff1bd4005acc2a5f7db70d83774': 'ln.pizza',
-  '024a2e265cd66066b78a788ae615acdc84b5b0dec9efac36d7ac87513015eaf6ed': 'Bitrefill.com/lightning',
+  '0254ff808f53b2f8c45e74b70430f336c6c76ba2f4af289f48d6086ae6e60462d3': 'bitrefill thor',
   '02a0bc43557fae6af7be8e3a29fdebda819e439bea9c0f8eb8ed6a0201f3471ca9': 'LightningPeachHub',
   '02d4531a2f2e6e5a9033d37d548cff4834a3898e74c3abe1985b493c42ebbd707d': 'coinfinity.co',
   '02d23fa6794d8fd056c757f3c8f4877782138dafffedc831fc570cab572620dc61': 'paywithmoon.com',
