@@ -4,6 +4,11 @@ var crypto = require('crypto');
 var lightningPayReq = require('bolt11');
 import { BigNumber } from 'bignumber.js';
 
+// static cache:
+let _invoice_ispaid_cache = {};
+let _listtransactions_cache = false;
+let _listtransactions_cache_expiry_ts = 0;
+
 export class User {
   /**
    *
@@ -244,17 +249,21 @@ export class User {
           invoice.payment_hash = tag.data;
         }
       }
-      invoice.ispaid = !!(await this.getPaymentHashPaid(invoice.payment_hash));
+
+      invoice.ispaid = _invoice_ispaid_cache[invoice.payment_hash] || !!(await this.getPaymentHashPaid(invoice.payment_hash));
       if (!invoice.ispaid) {
-        // TODO: check if expired
-        // attempting to lookup invoice
-        let lookup_info = await this.lookupInvoice(invoice.payment_hash);
-        invoice.ispaid = lookup_info.settled;
-        if (invoice.ispaid) {
-          // so invoice was paid after all
-          await this.setPaymentHashPaid(invoice.payment_hash);
-          await this.clearBalanceCache();
+        if (decoded && decoded.timestamp > ((+new Date()) / 1000 - 3600 * 24 * 5)) {
+          // if invoice is not too old we query lnd to find out if its paid
+          let lookup_info = await this.lookupInvoice(invoice.payment_hash);
+          invoice.ispaid = lookup_info.settled; // TODO: start using `state` instead as its future proof, and this one might get deprecated
+          if (invoice.ispaid) {
+            // so invoice was paid after all
+            await this.setPaymentHashPaid(invoice.payment_hash);
+            await this.clearBalanceCache();
+          }
         }
+      } else {
+        _invoice_ispaid_cache[invoice.payment_hash] = true;
       }
 
       invoice.amt = decoded.satoshis;
@@ -333,12 +342,15 @@ export class User {
    * @private
    */
   async _listtransactions() {
-    const key = 'listtransactions';
-    let response = await this._redis.get(key);
+    let response = _listtransactions_cache;
     if (response) {
+      if (+new Date() > _listtransactions_cache_expiry_ts) {
+        // invalidate cache
+        response = _listtransactions_cache = false;
+      }
+
       try {
-        let json = JSON.parse(response);
-        return json;
+        return JSON.parse(response);
       } catch (_) {
         // nop
       }
@@ -356,8 +368,8 @@ export class User {
         time: tx.time,
       });
     }
-    await this._redis.set(key, JSON.stringify(ret));
-    await this._redis.expire(key, 5 * 60);
+    _listtransactions_cache = JSON.stringify(ret);
+    _listtransactions_cache_expiry_ts = +new Date() + 5 * 60 * 1000; // 5 min
     return ret;
   }
 
