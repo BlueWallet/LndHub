@@ -252,7 +252,7 @@ export class User {
 
       invoice.ispaid = _invoice_ispaid_cache[invoice.payment_hash] || !!(await this.getPaymentHashPaid(invoice.payment_hash));
       if (!invoice.ispaid) {
-        if (decoded && decoded.timestamp > ((+new Date()) / 1000 - 3600 * 24 * 5)) {
+        if (decoded && decoded.timestamp > +new Date() / 1000 - 3600 * 24 * 5) {
           // if invoice is not too old we query lnd to find out if its paid
           let lookup_info = await this.lookupInvoice(invoice.payment_hash);
           invoice.ispaid = lookup_info.settled; // TODO: start using `state` instead as its future proof, and this one might get deprecated
@@ -347,12 +347,12 @@ export class User {
       if (+new Date() > _listtransactions_cache_expiry_ts) {
         // invalidate cache
         response = _listtransactions_cache = false;
-      }
-
-      try {
-        return JSON.parse(response);
-      } catch (_) {
-        // nop
+      } else {
+        try {
+          return JSON.parse(response);
+        } catch (_) {
+          // nop
+        }
       }
     }
 
@@ -370,6 +370,7 @@ export class User {
     }
     _listtransactions_cache = JSON.stringify(ret);
     _listtransactions_cache_expiry_ts = +new Date() + 5 * 60 * 1000; // 5 min
+    this._redis.set('listtransactions', _listtransactions_cache); // backup, will use later TODO
     return ret;
   }
 
