@@ -3,8 +3,12 @@ let important_channels = {
   '03864ef025fde8fb587d989186ce6a4a186895ee44a926bfc370e2c366597a3f8f': 'ACINQ',
   '03abf6f44c355dec0d5aa155bdbdd6e0c8fefe318eff402de65c6eb2e1be55dc3e': 'OpenNode',
   '0242a4ae0c5bef18048fbecf995094b74bfb0f7391418d71ed394784373f41e4f3': 'coingate.com',
-  '0232e20e7b68b9b673fb25f48322b151a93186bffe4550045040673797ceca43cf': 'zigzag.io',
-  '024a2e265cd66066b78a788ae615acdc84b5b0dec9efac36d7ac87513015eaf6ed': 'Bitrefill.com/lightning',
+  '0254ff808f53b2f8c45e74b70430f336c6c76ba2f4af289f48d6086ae6e60462d3': 'bitrefill thor',
+  '025f1456582e70c4c06b61d5c8ed3ce229e6d0db538be337a2dc6d163b0ebc05a5': 'paywithmoon.com',
+  '02c91d6aa51aa940608b497b6beebcb1aec05be3c47704b682b3889424679ca490': 'lnbig 21',
+  '0279c22ed7a068d10dc1a38ae66d2d6461e269226c60258c021b1ddcdfe4b00bc4': 'ln1.satoshilabs.com',
+  '026c7d28784791a4b31a64eb34d9ab01552055b795919165e6ae886de637632efb': 'LivingRoomOfSatoshi',
+  '02816caed43171d3c9854e3b0ab2cf0c42be086ff1bd4005acc2a5f7db70d83774': 'ln.pizza',
 };
 let lightning = require('../lightning');
 
@@ -16,7 +20,7 @@ lightning.listChannels({}, function(err, response) {
   }
   let lightningListChannels = response;
   for (let channel of lightningListChannels.channels) {
-    if (channel.capacity < 5000000) {
+    if (0 && channel.capacity < 5000000) {
       console.log(
         'lncli closechannel',
         channel.channel_point.replace(':', ' '),
