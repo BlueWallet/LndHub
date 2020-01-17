@@ -262,7 +262,7 @@ router.get('/balance', postLimiter, async function(req, res) {
     if (balance < 0) balance = 0;
     res.send({ BTC: { AvailableBalance: balance } });
   } catch (Error) {
-    console.error(Error);
+    logger.log('', [req.id, 'error:', Error]);
     return errorGeneralServerError(res);
   }
 });
