@@ -255,11 +255,16 @@ router.get('/balance', postLimiter, async function(req, res) {
     return errorBadAuth(res);
   }
 
-  if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
-  await u.accountForPosibleTxids();
-  let balance = await u.getBalance();
-  if (balance < 0) balance = 0;
-  res.send({ BTC: { AvailableBalance: balance } });
+  try {
+    if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
+    await u.accountForPosibleTxids();
+    let balance = await u.getBalance();
+    if (balance < 0) balance = 0;
+    res.send({ BTC: { AvailableBalance: balance } });
+  } catch (Error) {
+    console.error(Error);
+    return errorGeneralServerError(res);
+  }
 });
 
 router.get('/getinfo', postLimiter, async function(req, res) {
