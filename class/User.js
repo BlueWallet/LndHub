@@ -243,7 +243,11 @@ export class User {
       invoice.description = '';
       for (let tag of decoded.tags) {
         if (tag.tagName === 'description') {
-          invoice.description += decodeURIComponent(tag.data);
+          try {
+            invoice.description += decodeURIComponent(tag.data);
+          } catch (_) {
+            invoice.description += tag.data;
+          }
         }
         if (tag.tagName === 'payment_hash') {
           invoice.payment_hash = tag.data;
