@@ -131,7 +131,14 @@ router.post('/payinvoice', async function(req, res) {
     return errorTryAgainLater(res);
   }
 
-  let userBalance = await u.getCalculatedBalance();
+  let userBalance;
+  try {
+    userBalance = await u.getCalculatedBalance();
+  } catch (Error) {
+    logger.log('', [req.id, 'error running getCalculatedBalance():', Error]);
+    lock.releaseLock();
+    return errorTryAgainLater(res);
+  }
 
   lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
     if (err) {
@@ -206,7 +213,7 @@ router.post('/payinvoice', async function(req, res) {
           return errorPaymentFailed(res);
         }
       });
-      if (!info.num_satoshis && !info.num_satoshis) {
+      if (!info.num_satoshis) {
         // tip invoice, but someone forgot to specify amount
         await lock.releaseLock();
         return errorBadArguments(res);
