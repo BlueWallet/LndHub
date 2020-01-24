@@ -317,6 +317,10 @@ export class User {
       if (invoice.payment_route) {
         invoice.fee = +invoice.payment_route.total_fees;
         invoice.value = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
+        if (invoice.payment_route.total_amt_msat && invoice.payment_route.total_amt_msat / 1000 !== +invoice.payment_route.total_amt) {
+          // okay, we have to account for MSAT
+          invoice.value = Math.max(parseInt(invoice.payment_route.total_amt_msat / 1000), +invoice.payment_route.total_amt) + 1; // extra sat to cover for msats, as external layer (clients) dont have that resolution
+        }
       } else {
         invoice.fee = 0;
       }
