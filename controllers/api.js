@@ -128,14 +128,14 @@ router.post('/payinvoice', async function(req, res) {
   // obtaining a lock
   let lock = new Lock(redis, 'invoice_paying_for_' + u.getUserId());
   if (!(await lock.obtainLock())) {
-    return errorTryAgainLater(res);
+    return errorGeneralServerError(res);
   }
 
   let userBalance;
   try {
     userBalance = await u.getCalculatedBalance();
   } catch (Error) {
-    logger.log('', [req.id, 'error running getCalculatedBalance():', Error]);
+    logger.log('', [req.id, 'error running getCalculatedBalance():', Error.message]);
     lock.releaseLock();
     return errorTryAgainLater(res);
   }
@@ -269,7 +269,7 @@ router.get('/balance', postLimiter, async function(req, res) {
     if (balance < 0) balance = 0;
     res.send({ BTC: { AvailableBalance: balance } });
   } catch (Error) {
-    logger.log('', [req.id, 'error:', Error]);
+    logger.log('', [req.id, 'error getting balance:', Error.message, 'userid:', u.getUserId()]);
     return errorGeneralServerError(res);
   }
 });
@@ -310,7 +310,7 @@ router.get('/gettxs', async function(req, res) {
     }
     res.send(txs);
   } catch (Err) {
-    logger.log('', [req.id, 'error:', Err]);
+    logger.log('', [req.id, 'error gettxs:', Err.message, 'userid:', u.getUserId()]);
     res.send([]);
   }
 });
@@ -330,7 +330,7 @@ router.get('/getuserinvoices', async function(req, res) {
       res.send(invoices);
     }
   } catch (Err) {
-    logger.log('', [req.id, 'error:', Err]);
+    logger.log('', [req.id, 'error getting user invoices:', Err.message, 'userid:', u.getUserId()]);
     res.send([]);
   }
 });
@@ -420,7 +420,7 @@ function errorGeneralServerError(res) {
   return res.send({
     error: true,
     code: 6,
-    message: 'Server fault',
+    message: 'Something went wrong. Please try again later',
   });
 }
 

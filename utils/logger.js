@@ -37,10 +37,6 @@ if (!fs.existsSync('logs')) {
   fs.mkdirSync('logs');
 }
 
-/**
- * @param {string} label group label
- * @param {string} message log message
- */
 function log(label, message) {
   logger.log({
     level: 'info',
