@@ -25,7 +25,7 @@ function updateLightning() {
       lightningListChannels = response;
       let channels = [];
       for (let channel of lightningListChannels.channels) {
-        let divider = 524287;
+        let divider = 5242870;
         let ascii_length1 = channel.local_balance / divider;
         let ascii_length2 = channel.remote_balance / divider;
         channel.ascii = '[';

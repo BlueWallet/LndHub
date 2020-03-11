@@ -25,7 +25,7 @@ bitcoinclient.request('getblockchaininfo', false, function(err, info) {
       process.exit(1);
     }
   } else {
-    console.error('bitcoind failure');
+    console.error('bitcoind failure:', err, info);
     process.exit(2);
   }
 });
@@ -56,7 +56,7 @@ redis.info(function(err, info) {
 const rateLimit = require('express-rate-limit');
 const postLimiter = rateLimit({
   windowMs: 30 * 60 * 1000,
-  max: 50,
+  max: 100,
 });
 
 router.post('/create', postLimiter, async function(req, res) {
