@@ -128,10 +128,17 @@ router.post('/payinvoice', async function(req, res) {
   // obtaining a lock
   let lock = new Lock(redis, 'invoice_paying_for_' + u.getUserId());
   if (!(await lock.obtainLock())) {
-    return errorTryAgainLater(res);
+    return errorGeneralServerError(res);
   }
 
-  let userBalance = await u.getCalculatedBalance();
+  let userBalance;
+  try {
+    userBalance = await u.getCalculatedBalance();
+  } catch (Error) {
+    logger.log('', [req.id, 'error running getCalculatedBalance():', Error.message]);
+    lock.releaseLock();
+    return errorTryAgainLater(res);
+  }
 
   lightning.decodePayReq({ pay_req: req.body.invoice }, async function(err, info) {
     if (err) {
@@ -206,7 +213,7 @@ router.post('/payinvoice', async function(req, res) {
           return errorPaymentFailed(res);
         }
       });
-      if (!info.num_satoshis && !info.num_satoshis) {
+      if (!info.num_satoshis) {
         // tip invoice, but someone forgot to specify amount
         await lock.releaseLock();
         return errorBadArguments(res);
@@ -255,11 +262,16 @@ router.get('/balance', postLimiter, async function(req, res) {
     return errorBadAuth(res);
   }
 
-  if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
-  await u.accountForPosibleTxids();
-  let balance = await u.getBalance();
-  if (balance < 0) balance = 0;
-  res.send({ BTC: { AvailableBalance: balance } });
+  try {
+    if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
+    await u.accountForPosibleTxids();
+    let balance = await u.getBalance();
+    if (balance < 0) balance = 0;
+    res.send({ BTC: { AvailableBalance: balance } });
+  } catch (Error) {
+    logger.log('', [req.id, 'error getting balance:', Error.message, 'userid:', u.getUserId()]);
+    return errorGeneralServerError(res);
+  }
 });
 
 router.get('/getinfo', postLimiter, async function(req, res) {
@@ -298,7 +310,7 @@ router.get('/gettxs', async function(req, res) {
     }
     res.send(txs);
   } catch (Err) {
-    logger.log('', [req.id, 'error:', Err]);
+    logger.log('', [req.id, 'error gettxs:', Err.message, 'userid:', u.getUserId()]);
     res.send([]);
   }
 });
@@ -318,7 +330,7 @@ router.get('/getuserinvoices', async function(req, res) {
       res.send(invoices);
     }
   } catch (Err) {
-    logger.log('', [req.id, 'error:', Err]);
+    logger.log('', [req.id, 'error getting user invoices:', Err.message, 'userid:', u.getUserId()]);
     res.send([]);
   }
 });
@@ -408,7 +420,7 @@ function errorGeneralServerError(res) {
   return res.send({
     error: true,
     code: 6,
-    message: 'Server fault',
+    message: 'Something went wrong. Please try again later',
   });
 }
 

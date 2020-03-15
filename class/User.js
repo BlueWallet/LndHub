@@ -243,7 +243,11 @@ export class User {
       invoice.description = '';
       for (let tag of decoded.tags) {
         if (tag.tagName === 'description') {
-          invoice.description += decodeURIComponent(tag.data);
+          try {
+            invoice.description += decodeURIComponent(tag.data);
+          } catch (_) {
+            invoice.description += tag.data;
+          }
         }
         if (tag.tagName === 'payment_hash') {
           invoice.payment_hash = tag.data;
@@ -267,7 +271,7 @@ export class User {
       }
 
       invoice.amt = decoded.satoshis;
-      invoice.expire_time = 3600;
+      invoice.expire_time = 3600 * 24;
       // ^^^default; will keep for now. if we want to un-hardcode it - it should be among tags (`expire_time`)
       invoice.timestamp = decoded.timestamp;
       invoice.type = 'user_invoice';
@@ -313,6 +317,10 @@ export class User {
       if (invoice.payment_route) {
         invoice.fee = +invoice.payment_route.total_fees;
         invoice.value = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
+        if (invoice.payment_route.total_amt_msat && invoice.payment_route.total_amt_msat / 1000 !== +invoice.payment_route.total_amt) {
+          // okay, we have to account for MSAT
+          invoice.value = +invoice.payment_route.total_fees + Math.max(parseInt(invoice.payment_route.total_amt_msat / 1000), +invoice.payment_route.total_amt) + 1; // extra sat to cover for msats, as external layer (clients) dont have that resolution
+        }
       } else {
         invoice.fee = 0;
       }
