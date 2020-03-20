@@ -10,7 +10,6 @@ if (process.env.TLSCERT) {
 } else {
   lndCert = fs.readFileSync('tls.cert');
 }
-console.log('using tls.cert', lndCert.toString('hex'));
 let sslCreds = grpc.credentials.createSsl(lndCert);
 let macaroon;
 if (process.env.MACAROON) {

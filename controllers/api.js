@@ -25,17 +25,19 @@ bitcoinclient.request('getblockchaininfo', false, function(err, info) {
       process.exit(1);
     }
   } else {
-    console.error('bitcoind failure');
+    console.error('bitcoind failure:', err, info);
     process.exit(2);
   }
 });
 
 lightning.getInfo({}, function(err, info) {
   if (err) {
-    console.error('lnd failure');
+    console.error('lnd failure shuuu');
+    console.dir(err);
     process.exit(3);
   }
   if (info) {
+    console.info(info);
     if (!info.synced_to_chain) {
       console.error('lnd not synced');
       process.exit(4);
@@ -56,7 +58,7 @@ redis.info(function(err, info) {
 const rateLimit = require('express-rate-limit');
 const postLimiter = rateLimit({
   windowMs: 30 * 60 * 1000,
-  max: 50,
+  max: 100,
 });
 
 router.post('/create', postLimiter, async function(req, res) {
@@ -345,6 +347,22 @@ router.get('/getuserinvoices', async function(req, res) {
   } catch (Err) {
     logger.log('', [req.id, 'error getting user invoices:', Err.message, 'userid:', u.getUserId()]);
     res.send([]);
+  }
+});
+
+router.get('/checkinvoicepaid', async function(req, res) {
+  logger.log('/checkinvoicepaid', [req.id]);
+  let u = new User(redis, bitcoinclient, lightning);
+  if (!(await u.loadByAuthorization(req.headers.authorization))) {
+    return errorBadAuth(res);
+  }
+
+  try {
+    let paid = await u.getPaymentHashPaid(req.query.pay_req);
+    res.send(paid);
+  } catch (Err) {
+    logger.log('', [req.id, 'error getting invoice:', Err.message, 'userid:', u.getUserId()]);
+    res.send(false);
   }
 });
 

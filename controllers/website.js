@@ -19,13 +19,13 @@ function updateLightning() {
 
     lightning.listChannels({}, function(err, response) {
       if (err) {
-        console.error('lnd failure:', err);
+        console.error('lnd 2 failure:', err);
         return;
       }
       lightningListChannels = response;
       let channels = [];
       for (let channel of lightningListChannels.channels) {
-        let divider = 524287;
+        let divider = 5242870;
         let ascii_length1 = channel.local_balance / divider;
         let ascii_length2 = channel.remote_balance / divider;
         channel.ascii = '[';
@@ -75,7 +75,7 @@ const pubkey2name = {
 router.get('/', function(req, res) {
   logger.log('/', [req.id]);
   if (!lightningGetInfo) {
-    console.error('lnd failure');
+    console.error('lnd failurefff');
     process.exit(3);
   }
   res.setHeader('Content-Type', 'text/html');
