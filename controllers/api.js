@@ -265,17 +265,18 @@ router.get('/checkpayment/:payment_hash', async function(req, res) {
   }
 
   let paid = !!(await u.getPaymentHashPaid(req.params.payment_hash));
-  res.send({paid: paid});
+  res.send({ paid: paid });
 });
 
 router.get('/balance', postLimiter, async function(req, res) {
-  logger.log('/balance', [req.id]);
-  let u = new User(redis, bitcoinclient, lightning);
-  if (!(await u.loadByAuthorization(req.headers.authorization))) {
-    return errorBadAuth(res);
-  }
-
   try {
+    logger.log('/balance', [req.id]);
+    let u = new User(redis, bitcoinclient, lightning);
+    if (!(await u.loadByAuthorization(req.headers.authorization))) {
+      return errorBadAuth(res);
+    }
+    logger.log('/balance', [req.id, 'userid: ' + u.getUserId()]);
+
     if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
     await u.accountForPosibleTxids();
     let balance = await u.getBalance();
@@ -338,12 +339,8 @@ router.get('/getuserinvoices', postLimiter, async function(req, res) {
   logger.log('/getuserinvoices', [req.id, 'userid: ' + u.getUserId()]);
 
   try {
-    let invoices = await u.getUserInvoices();
-    if (req.query.limit && !isNaN(parseInt(req.query.limit))) {
-      res.send(invoices.slice(parseInt(req.query.limit) * -1));
-    } else {
-      res.send(invoices);
-    }
+    let invoices = await u.getUserInvoices(req.query.limit);
+    res.send(invoices);
   } catch (Err) {
     logger.log('', [req.id, 'error getting user invoices:', Err.message, 'userid:', u.getUserId()]);
     res.send([]);

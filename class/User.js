@@ -234,8 +234,11 @@ export class User {
     return await this._redis.get('ispaid_' + payment_hash);
   }
 
-  async getUserInvoices() {
+  async getUserInvoices(limit) {
     let range = await this._redis.lrange('userinvoices_for_' + this._userid, 0, -1);
+    if (limit && !isNaN(parseInt(limit))) {
+      range = range.slice(parseInt(limit) * -1);
+    }
     let result = [];
     for (let invoice of range) {
       invoice = JSON.parse(invoice);
