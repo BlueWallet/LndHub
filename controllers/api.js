@@ -329,7 +329,7 @@ router.get('/gettxs', async function(req, res) {
   }
 });
 
-router.get('/getuserinvoices', async function(req, res) {
+router.get('/getuserinvoices', postLimiter, async function(req, res) {
   logger.log('/getuserinvoices', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
