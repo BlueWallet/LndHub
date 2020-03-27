@@ -306,6 +306,7 @@ router.get('/gettxs', async function(req, res) {
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
+  logger.log('/gettxs', [req.id, 'userid: ' + u.getUserId()]);
 
   if (!(await u.getAddress())) await u.generateAddress(); // onchain addr needed further
   try {
@@ -334,6 +335,7 @@ router.get('/getuserinvoices', async function(req, res) {
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
+  logger.log('/getuserinvoices', [req.id, 'userid: ' + u.getUserId()]);
 
   try {
     let invoices = await u.getUserInvoices();
@@ -354,6 +356,7 @@ router.get('/getpending', async function(req, res) {
   if (!(await u.loadByAuthorization(req.headers.authorization))) {
     return errorBadAuth(res);
   }
+  logger.log('/getpending', [req.id, 'userid: ' + u.getUserId()]);
 
   if (!(await u.getAddress())) await u.generateAddress(); // onchain address needed further
   await u.accountForPosibleTxids();
