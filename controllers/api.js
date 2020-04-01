@@ -20,7 +20,7 @@ let identity_pubkey = false;
 
 bitcoinclient.request('getblockchaininfo', false, function(err, info) {
   if (info && info.result && info.result.blocks) {
-    if (false && info.result.blocks < 550000) { // TODO: REGTEST
+    if (info.result.chain === 'mainnet' && info.result.blocks < 550000) {
       console.error('bitcoind is not caught up');
       process.exit(1);
     }
