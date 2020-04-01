@@ -363,22 +363,6 @@ router.get('/getuserinvoices', postLimiter, async function(req, res) {
   }
 });
 
-router.get('/checkinvoicepaid', async function(req, res) {
-  logger.log('/checkinvoicepaid', [req.id]);
-  let u = new User(redis, bitcoinclient, lightning);
-  if (!(await u.loadByAuthorization(req.headers.authorization))) {
-    return errorBadAuth(res);
-  }
-
-  try {
-    let paid = await u.getPaymentHashPaid(req.query.pay_req);
-    res.send(paid);
-  } catch (Err) {
-    logger.log('', [req.id, 'error getting invoice:', Err.message, 'userid:', u.getUserId()]);
-    res.send(false);
-  }
-});
-
 router.get('/getpending', async function(req, res) {
   logger.log('/getpending', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
