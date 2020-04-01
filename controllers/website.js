@@ -19,7 +19,7 @@ function updateLightning() {
 
     lightning.listChannels({}, function(err, response) {
       if (err) {
-        console.error('lnd 2 failure:', err);
+        console.error('lnd failure:', err);
         return;
       }
       lightningListChannels = response;
@@ -75,7 +75,7 @@ const pubkey2name = {
 router.get('/', function(req, res) {
   logger.log('/', [req.id]);
   if (!lightningGetInfo) {
-    console.error('lnd failurefff');
+    console.error('lnd failure');
     process.exit(3);
   }
   res.setHeader('Content-Type', 'text/html');
