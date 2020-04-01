@@ -271,20 +271,6 @@ router.get('/checkpayment/:payment_hash', async function(req, res) {
 });
 
 router.get('/balance', postLimiter, async function(req, res) {
-  logger.log('/balance', [req.id]);
-  try {
-  let u = new User(redis, bitcoinclient, lightning);
-  await u.loadByAuthorization(req.headers.authorization);
-
-  if (!u.getUserId()) {
-    return errorBadAuth(res);
-  }
-
-  let paid = !!(await u.getPaymentHashPaid(req.params.payment_hash));
-  res.send({ paid: paid });
-});
-
-router.get('/balance', postLimiter, async function(req, res) {
   try {
     logger.log('/balance', [req.id]);
     let u = new User(redis, bitcoinclient, lightning);
