@@ -266,7 +266,10 @@ router.get('/checkpayment/:payment_hash', async function(req, res) {
     return errorBadAuth(res);
   }
 
-  let paid = !!(await u.getPaymentHashPaid(req.params.payment_hash));
+  let paid = true;
+  if (!(await u.getPaymentHashPaid(req.params.payment_hash))) { // Not found on cache
+    paid = await u.syncInvoicePaid(req.params.payment_hash);
+  }
   res.send({paid: paid});
 });
 
