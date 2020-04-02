@@ -1,17 +1,17 @@
 let config = {
   bitcoind: {
-    rpc: 'http://masize:12345678@127.0.0.1:18443',
+    rpc: 'http://login:password@1.1.1.1:8332',
   },
   redis: {
-    port: 6379,
-    host: '127.0.0.1',
+    port: 12914,
+    host: '1.1.1.1',
     family: 4,
-    //password: 'password',
+    password: 'password',
     db: 0,
   },
   lnd: {
-    url: '127.0.0.1:10009',
-    password: 'masize1535',
+    url: '1.1.1.1:10009',
+    password: '',
   },
 };
 
