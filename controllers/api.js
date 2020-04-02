@@ -20,7 +20,7 @@ let identity_pubkey = false;
 
 bitcoinclient.request('getblockchaininfo', false, function(err, info) {
   if (info && info.result && info.result.blocks) {
-    if (info.result.blocks < 550000) {
+    if (info.result.chain === 'mainnet' && info.result.blocks < 550000) {
       console.error('bitcoind is not caught up');
       process.exit(1);
     }
@@ -33,9 +33,11 @@ bitcoinclient.request('getblockchaininfo', false, function(err, info) {
 lightning.getInfo({}, function(err, info) {
   if (err) {
     console.error('lnd failure');
+    console.dir(err);
     process.exit(3);
   }
   if (info) {
+    console.info(info);
     if (!info.synced_to_chain) {
       console.error('lnd not synced');
       process.exit(4);
@@ -264,8 +266,11 @@ router.get('/checkpayment/:payment_hash', async function(req, res) {
     return errorBadAuth(res);
   }
 
-  let paid = !!(await u.getPaymentHashPaid(req.params.payment_hash));
-  res.send({ paid: paid });
+  let paid = true;
+  if (!(await u.getPaymentHashPaid(req.params.payment_hash))) { // Not found on cache
+    paid = await u.syncInvoicePaid(req.params.payment_hash);
+  }
+  res.send({paid: paid});
 });
 
 router.get('/balance', postLimiter, async function(req, res) {
