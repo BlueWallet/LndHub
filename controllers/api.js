@@ -160,22 +160,12 @@ router.post('/payinvoice', async function(req, res) {
 
       if (identity_pubkey === info.destination) {
         // this is internal invoice
-        // now, receiver add balance
-        let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
-        if (!userid_payee) {
-          await lock.releaseLock();
-          return errorGeneralServerError(res);
-        }
 
         if (await u.getPaymentHashPaid(info.payment_hash)) {
           // this internal invoice was paid, no sense paying it again
           await lock.releaseLock();
           return errorLnd(res);
         }
-
-        let UserPayee = new User(redis, bitcoinclient, lightning);
-        UserPayee._userid = userid_payee; // hacky, fixme
-        await UserPayee.clearBalanceCache();
 
         // sender spent his balance:
         await u.clearBalanceCache();
@@ -188,7 +178,14 @@ router.post('/payinvoice', async function(req, res) {
           pay_req: req.body.invoice,
         });
 
-        await UserPayee.setPaymentHashPaid(info.payment_hash);
+        // now, receiver add balance
+        let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
+        if (userid_payee) {
+          let UserPayee = new User(redis, bitcoinclient, lightning);
+          UserPayee._userid = userid_payee; // hacky, fixme
+          await UserPayee.clearBalanceCache();
+          await UserPayee.setPaymentHashPaid(info.payment_hash);
+        }
 
         await lock.releaseLock();
         return res.send(info);
