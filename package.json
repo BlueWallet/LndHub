@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon node_modules/.bin/babel-node index.js",
     "start": "node_modules/.bin/babel-node index.js",
-    "lint": "./node_modules/.bin/eslint ./ controllers/ class/ --fix"
+    "lint": "./node_modules/.bin/eslint ./ controllers/ class/ --fix",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "author": "Igor Korsakov <overtorment@gmail.com>",
   "license": "MIT",
@@ -35,6 +37,8 @@
     "prettier": "^2.0.4",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "winston": "^3.1.0"
-  }
+    "winston": "^3.1.0",
+    "snyk": "^1.316.1"
+  },
+  "snyk": true
 }
