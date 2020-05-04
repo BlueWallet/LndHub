@@ -18,17 +18,20 @@ let lightning = require('../lightning');
 
   let listinvoices = await tempInv.listInvoices();
   console.log('done', 'got', listinvoices['invoices'].length, 'invoices');
-  fs.writeFileSync('listInvoices.json', JSON.stringify(listinvoices['invoices'], null, 2));
+  fs.writeFileSync('listInvoices.json', '[\n');
 
   let markedInvoices = 0;
   for (const invoice of listinvoices['invoices']) {
-    if (invoice.state === 'SETTLED' && +invoice.creation_date >= +new Date() / 1000 - 3600 * 24 * 7) {
+    fs.appendFileSync('listInvoices.json', JSON.stringify(invoice, null, 2) + ',\n');
+    if (invoice.state === 'SETTLED' && +invoice.creation_date >= +new Date() / 1000 - 3600 * 24 * 7 * 2) {
       tempInv.setInvoice(invoice.payment_request);
       await tempInv.markAsPaidInDatabase();
       markedInvoices++;
       process.stdout.write(markedInvoices + '\r');
     }
   }
+
+  fs.appendFileSync('listInvoices.json', ']');
 
   console.log('done, marked', markedInvoices, 'invoices');
   process.exit();

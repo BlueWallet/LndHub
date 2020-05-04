@@ -74,7 +74,8 @@ export class Invo {
     return new Promise((resolve, reject) => {
       this._lightning.listInvoices(
         {
-          num_max_invoices: 9000111,
+          num_max_invoices: 99000111,
+          reversed: true,
         },
         function(err, response) {
           if (err) return reject(err);
