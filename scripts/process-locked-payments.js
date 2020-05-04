@@ -1,6 +1,12 @@
+/**
+ * This script gets all locked payments from our database and cross-checks them with actual
+ * sentout payments from LND. If locked payment is in there we moe locked payment to array of real payments for the user
+ * (it is effectively spent coins by user), if not - we attempt to pay it again (if it is not too old).
+ */
 import { User, Lock, Paym } from '../class/';
 const config = require('../config');
 
+const fs = require('fs');
 var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 
@@ -15,6 +21,7 @@ let lightning = require('../lightning');
   let tempPaym = new Paym(redis, bitcoinclient, lightning);
   let listPayments = await tempPaym.listPayments();
   console.log('done', 'got', listPayments['payments'].length, 'payments');
+  fs.writeFileSync('listPayments.json', JSON.stringify(listPayments['payments'], null, 2));
 
   for (let key of keys) {
     const userid = key.replace('locked_payments_for_', '');
@@ -34,6 +41,7 @@ let lightning = require('../lightning');
       if (daysPassed < 2) {
         // if (!await payment.isExpired()) {
         let sendResult;
+        console.log('attempting to pay to route');
         try {
           sendResult = await payment.attemptPayToRoute();
         } catch (_) {

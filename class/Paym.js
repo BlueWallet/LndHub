@@ -38,7 +38,6 @@ export class Paym {
     var request = {
       pub_key: this._decoded.destination,
       amt: this._decoded.num_satoshis,
-      num_routes: 1,
       final_cltv_delta: 144,
       fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * 0.01) + 1 },
     };
@@ -57,8 +56,10 @@ export class Paym {
 
     let request = {
       payment_hash_string: this._decoded.payment_hash,
-      routes: routes,
+      route: routes[0],
     };
+
+    console.log('sendToRouteSync:', { request });
 
     let that = this;
     return new Promise(function(resolve, reject) {

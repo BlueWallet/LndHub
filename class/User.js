@@ -212,6 +212,8 @@ export class User {
 
   /**
    * Doent belong here, FIXME
+   * @see Invo._setIsPaymentHashPaidInDatabase
+   * @see Invo.markAsPaidInDatabase
    */
   async setPaymentHashPaid(payment_hash) {
     return await this._redis.set('ispaid_' + payment_hash, 1);
@@ -229,6 +231,8 @@ export class User {
 
   /**
    * Doent belong here, FIXME
+   * @see Invo._getIsPaymentHashMarkedPaidInDatabase
+   * @see Invo.getIsMarkedAsPaidInDatabase
    */
   async getPaymentHashPaid(payment_hash) {
     return await this._redis.get('ispaid_' + payment_hash);
@@ -322,7 +326,10 @@ export class User {
         invoice.value = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
         if (invoice.payment_route.total_amt_msat && invoice.payment_route.total_amt_msat / 1000 !== +invoice.payment_route.total_amt) {
           // okay, we have to account for MSAT
-          invoice.value = +invoice.payment_route.total_fees + Math.max(parseInt(invoice.payment_route.total_amt_msat / 1000), +invoice.payment_route.total_amt) + 1; // extra sat to cover for msats, as external layer (clients) dont have that resolution
+          invoice.value =
+            +invoice.payment_route.total_fees +
+            Math.max(parseInt(invoice.payment_route.total_amt_msat / 1000), +invoice.payment_route.total_amt) +
+            1; // extra sat to cover for msats, as external layer (clients) dont have that resolution
         }
       } else {
         invoice.fee = 0;

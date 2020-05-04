@@ -70,6 +70,12 @@ const pubkey2name = {
   '02a0bc43557fae6af7be8e3a29fdebda819e439bea9c0f8eb8ed6a0201f3471ca9': 'LightningPeachHub',
   '02d4531a2f2e6e5a9033d37d548cff4834a3898e74c3abe1985b493c42ebbd707d': 'coinfinity.co',
   '02d23fa6794d8fd056c757f3c8f4877782138dafffedc831fc570cab572620dc61': 'paywithmoon.com',
+  '025f1456582e70c4c06b61d5c8ed3ce229e6d0db538be337a2dc6d163b0ebc05a5': 'paywithmoon.com',
+  '02004c625d622245606a1ea2c1c69cfb4516b703b47945a3647713c05fe4aaeb1c': 'walletofsatoshi',
+  '0331f80652fb840239df8dc99205792bba2e559a05469915804c08420230e23c7c': 'LightningPowerUsers.com',
+  '033d8656219478701227199cbd6f670335c8d408a92ae88b962c49d4dc0e83e025': 'bfx-lnd0',
+  '03021c5f5f57322740e4ee6936452add19dc7ea7ccf90635f95119ab82a62ae268': 'lnd1.bluewallet.io',
+  '037cc5f9f1da20ac0d60e83989729a204a33cc2d8e80438969fadf35c1c5f1233b': 'lnd2.bluewallet.io',
 };
 
 router.get('/', function(req, res) {
