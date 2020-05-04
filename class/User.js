@@ -238,6 +238,17 @@ export class User {
     return await this._redis.get('ispaid_' + payment_hash);
   }
 
+  async syncInvoicePaid(payment_hash) {
+    const invoice = await this.lookupInvoice(payment_hash);
+    const ispaid = invoice.settled; // TODO: start using `state` instead as its future proof, and this one might get deprecated
+    if (ispaid) {
+      // so invoice was paid after all
+      await this.setPaymentHashPaid(payment_hash);
+      await this.clearBalanceCache();
+    }
+    return ispaid;
+  }
+
   async getUserInvoices(limit) {
     let range = await this._redis.lrange('userinvoices_for_' + this._userid, 0, -1);
     if (limit && !isNaN(parseInt(limit))) {
@@ -265,13 +276,7 @@ export class User {
       if (!invoice.ispaid) {
         if (decoded && decoded.timestamp > +new Date() / 1000 - 3600 * 24 * 5) {
           // if invoice is not too old we query lnd to find out if its paid
-          let lookup_info = await this.lookupInvoice(invoice.payment_hash);
-          invoice.ispaid = lookup_info.settled; // TODO: start using `state` instead as its future proof, and this one might get deprecated
-          if (invoice.ispaid) {
-            // so invoice was paid after all
-            await this.setPaymentHashPaid(invoice.payment_hash);
-            await this.clearBalanceCache();
-          }
+          invoice.ispaid = await this.syncInvoicePaid(invoice.payment_hash);
         }
       } else {
         _invoice_ispaid_cache[invoice.payment_hash] = true;
