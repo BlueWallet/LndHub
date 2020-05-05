@@ -72,48 +72,50 @@ lightning.listChannels({}, function(err, response) {
     }
   }
 
-  console.log('# reconnect important channels that are inactive:\n');
-
-  for (const important of Object.keys(important_channels)) {
-    for (let channel of lightningListChannels.channels) {
-      if (channel.remote_pubkey === important && !channel.active) {
-        console.log(
-          'lncli disconnect',
-          channel.remote_pubkey,
-          '; sleep 5;',
-          'lncli connect',
-          important_channels[channel.remote_pubkey].uri,
-          '#',
-          important_channels[channel.remote_pubkey].name,
-        );
+  if (process.argv.includes('--reconnect')) {
+    console.log('# reconnect important channels that are inactive:\n');
+    for (const important of Object.keys(important_channels)) {
+      for (let channel of lightningListChannels.channels) {
+        if (channel.remote_pubkey === important && !channel.active) {
+          console.log(
+            'lncli disconnect',
+            channel.remote_pubkey,
+            '; sleep 5;',
+            'lncli connect',
+            important_channels[channel.remote_pubkey].uri,
+            '#',
+            important_channels[channel.remote_pubkey].name,
+          );
+        }
       }
     }
   }
 
-  console.log('\n# open important channels:\n');
-
-  for (const important of Object.keys(important_channels)) {
-    let atLeastOneChannelIsSufficientCapacity = false;
-    for (let channel of lightningListChannels.channels) {
-      if (channel.remote_pubkey === important && channel.local_balance >= 4000000 && channel.active) {
-        atLeastOneChannelIsSufficientCapacity = true;
+  if (process.argv.includes('--open')) {
+    console.log('\n# open important channels:\n');
+    for (const important of Object.keys(important_channels)) {
+      let atLeastOneChannelIsSufficientCapacity = false;
+      for (let channel of lightningListChannels.channels) {
+        if (channel.remote_pubkey === important && channel.local_balance >= 4000000 && channel.active) {
+          atLeastOneChannelIsSufficientCapacity = true;
+        }
       }
-    }
 
-    if (!atLeastOneChannelIsSufficientCapacity) {
-      console.log(
-        'lncli disconnect',
-        important,
-        '; sleep 3;',
-        'lncli  openchannel --node_key',
-        important,
-        '--connect',
-        important_channels[important].uri.split('@')[1],
-        '--local_amt',
-        important_channels[important].wumbo ? '167772150' : '16777215',
-        '#',
-        important_channels[important].name,
-      );
+      if (!atLeastOneChannelIsSufficientCapacity) {
+        console.log(
+          'lncli disconnect',
+          important,
+          '; sleep 3;',
+          'lncli  openchannel --node_key',
+          important,
+          '--connect',
+          important_channels[important].uri.split('@')[1],
+          '--local_amt',
+          important_channels[important].wumbo ? '167772150' : '16777215',
+          '#',
+          important_channels[important].name,
+        );
+      }
     }
   }
 

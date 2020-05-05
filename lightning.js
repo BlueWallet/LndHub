@@ -10,7 +10,7 @@ if (process.env.TLSCERT) {
 } else {
   lndCert = fs.readFileSync('tls.cert');
 }
-console.log('using tls.cert', lndCert.toString('hex'));
+process.env.VERBOSE && console.log('using tls.cert', lndCert.toString('hex'));
 let sslCreds = grpc.credentials.createSsl(lndCert);
 let macaroon;
 if (process.env.MACAROON) {
@@ -18,7 +18,7 @@ if (process.env.MACAROON) {
 } else {
   macaroon = fs.readFileSync('admin.macaroon').toString('hex');
 }
-console.log('using macaroon', macaroon);
+process.env.VERBOSE && console.log('using macaroon', macaroon);
 let macaroonCreds = grpc.credentials.createFromMetadataGenerator(function(args, callback) {
   let metadata = new grpc.Metadata();
   metadata.add('macaroon', macaroon);
@@ -28,7 +28,7 @@ let creds = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
 
 // trying to unlock the wallet:
 if (config.lnd.password) {
-  console.log('trying to unlock the wallet');
+  process.env.VERBOSE && console.log('trying to unlock the wallet');
   var walletUnlocker = new lnrpc.WalletUnlocker(config.lnd.url, creds);
   walletUnlocker.unlockWallet(
     {
@@ -36,7 +36,7 @@ if (config.lnd.password) {
     },
     function(err, response) {
       if (err) {
-        console.log('unlockWallet failed, probably because its been aleady unlocked');
+        process.env.VERBOSE && console.log('unlockWallet failed, probably because its been aleady unlocked');
       } else {
         console.log('unlockWallet:', response);
       }
