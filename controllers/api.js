@@ -274,9 +274,9 @@ router.get('/checkpayment/:payment_hash', async function(req, res) {
 });
 
 router.get('/balance', postLimiter, async function(req, res) {
+  let u = new User(redis, bitcoinclient, lightning);
   try {
     logger.log('/balance', [req.id]);
-    let u = new User(redis, bitcoinclient, lightning);
     if (!(await u.loadByAuthorization(req.headers.authorization))) {
       return errorBadAuth(res);
     }
