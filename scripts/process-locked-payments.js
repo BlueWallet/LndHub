@@ -38,7 +38,7 @@ let lightning = require('../lightning');
 
       let payment = new Paym(redis, bitcoinclient, lightning);
       payment.setInvoice(lockedPayment.pay_req);
-      if (daysPassed < 2) {
+      if (daysPassed <= 1) {
         // if (!await payment.isExpired()) {
         let sendResult;
         console.log('attempting to pay to route');
@@ -67,7 +67,7 @@ let lightning = require('../lightning');
         console.log('sleeping 5 sec...');
         console.log('-----------------------------------------------------------------------------------');
         await User._sleep(0);
-      } else if (daysPassed > 4) {
+      } else if (daysPassed > 1) {
         // trying to lookup this stuck payment in an array of delivered payments
         let isPaid = false;
         for (let sentPayment of listPayments['payments']) {

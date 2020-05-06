@@ -47,6 +47,14 @@ const important_channels = {
     name: 'bfx-lnd0',
     uri: '033d8656219478701227199cbd6f670335c8d408a92ae88b962c49d4dc0e83e025@34.65.85.39:9735',
   },
+  '037f990e61acee8a7697966afd29dd88f3b1f8a7b14d625c4f8742bd952003a590': {
+    name: 'fixedfloat.com',
+    uri: '037f990e61acee8a7697966afd29dd88f3b1f8a7b14d625c4f8742bd952003a590@185.5.53.91:9735',
+  },
+  '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda': {
+    name: 'tippin.me',
+    uri: '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda@157.245.68.47:9735',
+  },
 };
 
 let lightning = require('../lightning');
@@ -73,10 +81,12 @@ lightning.listChannels({}, function(err, response) {
   }
 
   if (process.argv.includes('--reconnect')) {
+    let doneReconnect = {}; // so theres no duplicates
     console.log('# reconnect important channels that are inactive:\n');
     for (const important of Object.keys(important_channels)) {
       for (let channel of lightningListChannels.channels) {
-        if (channel.remote_pubkey === important && !channel.active) {
+        if (channel.remote_pubkey === important && !channel.active && !doneReconnect[channel.remote_pubkey]) {
+          doneReconnect[channel.remote_pubkey] = true;
           console.log(
             'lncli disconnect',
             channel.remote_pubkey,
