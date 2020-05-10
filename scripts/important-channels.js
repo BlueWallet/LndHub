@@ -101,6 +101,27 @@ lightning.listChannels({}, function(err, response) {
     }
   }
 
+  if (process.argv.includes('--reconnect-all')) {
+    let doneReconnect = {}; // so theres no duplicates
+    console.log('# reconnect important channels that are inactive:\n');
+    for (const important of Object.keys(important_channels)) {
+      for (let channel of lightningListChannels.channels) {
+        if (channel.remote_pubkey === important && !doneReconnect[channel.remote_pubkey]) {
+          doneReconnect[channel.remote_pubkey] = true;
+          console.log(
+            'lncli disconnect',
+            channel.remote_pubkey,
+            '; sleep 5;',
+            'lncli connect',
+            important_channels[channel.remote_pubkey].uri,
+            '#',
+            important_channels[channel.remote_pubkey].name,
+          );
+        }
+      }
+    }
+  }
+
   if (process.argv.includes('--open')) {
     console.log('\n# open important channels:\n');
     for (const important of Object.keys(important_channels)) {
