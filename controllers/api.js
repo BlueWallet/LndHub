@@ -1,4 +1,4 @@
-import { User, Lock, Paym } from '../class/';
+import { User, Lock, Paym, Invo } from '../class/';
 import Frisbee from 'frisbee';
 const config = require('../config');
 let express = require('express');
@@ -63,6 +63,15 @@ subscribeInvoicesCall.on('data', async function (response) {
       hash: response.r_hash.toString('hex'),
       amt_paid_sat: response.amt_paid_sat,
     };
+    // obtaining a lock, to make sure we push to groundcontrol only once
+    // since this web server can have several instances running, and each will get the same callback from LND
+    // and dont release the lock - it will autoexpire in a while
+    let lock = new Lock(redis, 'groundcontrol_hash_' + LightningInvoiceSettledNotification.hash);
+    if (!(await lock.obtainLock())) {
+      return;
+    }
+    let invoice = new Invo(redis, bitcoinclient, lightning);
+    await invoice._setIsPaymentHashPaidInDatabase(LightningInvoiceSettledNotification.hash, true);
     console.log('payment', LightningInvoiceSettledNotification.hash, 'was paid, posting to GroundControl...');
     const baseURI = process.env.GROUNDCONTROL;
     if (!baseURI) return;
