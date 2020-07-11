@@ -1,4 +1,5 @@
 import { User, Lock, Paym } from '../class/';
+import Frisbee from 'frisbee';
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
@@ -46,11 +47,47 @@ lightning.getInfo({}, function(err, info) {
   }
 });
 
-redis.info(function(err, info) {
+redis.info(function (err, info) {
   if (err || !info) {
     console.error('redis failure');
     process.exit(5);
   }
+});
+
+let subscribeInvoicesCall = lightning.subscribeInvoices({});
+subscribeInvoicesCall.on('data', async function (response) {
+  if (response.state === 'SETTLED') {
+    const LightningInvoiceSettledNotification = {
+      memo: response.memo,
+      preimage: response.r_preimage.toString('hex'),
+      hash: response.r_hash.toString('hex'),
+      amt_paid_sat: response.amt_paid_sat,
+    };
+    console.log('payment', LightningInvoiceSettledNotification.hash, 'was paid, posting to GroundControl...');
+    const baseURI = process.env.GROUNDCONTROL;
+    if (!baseURI) return;
+    const _api = new Frisbee({ baseURI: baseURI });
+    const apiResponse = await _api.post(
+      '/lightningInvoiceGotSettled',
+      Object.assign(
+        {},
+        {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
+          },
+          body: LightningInvoiceSettledNotification,
+        },
+      ),
+    );
+    console.log('GroundControl:', apiResponse.originalResponse.status);
+  }
+});
+subscribeInvoicesCall.on('status', function (status) {
+  // The current status of the stream.
+});
+subscribeInvoicesCall.on('end', function () {
+  // The server has closed the stream.
 });
 
 // ######################## ROUTES ########################
