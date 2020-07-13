@@ -72,6 +72,9 @@ subscribeInvoicesCall.on('data', async function (response) {
     }
     let invoice = new Invo(redis, bitcoinclient, lightning);
     await invoice._setIsPaymentHashPaidInDatabase(LightningInvoiceSettledNotification.hash, true);
+    const user = new User(redis, bitcoinclient, lightning);
+    user._userid = await user.getUseridByPaymentHash(LightningInvoiceSettledNotification.hash);
+    await user.clearBalanceCache();
     console.log('payment', LightningInvoiceSettledNotification.hash, 'was paid, posting to GroundControl...');
     const baseURI = process.env.GROUNDCONTROL;
     if (!baseURI) return;
