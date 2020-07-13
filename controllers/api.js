@@ -54,8 +54,7 @@ redis.info(function (err, info) {
   }
 });
 
-let subscribeInvoicesCall = lightning.subscribeInvoices({});
-subscribeInvoicesCall.on('data', async function (response) {
+const subscribeInvoicesCallCallback = async function (response) {
   if (response.state === 'SETTLED') {
     const LightningInvoiceSettledNotification = {
       memo: response.memo,
@@ -94,7 +93,9 @@ subscribeInvoicesCall.on('data', async function (response) {
     );
     console.log('GroundControl:', apiResponse.originalResponse.status);
   }
-});
+};
+let subscribeInvoicesCall = lightning.subscribeInvoices({});
+subscribeInvoicesCall.on('data', subscribeInvoicesCallCallback);
 subscribeInvoicesCall.on('status', function (status) {
   // The current status of the stream.
 });
@@ -151,11 +152,14 @@ router.post('/addinvoice', postLimiter, async function(req, res) {
 
   if (!req.body.amt || /*stupid NaN*/ !(req.body.amt > 0)) return errorBadArguments(res);
 
-  lightning.addInvoice({ memo: req.body.memo, value: req.body.amt, expiry: 3600 * 24 }, async function(err, info) {
+  const invoice = new Invo(redis, bitcoinclient, lightning);
+  const r_preimage = invoice.makePreimageHex();
+  lightning.addInvoice({ memo: req.body.memo, value: req.body.amt, expiry: 3600 * 24, r_preimage: Buffer.from(r_preimage, 'hex').toString('base64') }, async function(err, info) {
     if (err) return errorLnd(res);
 
     info.pay_req = info.payment_request; // client backwards compatibility
     await u.saveUserInvoice(info);
+    await invoice.savePreimage(r_preimage);
 
     res.send(info);
   });
@@ -237,8 +241,21 @@ router.post('/payinvoice', async function(req, res) {
           pay_req: req.body.invoice,
         });
 
-        await UserPayee.setPaymentHashPaid(info.payment_hash);
+        const invoice = new Invo(redis, bitcoinclient, lightning);
+        invoice.setInvoice(req.body.invoice);
+        await invoice.markAsPaidInDatabase();
 
+        // now, faking LND callback about invoice paid:
+        const preimage = await invoice.getPreimage();
+        if (preimage) {
+          subscribeInvoicesCallCallback({
+            state: 'SETTLED',
+            memo: info.description,
+            r_preimage: Buffer.from(preimage, 'hex'),
+            r_hash: Buffer.from(info.payment_hash, 'hex'),
+            amt_paid_sat: +info.num_satoshis,
+          });
+        }
         await lock.releaseLock();
         return res.send(info);
       }

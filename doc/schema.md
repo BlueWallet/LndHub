@@ -11,6 +11,7 @@ User storage schema
 * refresh_token_for_{userid} = {access_token}
 * importing_{txid} = 1 `atomic lock when processing topup tx`
 * invoice_paying_for_{userid} = 1 `lock for when payinvoice is in progress`
+* preimage_for_{payment_hash_hex} = {preimage_hex} `ttl 1 month`
 
 
 
