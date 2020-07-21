@@ -36,6 +36,6 @@
     "prettier": "^2.0.5",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "winston": "^3.3.2"
+    "winston": "^3.3.3"
   }
 }
