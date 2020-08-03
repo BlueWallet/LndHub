@@ -107,6 +107,12 @@ export class User {
    * @returns {Promise<any>}
    */
   async generateAddress() {
+    let lock = new Lock(this._redis, 'generating_address_' + this._userid);
+    if (!(await lock.obtainLock())) {
+      // someone's already generating address
+      return;
+    }
+
     let self = this;
     return new Promise(function(resolve, reject) {
       self._lightning.newAddress({ type: 0 }, async function(err, response) {
