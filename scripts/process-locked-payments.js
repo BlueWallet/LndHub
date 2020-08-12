@@ -38,7 +38,7 @@ let lightning = require('../lightning');
 
       let payment = new Paym(redis, bitcoinclient, lightning);
       payment.setInvoice(lockedPayment.pay_req);
-      if (daysPassed <= 1) {
+      if (daysPassed > (1 / 24) && daysPassed <= 1) {
         // if (!await payment.isExpired()) {
         let sendResult;
         console.log('attempting to pay to route');
