@@ -35,7 +35,7 @@
     "node-uuid": "^1.4.8",
     "prettier": "^2.0.5",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2",
+    "request-promise": "^4.2.6",
     "winston": "^3.3.3"
   }
 }
