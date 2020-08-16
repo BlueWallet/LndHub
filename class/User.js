@@ -124,6 +124,11 @@ export class User {
     });
   }
 
+  async watchAddress(address) {
+    if (!address) return;
+    return this._bitcoindrpc.request('importaddress', [address, address, false]);
+  }
+
   /**
    * LndHub no longer relies on redis balance as source of truth, this is
    * more a cache now. See `this.getCalculatedBalance()` to get correct balance.

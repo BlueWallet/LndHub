@@ -319,6 +319,7 @@ router.get('/getbtc', async function(req, res) {
     await u.generateAddress();
     address = await u.getAddress();
   }
+  u.watchAddress(address);
 
   res.send([{ address }]);
 });
