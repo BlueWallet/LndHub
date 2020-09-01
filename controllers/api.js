@@ -60,7 +60,7 @@ const subscribeInvoicesCallCallback = async function (response) {
       memo: response.memo,
       preimage: response.r_preimage.toString('hex'),
       hash: response.r_hash.toString('hex'),
-      amt_paid_sat: response.amt_paid_sat,
+      amt_paid_sat: response.value_msat ? Math.floor(response.value_msat / 1000) : response.value,
     };
     // obtaining a lock, to make sure we push to groundcontrol only once
     // since this web server can have several instances running, and each will get the same callback from LND
