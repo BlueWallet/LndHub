@@ -390,22 +390,29 @@ export class User {
       }
     }
 
-    let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
-    // now, compacting response a bit
-    let ret = { result: [] };
-    for (const tx of txs.result) {
-      ret.result.push({
-        category: tx.category,
-        amount: tx.amount,
-        confirmations: tx.confirmations,
-        address: tx.address,
-        time: tx.time,
-      });
+    try {
+      let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
+      // now, compacting response a bit
+      let ret = { result: [] };
+      for (const tx of txs.result) {
+        ret.result.push({
+          category: tx.category,
+          amount: tx.amount,
+          confirmations: tx.confirmations,
+          address: tx.address,
+          time: tx.time,
+        });
+      }
+      _listtransactions_cache = JSON.stringify(ret);
+      _listtransactions_cache_expiry_ts = +new Date() + 5 * 60 * 1000; // 5 min
+      this._redis.set('listtransactions', _listtransactions_cache);
+      return ret;
+    } catch (error) {
+      console.warn('listtransactions error:', error);
+      let _listtransactions_cache = await this._redis.get('listtransactions');
+      if (!_listtransactions_cache) return { result: [] };
+      return JSON.parse(_listtransactions_cache);
     }
-    _listtransactions_cache = JSON.stringify(ret);
-    _listtransactions_cache_expiry_ts = +new Date() + 5 * 60 * 1000; // 5 min
-    this._redis.set('listtransactions', _listtransactions_cache); // backup, will use later TODO
-    return ret;
   }
 
   /**
