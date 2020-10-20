@@ -253,7 +253,7 @@ router.post('/payinvoice', async function(req, res) {
             memo: info.description,
             r_preimage: Buffer.from(preimage, 'hex'),
             r_hash: Buffer.from(info.payment_hash, 'hex'),
-            amt_paid_sat: +info.num_satoshis,
+            value: +info.num_satoshis,
           });
         }
         await lock.releaseLock();
