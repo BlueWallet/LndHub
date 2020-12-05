@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 let express = require('express');
 let morgan = require('morgan');
-let uuid = require('node-uuid');
+let uuid = require('uuid');
 let logger = require('./utils/logger');
 
 morgan.token('id', function getId(req) {
