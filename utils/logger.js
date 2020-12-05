@@ -7,10 +7,7 @@
 *
 + + + + + + + + + + + + + + + + + + + + + */
 let fs = require('fs');
-let winston = require('winston');
-let createLogger = winston.createLogger;
-let format = winston.format;
-let transports = winston.transports;
+import { createLogger, format, transports } from 'winston';
 
 /* + + + + + + + + + + + + + + + + + + + + +
 // Start
