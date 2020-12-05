@@ -14,7 +14,7 @@
   "dependencies": {
     "@babel/core": "^7.12.9",
     "@babel/cli": "^7.12.8",
-    "babel-eslint": "^10.1.0",
+    "@babel/eslint-parser": "^7.12.1",
     "@babel/node": "^7.12.6",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.7",
