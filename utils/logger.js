@@ -13,7 +13,7 @@ import { createLogger, format, transports } from 'winston';
 // Start
 + + + + + + + + + + + + + + + + + + + + + */
 const { combine, timestamp, printf } = format;
-const logFormat = printf(info => {
+const logFormat = printf((info) => {
   return `${info.timestamp} : ${info.level}: [${info.label}] : ${info.message}`;
 });
 const logger = createLogger({

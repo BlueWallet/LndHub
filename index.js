@@ -1,4 +1,4 @@
-process.on('uncaughtException', function(err) {
+process.on('uncaughtException', function (err) {
   console.error(err);
   console.log('Node NOT Exiting...');
 });
@@ -23,7 +23,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   req.id = uuid.v4();
   next();
 });
@@ -44,7 +44,7 @@ app.use('/static', express.static('static'));
 app.use(require('./controllers/api'));
 app.use(require('./controllers/website'));
 
-let server = app.listen(process.env.PORT || 3000, function() {
+let server = app.listen(process.env.PORT || 3000, function () {
   logger.log('BOOTING UP', 'Listening on port ' + (process.env.PORT || 3000));
 });
 module.exports = server;

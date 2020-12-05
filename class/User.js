@@ -114,8 +114,8 @@ export class User {
     }
 
     let self = this;
-    return new Promise(function(resolve, reject) {
-      self._lightning.newAddress({ type: 0 }, async function(err, response) {
+    return new Promise(function (resolve, reject) {
+      self._lightning.newAddress({ type: 0 }, async function (err, response) {
         if (err) return reject('LND failure');
         await self.addAddress(response.address);
         self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
@@ -232,8 +232,8 @@ export class User {
 
   async lookupInvoice(payment_hash) {
     let that = this;
-    return new Promise(function(resolve, reject) {
-      that._lightning.lookupInvoice({ r_hash_str: payment_hash }, function(err, response) {
+    return new Promise(function (resolve, reject) {
+      that._lightning.lookupInvoice({ r_hash_str: payment_hash }, function (err, response) {
         if (err) resolve({});
         resolve(response);
       });
@@ -546,11 +546,7 @@ export class User {
   }
 
   _hash(string) {
-    return crypto
-      .createHash('sha256')
-      .update(string)
-      .digest()
-      .toString('hex');
+    return crypto.createHash('sha256').update(string).digest().toString('hex');
   }
 
   /**
@@ -566,6 +562,6 @@ export class User {
   }
 
   static async _sleep(s) {
-    return new Promise(r => setTimeout(r, s * 1000));
+    return new Promise((r) => setTimeout(r, s * 1000));
   }
 }

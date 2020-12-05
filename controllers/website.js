@@ -10,14 +10,14 @@ let lightningListChannels = {};
 function updateLightning() {
   console.log('updateLightning()');
   try {
-    lightning.getInfo({}, function(err, info) {
+    lightning.getInfo({}, function (err, info) {
       if (err) {
         console.error('lnd failure:', err);
       }
       lightningGetInfo = info;
     });
 
-    lightning.listChannels({}, function(err, response) {
+    lightning.listChannels({}, function (err, response) {
       if (err) {
         console.error('lnd failure:', err);
         return;
@@ -78,7 +78,7 @@ const pubkey2name = {
   '037cc5f9f1da20ac0d60e83989729a204a33cc2d8e80438969fadf35c1c5f1233b': 'lnd2.bluewallet.io',
 };
 
-router.get('/', function(req, res) {
+router.get('/', function (req, res) {
   logger.log('/', [req.id]);
   if (!lightningGetInfo) {
     console.error('lnd failure');
@@ -89,14 +89,14 @@ router.get('/', function(req, res) {
   return res.status(200).send(mustache.render(html, Object.assign({}, lightningGetInfo, lightningListChannels)));
 });
 
-router.get('/about', function(req, res) {
+router.get('/about', function (req, res) {
   logger.log('/about', [req.id]);
   let html = fs.readFileSync('./templates/about.html').toString('utf8');
   res.setHeader('Content-Type', 'text/html');
   return res.status(200).send(mustache.render(html, {}));
 });
 
-router.use(function(req, res) {
+router.use(function (req, res) {
   res.status(404).send('404');
 });
 

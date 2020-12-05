@@ -19,7 +19,7 @@ if (process.env.MACAROON) {
   macaroon = fs.readFileSync('admin.macaroon').toString('hex');
 }
 process.env.VERBOSE && console.log('using macaroon', macaroon);
-let macaroonCreds = grpc.credentials.createFromMetadataGenerator(function(args, callback) {
+let macaroonCreds = grpc.credentials.createFromMetadataGenerator(function (args, callback) {
   let metadata = new grpc.Metadata();
   metadata.add('macaroon', macaroon);
   callback(null, metadata);
@@ -34,7 +34,7 @@ if (config.lnd.password) {
     {
       wallet_password: Buffer.from(config.lnd.password).toString('base64'),
     },
-    function(err, response) {
+    function (err, response) {
       if (err) {
         process.env.VERBOSE && console.log('unlockWallet failed, probably because its been aleady unlocked');
       } else {

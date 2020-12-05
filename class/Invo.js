@@ -103,7 +103,7 @@ export class Invo {
           num_max_invoices: 99000111,
           reversed: true,
         },
-        function(err, response) {
+        function (err, response) {
           if (err) return reject(err);
           resolve(response);
         },

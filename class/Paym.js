@@ -22,8 +22,8 @@ export class Paym {
 
   async decodePayReqViaRpc(invoice) {
     let that = this;
-    return new Promise(function(resolve, reject) {
-      that._lightning.decodePayReq({ pay_req: invoice }, function(err, info) {
+    return new Promise(function (resolve, reject) {
+      that._lightning.decodePayReq({ pay_req: invoice }, function (err, info) {
         if (err) return reject(err);
         that._decoded = info;
         return resolve(info);
@@ -42,8 +42,8 @@ export class Paym {
       fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * 0.01) + 1 },
     };
     let that = this;
-    return new Promise(function(resolve, reject) {
-      that._lightning.queryRoutes(request, function(err, response) {
+    return new Promise(function (resolve, reject) {
+      that._lightning.queryRoutes(request, function (err, response) {
         if (err) return reject(err);
         resolve(response);
       });
@@ -62,8 +62,8 @@ export class Paym {
     console.log('sendToRouteSync:', { request });
 
     let that = this;
-    return new Promise(function(resolve, reject) {
-      that._lightning.sendToRouteSync(request, function(err, response) {
+    return new Promise(function (resolve, reject) {
+      that._lightning.sendToRouteSync(request, function (err, response) {
         if (err) reject(err);
         resolve(that.processSendPaymentResponse(response));
       });
@@ -133,7 +133,7 @@ export class Paym {
 
   async listPayments() {
     return new Promise((resolve, reject) => {
-      this._lightning.listPayments({}, function(err, response) {
+      this._lightning.listPayments({}, function (err, response) {
         if (err) return reject(err);
         resolve(response);
       });
