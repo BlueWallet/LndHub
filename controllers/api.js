@@ -39,7 +39,7 @@ lightning.getInfo({}, function (err, info) {
   }
   if (info) {
     console.info(info);
-    if (!info.synced_to_chain) {
+    if (!info.synced_to_chain && !info.syncedToChain) {
       console.error('lnd not synced');
       process.exit(4);
     }
