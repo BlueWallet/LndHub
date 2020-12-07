@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 let express = require('express');
 let morgan = require('morgan');
-let uuid = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 let logger = require('./utils/logger');
 
 morgan.token('id', function getId(req) {
@@ -24,7 +24,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use(function (req, res, next) {
-  req.id = uuid.v4();
+  req.id = uuidv4();
   next();
 });
 
