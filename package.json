@@ -6,8 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon node_modules/.bin/babel-node index.js",
-    "build": "babel ./ -d dist --copy-files --ignore node_modules",
-    "start": "node dist/index.js",
+    "start": "node_modules/.bin/babel-node index.js",
     "lint": "./node_modules/.bin/eslint ./ controllers/ class/ --fix"
   },
   "author": "Igor Korsakov <overtorment@gmail.com>",
