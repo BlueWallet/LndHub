@@ -1,22 +1,27 @@
 FROM node:buster-slim AS builder
 
+# These packages are required for building LNDHub
 RUN apt-get update && apt-get -y install git python3
-# Switch to official images once my PR is merged
+
+# TODO: Switch to official images once my PR is merged
 RUN git clone https://github.com/AaronDewes/LndHub.git -b update-dependencies /lndhub
 
 WORKDIR /lndhub
 
 RUN npm i
 
-# Delete git data as it's not needed inside the container
-
-RUN rm -rf .git
-
 FROM node:buster-slim
 
+# Create a specific user so LNDHub doesn't run as root
 RUN adduser --disabled-password --uid 1000 --home /lndhub --gecos "" lndhub
+
+# Copy LNDHub with installed modules from builder
 COPY  --from=builder /lndhub /lndhub
 
+# Delete git data as it's not needed inside the container
+RUN rm -rf .git
+
+# Create logs folder and ensure permissions are set correctly
 RUN mkdir /lndhub/logs && chown -R lndhun:lndhub /lndhub
 
 USER lndhub
