@@ -1,3 +1,11 @@
+FROM alpine:latest AS perms
+
+# This is a bit weird, but required to make sure the LND data can be accessed. 
+RUN adduser --disabled-password \
+            --home "/lndhub" \
+            --gecos "" \
+            "lndhub"
+
 FROM node:buster-slim AS builder
 
 # These packages are required for building LNDHub
@@ -13,7 +21,7 @@ RUN npm i
 FROM node:buster-slim
 
 # Create a specific user so LNDHub doesn't run as root
-RUN adduser --disabled-password --uid 1000 --home /lndhub --gecos "" lndhub
+COPY  --from=perms /etc/group /etc/passwd /etc/shadow  /etc/
 
 # Copy LNDHub with installed modules from builder
 COPY  --from=builder /lndhub /lndhub
@@ -22,7 +30,7 @@ COPY  --from=builder /lndhub /lndhub
 RUN rm -rf .git
 
 # Create logs folder and ensure permissions are set correctly
-RUN mkdir /lndhub/logs && chown -R lndhun:lndhub /lndhub
+RUN mkdir /lndhub/logs && chown -R lndhub:lndhub /lndhub
 
 USER lndhub
 
