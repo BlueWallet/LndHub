@@ -3,7 +3,14 @@ const config = require('./config');
 var fs = require('fs');
 var grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
-const packageDefinition = protoLoader.loadSync('rpc.proto', {});
+const loaderOptions = {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+};
+const packageDefinition = protoLoader.loadSync('rpc.proto', loaderOptions);
 var lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;
 
 process.env.GRPC_SSL_CIPHER_SUITES = 'HIGH+ECDSA';
