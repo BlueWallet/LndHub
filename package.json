@@ -31,7 +31,7 @@
     "ioredis": "^4.19.2",
     "jayson": "^3.3.4",
     "morgan": "^1.9.1",
-    "mustache": "^4.0.1",
+    "mustache": "^4.1.0",
     "node-uuid": "^1.4.8",
     "prettier": "^2.2.0",
     "request": "^2.88.0",
