@@ -38,7 +38,7 @@ export class Invo {
       }
     }
     if (!paymentHash) throw new Error('Could not find payment hash in invoice tags');
-    return await this._setIsPaymentHashPaidInDatabase(paymentHash, true);
+    return await this._setIsPaymentHashPaidInDatabase(paymentHash, decoded.satoshis);
   }
 
   async markAsUnpaidInDatabase() {
@@ -54,9 +54,9 @@ export class Invo {
     return await this._setIsPaymentHashPaidInDatabase(paymentHash, false);
   }
 
-  async _setIsPaymentHashPaidInDatabase(paymentHash, isPaid) {
-    if (isPaid) {
-      return await this._redis.set('ispaid_' + paymentHash, 1);
+  async _setIsPaymentHashPaidInDatabase(paymentHash, settleAmountSat) {
+    if (settleAmountSat) {
+      return await this._redis.set('ispaid_' + paymentHash, settleAmountSat);
     } else {
       return await this._redis.del('ispaid_' + paymentHash);
     }
