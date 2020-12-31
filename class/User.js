@@ -114,9 +114,9 @@ export class User {
     }
 
     let self = this;
-    return new Promise(function (resolve, reject) {
-      self._lightning.newAddress({ type: 0 }, async function (err, response) {
-        if (err) return reject('LND failure');
+    return new Promise(function(resolve, reject) {
+      self._lightning.newAddress({ type: 0 }, async function(err, response) {
+        if (err) return reject('LND failure when trying to generate new address');
         await self.addAddress(response.address);
         self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
         resolve();
@@ -226,8 +226,8 @@ export class User {
    * @see Invo._setIsPaymentHashPaidInDatabase
    * @see Invo.markAsPaidInDatabase
    */
-  async setPaymentHashPaid(payment_hash) {
-    return await this._redis.set('ispaid_' + payment_hash, 1);
+  async setPaymentHashPaid(payment_hash, settleAmountSat) {
+    return await this._redis.set('ispaid_' + payment_hash, settleAmountSat);
   }
 
   async lookupInvoice(payment_hash) {
@@ -254,7 +254,7 @@ export class User {
     const ispaid = invoice.settled; // TODO: start using `state` instead as its future proof, and this one might get deprecated
     if (ispaid) {
       // so invoice was paid after all
-      await this.setPaymentHashPaid(payment_hash);
+      await this.setPaymentHashPaid(payment_hash, invoice.amt_paid_msat ? Math.floor(invoice.amt_paid_msat / 1000) : invoice.amt_paid_sat);
       await this.clearBalanceCache();
     }
     return ispaid;
@@ -283,17 +283,28 @@ export class User {
         }
       }
 
-      invoice.ispaid = _invoice_ispaid_cache[invoice.payment_hash] || !!(await this.getPaymentHashPaid(invoice.payment_hash));
+      let paymentHashPaidAmountSat = 0;
+      if (_invoice_ispaid_cache[invoice.payment_hash]) {
+        // static cache hit
+        invoice.ispaid = true;
+        paymentHashPaidAmountSat = _invoice_ispaid_cache[invoice.payment_hash];
+      } else {
+        // static cache miss, asking redis cache
+        paymentHashPaidAmountSat = await this.getPaymentHashPaid(invoice.payment_hash);
+        if (paymentHashPaidAmountSat) invoice.ispaid = true;
+      }
+
       if (!invoice.ispaid) {
         if (decoded && decoded.timestamp > +new Date() / 1000 - 3600 * 24 * 5) {
           // if invoice is not too old we query lnd to find out if its paid
           invoice.ispaid = await this.syncInvoicePaid(invoice.payment_hash);
+          paymentHashPaidAmountSat = await this.getPaymentHashPaid(invoice.payment_hash); // since we have just saved it
         }
       } else {
-        _invoice_ispaid_cache[invoice.payment_hash] = true;
+        _invoice_ispaid_cache[invoice.payment_hash] = paymentHashPaidAmountSat;
       }
 
-      invoice.amt = decoded.satoshis;
+      invoice.amt = (paymentHashPaidAmountSat && parseInt(paymentHashPaidAmountSat) > decoded.satoshis) ? parseInt(paymentHashPaidAmountSat) : decoded.satoshis;
       invoice.expire_time = 3600 * 24;
       // ^^^default; will keep for now. if we want to un-hardcode it - it should be among tags (`expire_time`)
       invoice.timestamp = decoded.timestamp;
