@@ -4,6 +4,7 @@ let fs = require('fs');
 let mustache = require('mustache');
 let lightning = require('../lightning');
 let logger = require('../utils/logger');
+var qr = require('qr-image');
 
 let lightningGetInfo = {};
 let lightningListChannels = {};
@@ -87,6 +88,13 @@ router.get('/', function(req, res) {
   res.setHeader('Content-Type', 'text/html');
   let html = fs.readFileSync('./templates/index.html').toString('utf8');
   return res.status(200).send(mustache.render(html, Object.assign({}, lightningGetInfo, lightningListChannels)));
+});
+
+router.get('/qr', function (req, res) {
+  const url = "bluewallet:setlndhuburl?url=" + encodeURIComponent(req.protocol + '://' + req.headers.host);
+  var code = qr.image(url, { type: 'png' });
+  res.setHeader('Content-type', 'image/png');
+  code.pipe(res);
 });
 
 router.get('/about', function(req, res) {

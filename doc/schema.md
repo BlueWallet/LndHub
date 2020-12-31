@@ -31,3 +31,9 @@ User storage schema
 * ispaid_{payment_hash} = 1
  
  
+ ####cleanup test user
+ 
+ * del locked_payments_for_666
+ * del txs_for_666
+ * del invoice_paying_for_666
+ * del userinvoices_for_666
