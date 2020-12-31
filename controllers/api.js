@@ -60,7 +60,7 @@ const subscribeInvoicesCallCallback = async function (response) {
       memo: response.memo,
       preimage: response.r_preimage.toString('hex'),
       hash: response.r_hash.toString('hex'),
-      amt_paid_sat: response.value_msat ? Math.floor(response.value_msat / 1000) : response.value,
+      amt_paid_sat: response.amt_paid_msat ? Math.floor(response.amt_paid_msat / 1000) : response.amt_paid_sat,
     };
     // obtaining a lock, to make sure we push to groundcontrol only once
     // since this web server can have several instances running, and each will get the same callback from LND
@@ -70,7 +70,7 @@ const subscribeInvoicesCallCallback = async function (response) {
       return;
     }
     let invoice = new Invo(redis, bitcoinclient, lightning);
-    await invoice._setIsPaymentHashPaidInDatabase(LightningInvoiceSettledNotification.hash, true);
+    await invoice._setIsPaymentHashPaidInDatabase(LightningInvoiceSettledNotification.hash, LightningInvoiceSettledNotification.amt_paid_sat || 1);
     const user = new User(redis, bitcoinclient, lightning);
     user._userid = await user.getUseridByPaymentHash(LightningInvoiceSettledNotification.hash);
     await user.clearBalanceCache();
@@ -253,7 +253,7 @@ router.post('/payinvoice', async function(req, res) {
             memo: info.description,
             r_preimage: Buffer.from(preimage, 'hex'),
             r_hash: Buffer.from(info.payment_hash, 'hex'),
-            value: +info.num_satoshis,
+            amt_paid_sat: +info.num_satoshis,
           });
         }
         await lock.releaseLock();
@@ -355,7 +355,7 @@ router.get('/balance', postLimiter, async function(req, res) {
     if (balance < 0) balance = 0;
     res.send({ BTC: { AvailableBalance: balance } });
   } catch (Error) {
-    logger.log('', [req.id, 'error getting balance:', Error.message, 'userid:', u.getUserId()]);
+    logger.log('', [req.id, 'error getting balance:', Error, 'userid:', u.getUserId()]);
     return errorGeneralServerError(res);
   }
 });
