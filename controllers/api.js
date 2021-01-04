@@ -4,6 +4,7 @@ const config = require('../config');
 let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
+const MIN_BTC_BLOCK = 550000;
 console.log('using config', JSON.stringify(config));
 
 var Redis = require('ioredis');
@@ -19,17 +20,19 @@ let lightning = require('../lightning');
 let identity_pubkey = false;
 // ###################### SMOKE TESTS ########################
 
-bitcoinclient.request('getblockchaininfo', false, function (err, info) {
-  if (info && info.result && info.result.blocks) {
-    if (info.result.chain === 'mainnet' && info.result.blocks < 550000) {
-      console.error('bitcoind is not caught up');
-      process.exit(1);
+if(config.bitcoind) {
+  bitcoinclient.request('getblockchaininfo', false, function (err, info) {
+    if (info && info.result && info.result.blocks) {
+      if (info.result.chain === 'mainnet' && info.result.blocks < 550000) {
+        console.error('bitcoind is not caught up');
+        process.exit(1);
+      }
+    } else {
+      console.error('bitcoind failure:', err, info);
+      process.exit(2);
     }
-  } else {
-    console.error('bitcoind failure:', err, info);
-    process.exit(2);
-  }
-});
+  });
+}
 
 lightning.getInfo({}, function (err, info) {
   if (err) {
@@ -39,7 +42,11 @@ lightning.getInfo({}, function (err, info) {
   }
   if (info) {
     console.info(info);
-    if (!info.synced_to_chain) {
+    if (!info.testnet && !config.forceStart && info.block_height < MIN_BTC_BLOCK) {
+      console.error('BTC Node is not caught up');
+      process.exit(1);
+    }
+    if (!info.synced_to_chain && !config.forceStart) {
       console.error('lnd not synced');
       process.exit(4);
     }
