@@ -1,16 +1,16 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "plugins": [
       "prettier"
   ],
   "extends": ["prettier"],
   "rules": {
-    'prettier/prettier': [
-      'warn',
+    "prettier/prettier": [
+      "warn",
       {
-        singleQuote: true,
-        printWidth: 140,
-        trailingComma: 'all'
+        "singleQuote": true,
+        "printWidth": 140,
+        "trailingComma": "all"
       }
     ]
   },

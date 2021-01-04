@@ -1,8 +1,18 @@
 // setup lnd rpc
 const config = require('./config');
 var fs = require('fs');
-var grpc = require('grpc');
-var lnrpc = grpc.load('rpc.proto').lnrpc;
+var grpc = require('@grpc/grpc-js');
+const protoLoader = require('@grpc/proto-loader');
+const loaderOptions = {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+};
+const packageDefinition = protoLoader.loadSync('rpc.proto', loaderOptions);
+var lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;
+
 process.env.GRPC_SSL_CIPHER_SUITES = 'HIGH+ECDSA';
 var lndCert;
 if (process.env.TLSCERT) {
@@ -19,7 +29,7 @@ if (process.env.MACAROON) {
   macaroon = fs.readFileSync('admin.macaroon').toString('hex');
 }
 process.env.VERBOSE && console.log('using macaroon', macaroon);
-let macaroonCreds = grpc.credentials.createFromMetadataGenerator(function(args, callback) {
+let macaroonCreds = grpc.credentials.createFromMetadataGenerator(function (args, callback) {
   let metadata = new grpc.Metadata();
   metadata.add('macaroon', macaroon);
   callback(null, metadata);
@@ -34,7 +44,7 @@ if (config.lnd.password) {
     {
       wallet_password: Buffer.from(config.lnd.password).toString('base64'),
     },
-    function(err, response) {
+    function (err, response) {
       if (err) {
         process.env.VERBOSE && console.log('unlockWallet failed, probably because its been aleady unlocked');
       } else {

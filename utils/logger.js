@@ -7,16 +7,13 @@
 *
 + + + + + + + + + + + + + + + + + + + + + */
 let fs = require('fs');
-let winston = require('winston');
-let createLogger = winston.createLogger;
-let format = winston.format;
-let transports = winston.transports;
+import { createLogger, format, transports } from 'winston';
 
 /* + + + + + + + + + + + + + + + + + + + + +
 // Start
 + + + + + + + + + + + + + + + + + + + + + */
 const { combine, timestamp, printf } = format;
-const logFormat = printf(info => {
+const logFormat = printf((info) => {
   return `${info.timestamp} : ${info.level}: [${info.label}] : ${info.message}`;
 });
 const logger = createLogger({

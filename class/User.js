@@ -232,8 +232,8 @@ export class User {
 
   async lookupInvoice(payment_hash) {
     let that = this;
-    return new Promise(function(resolve, reject) {
-      that._lightning.lookupInvoice({ r_hash_str: payment_hash }, function(err, response) {
+    return new Promise(function (resolve, reject) {
+      that._lightning.lookupInvoice({ r_hash_str: payment_hash }, function (err, response) {
         if (err) resolve({});
         resolve(response);
       });
@@ -557,11 +557,7 @@ export class User {
   }
 
   _hash(string) {
-    return crypto
-      .createHash('sha256')
-      .update(string)
-      .digest()
-      .toString('hex');
+    return crypto.createHash('sha256').update(string).digest().toString('hex');
   }
 
   /**
@@ -577,6 +573,6 @@ export class User {
   }
 
   static async _sleep(s) {
-    return new Promise(r => setTimeout(r, s * 1000));
+    return new Promise((r) => setTimeout(r, s * 1000));
   }
 }

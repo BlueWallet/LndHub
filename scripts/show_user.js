@@ -5,7 +5,7 @@ const config = require('../config');
 var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 
-redis.info(function(err, info) {
+redis.info(function (err, info) {
   if (err || !info) {
     console.error('redis failure');
     process.exit(5);

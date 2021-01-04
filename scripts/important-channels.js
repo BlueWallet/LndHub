@@ -59,7 +59,7 @@ const important_channels = {
 
 let lightning = require('../lightning');
 
-lightning.listChannels({}, function(err, response) {
+lightning.listChannels({}, function (err, response) {
   console.log();
   if (err) {
     console.error('lnd failure:', err);
