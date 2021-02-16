@@ -98,7 +98,12 @@
                 <a class="decor" href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">
                     <div class="row">
                         <div class="name">
+                            {{#name}}
                             <h2>{{name}}</h2>
+                            {{/name}}
+                            {{^name}}
+                            <h2>{{remote_pubkey}}</h2>
+                            {{/name}}
                             <span class="amount">{{capacity_btc}} BTC</span>
                         </div>
                         <div class="graph"><progress id="progressbar" class="" value="20" max="100" style="width:100%"></progress></div>
