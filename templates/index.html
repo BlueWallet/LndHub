@@ -104,10 +104,10 @@
                         <div class="graph"><progress id="progressbar" class="" value="20" max="100" style="width:100%"></progress></div>
                         {{^active}}
                         <div class="status"><span class="label right" title="inactive"></span></div>
-                        {{/active}}
-                       
+                        {{/active}} 
+                        {{#active}}
                         <div class="status"><span class="label right" title="active"></span></div>
-                       
+                        {{/active}}                          
                     </div>
                 </a>
                 {{/channels}}
@@ -123,10 +123,10 @@
     </div>
     <img src="/qr" class="qr">
     <div class="container32 nosidepadding">
-        <p class="meta">LND URI</p>
+        <p class="meta">Node URI</p>
         {{#uris}}
         <p class="uri">{{.}}</p>
-        {{/uris}}>
+        {{/uris}}
     </div>
     <footer>
         <a href="https://bluewallet.io/lndhub" target="_blank">about</a> | 
