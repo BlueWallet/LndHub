@@ -116,7 +116,7 @@ body {
 	-webkit-appearance: none;
 }
 #progressbar[max]::-webkit-progress-value {
-	border-radius: 8px 0 0 8px;
+	border-radius: 8px 4px 4px 8px;
 	background: linear-gradient(0deg, rgba(104,187,225,1) 0%, rgba(139,215,249,1) 100%);
 	-webkit-appearance: none;
 }
