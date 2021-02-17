@@ -112,10 +112,13 @@ body {
 	appearance: none;
 	margin: 0;
 	padding: 0;
+	max-width : 100%;
+	-webkit-appearance: none;
 }
 #progressbar[max]::-webkit-progress-value {
 	border-radius: 8px 0 0 8px;
 	background: linear-gradient(0deg, rgba(104,187,225,1) 0%, rgba(139,215,249,1) 100%);
+	-webkit-appearance: none;
 }
 #progressbar[value]::-webkit-progress-bar {
 	background: linear-gradient(0deg, rgba(47,95,179,1) 0%, rgba(63,120,220,1) 100%);
@@ -123,6 +126,7 @@ body {
 	border-radius: 8px;
 	transition: 0.4s linear;
 	transition-property: width, background-color;
+	-webkit-appearance: none;
 }
 .row {
 	padding: 8px 0;
