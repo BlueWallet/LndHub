@@ -26,11 +26,11 @@ function updateLightning() {
       lightningListChannels = response;
       let channels = [];
       for (let channel of lightningListChannels.channels) {
-        let divider = 5242870;
-        let ascii_length1 = channel.local_balance / divider;
-        let ascii_length2 = channel.remote_balance / divider;
-        channel.local = ascii_length1;
-        channel.remote = ascii_length2;
+        let divider = 0.1;
+        let ascii_length1 = channel.local_balance * divider;
+        let ascii_length2 = channel.remote_balance * divider;
+        channel.local = (Math.round(ascii_length1));
+        channel.remote = (Math.round(ascii_length2));
         channel.capacity_btc = channel.capacity / 100000000;
         channel.name = pubkey2name[channel.remote_pubkey];
         if (channel.name) {
