@@ -18,7 +18,7 @@
     "@babel/node": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@babel/register": "^7.12.10",
-    "@grpc/grpc-js": "^1.2.2",
+    "@grpc/grpc-js": "^1.2.5",
     "@grpc/proto-loader": "^0.5.6",
     "bignumber.js": "^9.0.1",
     "bolt11": "^1.2.7",
