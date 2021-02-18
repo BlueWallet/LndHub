@@ -27,13 +27,14 @@ function updateLightning() {
       lightningListChannels = response;
       let channels = [];
       for (let channel of lightningListChannels.channels) {
-        let divider = 5242870;
-        let ascii_length1 = channel.local_balance / divider;
-        let ascii_length2 = channel.remote_balance / divider;
-        channel.ascii = '[';
-        channel.ascii += '-'.repeat(Math.round(ascii_length1));
-        channel.ascii += '/' + '-'.repeat(Math.round(ascii_length2));
-        channel.ascii += ']';
+        let magic = 104287;
+        let divider = 0.01;
+        let ascii_length1 = channel.local_balance * divider;
+        let ascii_length2 = channel.remote_balance * divider;
+        channel.local = (Math.round(ascii_length1));
+        channel.remote = (Math.round(ascii_length2));
+        channel.total = (channel.local) + (channel.remote);
+        channel.size = (channel.capacity / magic);
         channel.capacity_btc = channel.capacity / 100000000;
         channel.name = pubkey2name[channel.remote_pubkey];
         if (channel.name) {
@@ -100,13 +101,6 @@ router.get('/qr', function (req, res) {
   var code = qr.image(url, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);
-});
-
-router.get('/about', function(req, res) {
-  logger.log('/about', [req.id]);
-  let html = fs.readFileSync('./templates/about.html').toString('utf8');
-  res.setHeader('Content-Type', 'text/html');
-  return res.status(200).send(mustache.render(html, {}));
 });
 
 router.use(function (req, res) {
