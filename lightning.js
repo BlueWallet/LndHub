@@ -8,7 +8,7 @@ const loaderOptions = {
   longs: String,
   enums: String,
   defaults: true,
-  oneofs: true
+  oneofs: true,
 };
 const packageDefinition = protoLoader.loadSync('rpc.proto', loaderOptions);
 var lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;

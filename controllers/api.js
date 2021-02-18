@@ -20,7 +20,7 @@ let lightning = require('../lightning');
 let identity_pubkey = false;
 // ###################### SMOKE TESTS ########################
 
-if(config.bitcoind) {
+if (config.bitcoind) {
   bitcoinclient.request('getblockchaininfo', false, function (err, info) {
     if (info && info.result && info.result.blocks) {
       if (info.result.chain === 'mainnet' && info.result.blocks < 550000) {
@@ -77,7 +77,10 @@ const subscribeInvoicesCallCallback = async function (response) {
       return;
     }
     let invoice = new Invo(redis, bitcoinclient, lightning);
-    await invoice._setIsPaymentHashPaidInDatabase(LightningInvoiceSettledNotification.hash, LightningInvoiceSettledNotification.amt_paid_sat || 1);
+    await invoice._setIsPaymentHashPaidInDatabase(
+      LightningInvoiceSettledNotification.hash,
+      LightningInvoiceSettledNotification.amt_paid_sat || 1,
+    );
     const user = new User(redis, bitcoinclient, lightning);
     user._userid = await user.getUseridByPaymentHash(LightningInvoiceSettledNotification.hash);
     await user.clearBalanceCache();
@@ -476,7 +479,7 @@ router.get('/checkrouteinvoice', async function (req, res) {
   });
 });
 
-router.get('/queryroutes/:source/:dest/:amt', async function(req, res) {
+router.get('/queryroutes/:source/:dest/:amt', async function (req, res) {
   logger.log('/queryroutes', [req.id]);
 
   let request = {
@@ -484,7 +487,7 @@ router.get('/queryroutes/:source/:dest/:amt', async function(req, res) {
     amt: req.params.amt,
     source_pub_key: req.params.source,
   };
-  lightning.queryRoutes(request, function(err, response) {
+  lightning.queryRoutes(request, function (err, response) {
     console.log(JSON.stringify(response, null, 2));
     res.send(response);
   });

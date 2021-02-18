@@ -116,11 +116,11 @@ export class User {
     }
 
     let self = this;
-    return new Promise(function(resolve, reject) {
-      self._lightning.newAddress({ type: 0 }, async function(err, response) {
+    return new Promise(function (resolve, reject) {
+      self._lightning.newAddress({ type: 0 }, async function (err, response) {
         if (err) return reject('LND failure when trying to generate new address');
         await self.addAddress(response.address);
-        if(config.bitcoind) self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
+        if (config.bitcoind) self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
         resolve();
       });
     });
@@ -128,7 +128,7 @@ export class User {
 
   async watchAddress(address) {
     if (!address) return;
-    if(config.bitcoind) return this._bitcoindrpc.request('importaddress', [address, address, false]);
+    if (config.bitcoind) return this._bitcoindrpc.request('importaddress', [address, address, false]);
   }
 
   /**
@@ -306,7 +306,10 @@ export class User {
         _invoice_ispaid_cache[invoice.payment_hash] = paymentHashPaidAmountSat;
       }
 
-      invoice.amt = (paymentHashPaidAmountSat && parseInt(paymentHashPaidAmountSat) > decoded.satoshis) ? parseInt(paymentHashPaidAmountSat) : decoded.satoshis;
+      invoice.amt =
+        paymentHashPaidAmountSat && parseInt(paymentHashPaidAmountSat) > decoded.satoshis
+          ? parseInt(paymentHashPaidAmountSat)
+          : decoded.satoshis;
       invoice.expire_time = 3600 * 24;
       // ^^^default; will keep for now. if we want to un-hardcode it - it should be among tags (`expire_time`)
       invoice.timestamp = decoded.timestamp;
@@ -328,7 +331,7 @@ export class User {
    * @returns {Promise<Array>}
    */
   async getTxs() {
-    if(config.bitcoind) {
+    if (config.bitcoind) {
       let addr = await this.getAddress();
       if (!addr) {
         await this.generateAddress();
@@ -408,7 +411,7 @@ export class User {
     }
 
     try {
-      if(config.bitcoind) {
+      if (config.bitcoind) {
         let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
         // now, compacting response a bit
         let ret = { result: [] };
@@ -473,7 +476,7 @@ export class User {
    * @returns {Promise<Array>}
    */
   async getPendingTxs() {
-    if(config.bitcoind) {
+    if (config.bitcoind) {
       let addr = await this.getAddress();
       if (!addr) {
         await this.generateAddress();

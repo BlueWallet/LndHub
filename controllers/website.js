@@ -1,11 +1,10 @@
-let express = require('express');
-let router = express.Router();
-let fs = require('fs');
-let mustache = require('mustache');
-let lightning = require('../lightning');
-let logger = require('../utils/logger');
-var qr = require('qr-image');
-const fs = require("fs");
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const mustache = require('mustache');
+const lightning = require('../lightning');
+const logger = require('../utils/logger');
+const qr = require('qr-image');
 
 let lightningGetInfo = {};
 let lightningListChannels = {};
@@ -31,10 +30,10 @@ function updateLightning() {
         let divider = 0.01;
         let ascii_length1 = channel.local_balance * divider;
         let ascii_length2 = channel.remote_balance * divider;
-        channel.local = (Math.round(ascii_length1));
-        channel.remote = (Math.round(ascii_length2));
-        channel.total = (channel.local) + (channel.remote);
-        channel.size = (channel.capacity / magic);
+        channel.local = Math.round(ascii_length1);
+        channel.remote = Math.round(ascii_length2);
+        channel.total = channel.local + channel.remote;
+        channel.size = channel.capacity / magic;
         channel.capacity_btc = channel.capacity / 100000000;
         channel.name = pubkey2name[channel.remote_pubkey];
         if (channel.name) {
@@ -94,10 +93,10 @@ router.get('/', function (req, res) {
 
 router.get('/qr', function (req, res) {
   let host = req.headers.host;
-  if (fs.existsSync(__dirname + "/../hostname")) {
-    host = { torURL: fs.readFileSync(__dirname + "/../hostname")}
+  if (fs.existsSync(__dirname + '/../hostname')) {
+    host = { torURL: fs.readFileSync(__dirname + '/../hostname') };
   }
-  const url = "bluewallet:setlndhuburl?url=" + encodeURIComponent(req.protocol + '://' + host);
+  const url = 'bluewallet:setlndhuburl?url=' + encodeURIComponent(req.protocol + '://' + host);
   var code = qr.image(url, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);
