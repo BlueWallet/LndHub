@@ -6,14 +6,14 @@ RUN adduser --disabled-password \
             --gecos "" \
             "lndhub"
 
-FROM node:buster-slim AS builder
+FROM node:12-buster-slim AS builder
 
 # These packages are required for building LNDHub
 RUN apt-get update && apt-get -y install python3
 
 WORKDIR /lndhub
 
-# Copy 'yarn.lock' and 'package.json'
+# Copy 'package-lock.json' and 'package.json'
 COPY package.json package-lock.json ./
 
 # Install dependencies
@@ -22,16 +22,16 @@ RUN npm i
 # Copy project files and folders to the current working directory
 COPY . .
 
-FROM node:buster-slim
+# Delete git data as it's not needed inside the container
+RUN rm -rf .git
+
+FROM node:12-buster-slim
 
 # Create a specific user so LNDHub doesn't run as root
 COPY  --from=perms /etc/group /etc/passwd /etc/shadow  /etc/
 
 # Copy LNDHub with installed modules from builder
 COPY  --from=builder /lndhub /lndhub
-
-# Delete git data as it's not needed inside the container
-RUN rm -rf .git
 
 # Create logs folder and ensure permissions are set correctly
 RUN mkdir /lndhub/logs && chown -R lndhub:lndhub /lndhub
