@@ -476,6 +476,20 @@ router.get('/checkrouteinvoice', async function (req, res) {
   });
 });
 
+router.get('/queryroutes/:source/:dest/:amt', async function(req, res) {
+  logger.log('/queryroutes', [req.id]);
+
+  let request = {
+    pub_key: req.params.dest,
+    amt: req.params.amt,
+    source_pub_key: req.params.source,
+  };
+  lightning.queryRoutes(request, function(err, response) {
+    console.log(JSON.stringify(response, null, 2));
+    res.send(response);
+  });
+});
+
 module.exports = router;
 
 // ################# HELPERS ###########################
