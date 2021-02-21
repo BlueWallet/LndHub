@@ -25,15 +25,15 @@ function updateLightning() {
       }
       lightningListChannels = response;
       let channels = [];
+      let max_chan_capacity = -1;
+      for (const channel of lightningListChannels.channels) {
+        max_chan_capacity = Math.max(max_chan_capacity, channel.capacity);
+      }
       for (let channel of lightningListChannels.channels) {
-        let magic = 104287;
-        let divider = 0.01;
-        let ascii_length1 = channel.local_balance * divider;
-        let ascii_length2 = channel.remote_balance * divider;
-        channel.local = (Math.round(ascii_length1));
-        channel.remote = (Math.round(ascii_length2));
-        channel.total = (channel.local) + (channel.remote);
-        channel.size = (channel.capacity / magic);
+        let magic = max_chan_capacity / 100;
+        channel.local = channel.local_balance * 1;
+        channel.total = channel.capacity * 1;
+        channel.size = Math.round(channel.capacity / magic); // total size of the bar on page. 100% means it takes maximum width
         channel.capacity_btc = channel.capacity / 100000000;
         channel.name = pubkey2name[channel.remote_pubkey];
         if (channel.name) {
