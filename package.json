@@ -23,7 +23,7 @@
     "bignumber.js": "^9.0.1",
     "bolt11": "^1.2.7",
     "core-js": "^3.8.1",
-    "eslint": "^7.16.0",
+    "eslint": "^7.19.0",
     "eslint-config-prettier": "^7.1.0",
     "eslint-plugin-prettier": "^3.3.0",
     "express": "^4.17.1",
