@@ -44,7 +44,7 @@ lightning.getInfo({}, function (err, info) {
     console.info(info);
     if (!info.synced_to_chain && !config.forceStart) {
       console.error('lnd not synced');
-      process.exit(4);
+      // process.exit(4);
     }
     identity_pubkey = info.identity_pubkey;
   }
