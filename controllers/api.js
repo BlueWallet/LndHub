@@ -4,7 +4,7 @@ const config = require('../config');
 let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
-const MIN_BTC_BLOCK = 550000;
+const MIN_BTC_BLOCK = 670000;
 console.log('using config', JSON.stringify(config));
 
 var Redis = require('ioredis');
@@ -23,7 +23,7 @@ let identity_pubkey = false;
 if (config.bitcoind) {
   bitcoinclient.request('getblockchaininfo', false, function (err, info) {
     if (info && info.result && info.result.blocks) {
-      if (info.result.chain === 'mainnet' && info.result.blocks < 550000) {
+      if (info.result.chain === 'mainnet' && info.result.blocks < MIN_BTC_BLOCK) {
         console.error('bitcoind is not caught up');
         process.exit(1);
       }
@@ -42,10 +42,6 @@ lightning.getInfo({}, function (err, info) {
   }
   if (info) {
     console.info(info);
-    if (!info.testnet && !config.forceStart && info.block_height < MIN_BTC_BLOCK) {
-      console.error('BTC Node is not caught up');
-      process.exit(1);
-    }
     if (!info.synced_to_chain && !config.forceStart) {
       console.error('lnd not synced');
       process.exit(4);
