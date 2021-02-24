@@ -332,7 +332,6 @@ export class User {
    */
   async getTxs() {
     const addr = await this.getOrGenerateAddress();
-    if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
@@ -403,10 +402,10 @@ export class User {
     }
 
     try {
+      let ret = { result: [] };
       if (config.bitcoind) {
         let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
         // now, compacting response a bit
-        let ret = { result: [] };
         for (const tx of txs.result) {
           ret.result.push({
             category: tx.category,
@@ -417,7 +416,6 @@ export class User {
           });
         }
       } else {
-        let ret = { result: [] };
         let txs = await this._getChainTransactions();
         ret.result.push(...txs);
       }
@@ -469,7 +467,6 @@ export class User {
    */
   async getPendingTxs() {
     const addr = await this.getOrGenerateAddress();
-    if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];

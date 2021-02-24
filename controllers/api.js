@@ -23,7 +23,7 @@ let identity_pubkey = false;
 if (config.bitcoind) {
   bitcoinclient.request('getblockchaininfo', false, function (err, info) {
     if (info && info.result && info.result.blocks) {
-      if (info.result.chain === 'mainnet' && info.result.blocks < MIN_BTC_BLOCK) {
+      if (info.result.chain === 'mainnet' && info.result.blocks < MIN_BTC_BLOCK && !config.forceStart) {
         console.error('bitcoind is not caught up');
         process.exit(1);
       }
