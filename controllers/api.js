@@ -4,6 +4,7 @@ const config = require('../config');
 let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
+const MIN_BTC_BLOCK = 670000;
 console.log('using config', JSON.stringify(config));
 
 var Redis = require('ioredis');
@@ -19,17 +20,19 @@ let lightning = require('../lightning');
 let identity_pubkey = false;
 // ###################### SMOKE TESTS ########################
 
-bitcoinclient.request('getblockchaininfo', false, function (err, info) {
-  if (info && info.result && info.result.blocks) {
-    if (info.result.chain === 'mainnet' && info.result.blocks < 550000) {
-      console.error('bitcoind is not caught up');
-      process.exit(1);
+if (config.bitcoind) {
+  bitcoinclient.request('getblockchaininfo', false, function (err, info) {
+    if (info && info.result && info.result.blocks) {
+      if (info.result.chain === 'mainnet' && info.result.blocks < MIN_BTC_BLOCK && !config.forceStart) {
+        console.error('bitcoind is not caught up');
+        process.exit(1);
+      }
+    } else {
+      console.error('bitcoind failure:', err, info);
+      process.exit(2);
     }
-  } else {
-    console.error('bitcoind failure:', err, info);
-    process.exit(2);
-  }
-});
+  });
+}
 
 lightning.getInfo({}, function (err, info) {
   if (err) {
@@ -39,7 +42,7 @@ lightning.getInfo({}, function (err, info) {
   }
   if (info) {
     console.info(info);
-    if (!info.synced_to_chain) {
+    if (!info.synced_to_chain && !config.forceStart) {
       console.error('lnd not synced');
       // process.exit(4);
     }
@@ -70,7 +73,10 @@ const subscribeInvoicesCallCallback = async function (response) {
       return;
     }
     let invoice = new Invo(redis, bitcoinclient, lightning);
-    await invoice._setIsPaymentHashPaidInDatabase(LightningInvoiceSettledNotification.hash, LightningInvoiceSettledNotification.amt_paid_sat || 1);
+    await invoice._setIsPaymentHashPaidInDatabase(
+      LightningInvoiceSettledNotification.hash,
+      LightningInvoiceSettledNotification.amt_paid_sat || 1,
+    );
     const user = new User(redis, bitcoinclient, lightning);
     user._userid = await user.getUseridByPaymentHash(LightningInvoiceSettledNotification.hash);
     await user.clearBalanceCache();
@@ -469,7 +475,7 @@ router.get('/checkrouteinvoice', async function (req, res) {
   });
 });
 
-router.get('/queryroutes/:source/:dest/:amt', async function(req, res) {
+router.get('/queryroutes/:source/:dest/:amt', async function (req, res) {
   logger.log('/queryroutes', [req.id]);
 
   let request = {
@@ -477,7 +483,7 @@ router.get('/queryroutes/:source/:dest/:amt', async function(req, res) {
     amt: req.params.amt,
     source_pub_key: req.params.source,
   };
-  lightning.queryRoutes(request, function(err, response) {
+  lightning.queryRoutes(request, function (err, response) {
     console.log(JSON.stringify(response, null, 2));
     res.send(response);
   });

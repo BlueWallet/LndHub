@@ -1,10 +1,10 @@
-let express = require('express');
-let router = express.Router();
-let fs = require('fs');
-let mustache = require('mustache');
-let lightning = require('../lightning');
-let logger = require('../utils/logger');
-var qr = require('qr-image');
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const mustache = require('mustache');
+const lightning = require('../lightning');
+const logger = require('../utils/logger');
+const qr = require('qr-image');
 
 let lightningGetInfo = {};
 let lightningListChannels = {};
@@ -92,7 +92,11 @@ router.get('/', function (req, res) {
 });
 
 router.get('/qr', function (req, res) {
-  const url = "bluewallet:setlndhuburl?url=" + encodeURIComponent(req.protocol + '://' + req.headers.host);
+  let host = req.headers.host;
+  if (process.env.TOR_URL) {
+    host = process.env.TOR_URL;
+  }
+  const url = 'bluewallet:setlndhuburl?url=' + encodeURIComponent(req.protocol + '://' + host);
   var code = qr.image(url, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);

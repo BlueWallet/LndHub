@@ -3,6 +3,8 @@ import { Lock } from './Lock';
 var crypto = require('crypto');
 var lightningPayReq = require('bolt11');
 import { BigNumber } from 'bignumber.js';
+import { decodeRawHex } from '../btc-decoder';
+const config = require('../config');
 
 // static cache:
 let _invoice_ispaid_cache = {};
@@ -114,11 +116,11 @@ export class User {
     }
 
     let self = this;
-    return new Promise(function(resolve, reject) {
-      self._lightning.newAddress({ type: 0 }, async function(err, response) {
+    return new Promise(function (resolve, reject) {
+      self._lightning.newAddress({ type: 0 }, async function (err, response) {
         if (err) return reject('LND failure when trying to generate new address');
         await self.addAddress(response.address);
-        self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
+        if (config.bitcoind) self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
         resolve();
       });
     });
@@ -126,7 +128,7 @@ export class User {
 
   async watchAddress(address) {
     if (!address) return;
-    return this._bitcoindrpc.request('importaddress', [address, address, false]);
+    if (config.bitcoind) return this._bitcoindrpc.request('importaddress', [address, address, false]);
   }
 
   /**
@@ -304,7 +306,10 @@ export class User {
         _invoice_ispaid_cache[invoice.payment_hash] = paymentHashPaidAmountSat;
       }
 
-      invoice.amt = (paymentHashPaidAmountSat && parseInt(paymentHashPaidAmountSat) > decoded.satoshis) ? parseInt(paymentHashPaidAmountSat) : decoded.satoshis;
+      invoice.amt =
+        paymentHashPaidAmountSat && parseInt(paymentHashPaidAmountSat) > decoded.satoshis
+          ? parseInt(paymentHashPaidAmountSat)
+          : decoded.satoshis;
       invoice.expire_time = 3600 * 24;
       // ^^^default; will keep for now. if we want to un-hardcode it - it should be among tags (`expire_time`)
       invoice.timestamp = decoded.timestamp;
@@ -326,12 +331,7 @@ export class User {
    * @returns {Promise<Array>}
    */
   async getTxs() {
-    let addr = await this.getAddress();
-    if (!addr) {
-      await this.generateAddress();
-      addr = await this.getAddress();
-    }
-    if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
+    const addr = await this.getOrGenerateAddress();
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
@@ -402,17 +402,22 @@ export class User {
     }
 
     try {
-      let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
-      // now, compacting response a bit
       let ret = { result: [] };
-      for (const tx of txs.result) {
-        ret.result.push({
-          category: tx.category,
-          amount: tx.amount,
-          confirmations: tx.confirmations,
-          address: tx.address,
-          time: tx.time,
-        });
+      if (config.bitcoind) {
+        let txs = await this._bitcoindrpc.request('listtransactions', ['*', 100500, 0, true]);
+        // now, compacting response a bit
+        for (const tx of txs.result) {
+          ret.result.push({
+            category: tx.category,
+            amount: tx.amount,
+            confirmations: tx.confirmations,
+            address: tx.address,
+            time: tx.time,
+          });
+        }
+      } else {
+        let txs = await this._getChainTransactions();
+        ret.result.push(...txs);
       }
       _listtransactions_cache = JSON.stringify(ret);
       _listtransactions_cache_expiry_ts = +new Date() + 5 * 60 * 1000; // 5 min
@@ -426,18 +431,42 @@ export class User {
     }
   }
 
+  async _getChainTransactions() {
+    return new Promise((resolve, reject) => {
+      this._lightning.getTransactions({}, (err, data) => {
+        if (err) return reject(err);
+        const { transactions } = data;
+        const outTxns = [];
+        // on lightning incoming transactions have no labels
+        // for now filter out known labels to reduce transactions
+        transactions
+          .filter((tx) => tx.label !== 'external' && !tx.label.includes('openchannel'))
+          .map((tx) => {
+            const decodedTx = decodeRawHex(tx.raw_tx_hex);
+            decodedTx.outputs.forEach((vout) =>
+              outTxns.push({
+                // mark all as received, since external is filtered out
+                category: 'receive',
+                confirmations: tx.num_confirmations,
+                amount: Number(vout.value),
+                address: vout.scriptPubKey.addresses[0],
+                time: tx.time_stamp,
+              }),
+            );
+          });
+
+        resolve(outTxns);
+      });
+    });
+  }
+
   /**
    * Returning onchain txs for user's address that are less than 3 confs
    *
    * @returns {Promise<Array>}
    */
   async getPendingTxs() {
-    let addr = await this.getAddress();
-    if (!addr) {
-      await this.generateAddress();
-      addr = await this.getAddress();
-    }
-    if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
+    const addr = await this.getOrGenerateAddress();
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
@@ -554,6 +583,16 @@ export class User {
     }
 
     return result;
+  }
+
+  async getOrGenerateAddress() {
+    let addr = await this.getAddress();
+    if (!addr) {
+      await this.generateAddress();
+      addr = await this.getAddress();
+    }
+    if (!addr) throw new Error('cannot get transactions: no onchain address assigned to user');
+    return addr;
   }
 
   _hash(string) {

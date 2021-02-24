@@ -3,7 +3,7 @@
   "plugins": [
       "prettier"
   ],
-  "extends": ["prettier"],
+  "extends": ["plugin:prettier/recommended"],
   "rules": {
     "prettier/prettier": [
       "warn",
