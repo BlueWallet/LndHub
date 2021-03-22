@@ -23,7 +23,7 @@
     "bignumber.js": "^9.0.1",
     "bitcoinjs-lib": "^5.2.0",
     "bolt11": "^1.2.7",
-    "core-js": "^3.9.0",
+    "core-js": "^3.9.1",
     "eslint": "^7.20.0",
     "eslint-config-prettier": "^8.0.0",
     "eslint-plugin-prettier": "^3.3.1",
