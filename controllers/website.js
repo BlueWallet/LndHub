@@ -14,6 +14,7 @@ function updateLightning() {
     lightning.getInfo({}, function (err, info) {
       if (err) {
         console.error('lnd failure:', err);
+        return;
       }
       lightningGetInfo = info;
     });
@@ -23,6 +24,7 @@ function updateLightning() {
         console.error('lnd failure:', err);
         return;
       }
+      console.log('updated');
       lightningListChannels = response;
       let channels = [];
       let max_chan_capacity = -1;
@@ -47,7 +49,6 @@ function updateLightning() {
   } catch (Err) {
     console.log(Err);
   }
-  console.log('updated');
 }
 updateLightning();
 setInterval(updateLightning, 60000);

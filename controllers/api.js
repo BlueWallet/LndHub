@@ -109,6 +109,17 @@ subscribeInvoicesCall.on('end', function () {
   // The server has closed the stream.
 });
 
+let lightningDescribeGraph = {};
+function updateDescribeGraph() {
+  console.log('updateDescribeGraph()');
+  lightning.describeGraph({ include_unannounced: true }, function (err, response) {
+    if (!err) lightningDescribeGraph = response;
+    console.log('updated graph');
+  });
+}
+updateDescribeGraph();
+setInterval(updateDescribeGraph, 120000);
+
 // ######################## ROUTES ########################
 
 const rateLimit = require('express-rate-limit');
@@ -487,6 +498,20 @@ router.get('/queryroutes/:source/:dest/:amt', async function (req, res) {
     console.log(JSON.stringify(response, null, 2));
     res.send(response);
   });
+});
+
+router.get('/getchaninfo/:chanid', async function (req, res) {
+  logger.log('/getchaninfo', [req.id]);
+
+  if (lightningDescribeGraph && lightningDescribeGraph.edges) {
+    for (const edge of lightningDescribeGraph.edges) {
+      console.log('edge.channel_id = ' + edge.channel_id);
+      if (edge.channel_id == req.params.chanid) {
+        return res.send(JSON.stringify(edge, null, 2));
+      }
+    }
+  }
+  res.send('');
 });
 
 module.exports = router;
