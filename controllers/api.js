@@ -505,7 +505,6 @@ router.get('/getchaninfo/:chanid', async function (req, res) {
 
   if (lightningDescribeGraph && lightningDescribeGraph.edges) {
     for (const edge of lightningDescribeGraph.edges) {
-      console.log('edge.channel_id = ' + edge.channel_id);
       if (edge.channel_id == req.params.chanid) {
         return res.send(JSON.stringify(edge, null, 2));
       }
