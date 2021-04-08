@@ -23,6 +23,9 @@ Copy `admin.macaroon` and `tls.cert` in root folder of LndHub.
 `bitcoind` should run with `-deprecatedrpc=accounts`, for now. Lndhub expects Lnd's wallet to be unlocked, if not - it will attempt to unlock it with password stored in `config.lnd.password`.
 Don't forget to enable disk-persistance for `redis`.
 
+If you have no `bitcoind` instance, for example if you use neutrino, or you have no bitcoind wallet, 
+for example if you use LND for wallet managment, you can remove the bitcoind settings from `config.js`.
+Please not that this feature is limited to Bitcoin, so you can't use this feature if you use any other cryptocurrency with LND.
 
 ### Deploy to Heroku
 
@@ -30,6 +33,12 @@ Add config vars :
 * `CONFIG` : json serialized config object
 * `MACAROON`: hex-encoded `admin.macaroon`
 * `TLSCERT`: hex-encoded `tls.cert`
+
+### Run in docker
+
+LndHub is available on Docker Hub as [`bluewalletorganization/lndhub`](https://hub.docker.com/r/bluewalletorganization/lndhub).
+Please note that this requires a separate instance of redis and LND and optionally, bitcoind.
+You can also view Umbrel's implementation using docker-compose [here](https://github.com/getumbrel/umbrel/blob/280c87f0f323666b1b0552aeb24f60df94d1e43c/apps/lndhub/docker-compose.yml).
 
 ### Reference client implementation
 
