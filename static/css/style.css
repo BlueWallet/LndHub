@@ -112,8 +112,10 @@ body {
 	appearance: none;
 	margin: 0;
 	padding: 0;
-	max-width : 100%;
+	max-width: 100%;
 	-webkit-appearance: none;
+	border-radius: 8px;
+	overflow: hidden;
 }
 #progressbar[max]::-webkit-progress-value {
 	border-radius: 8px 4px 4px 8px;
