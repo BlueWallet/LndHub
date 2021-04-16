@@ -28,7 +28,7 @@ User storage schema
 * metadata_for_{userid}= {serialized json}
 * userinvoices_for_{userid} = []
 * payment_hash_{payment_hash} = {userid}
-* ispaid_{payment_hash} = 1
+* ispaid_{payment_hash} = {settleAmountSat}
  
  
  ####cleanup test user
@@ -37,3 +37,4 @@ User storage schema
  * del txs_for_666
  * del invoice_paying_for_666
  * del userinvoices_for_666
+ * del balance_for_666
