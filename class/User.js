@@ -412,7 +412,7 @@ export class User {
             amount: tx.amount,
             confirmations: tx.confirmations,
             address: tx.address,
-            time: tx.time,
+            time: tx.blocktime || tx.time,
           });
         }
       } else {
