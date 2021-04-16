@@ -27,6 +27,7 @@ if (config.bitcoind) {
         console.error('bitcoind is not caught up');
         process.exit(1);
       }
+      console.log('bitcoind getblockchaininfo:', info);
     } else {
       console.error('bitcoind failure:', err, info);
       process.exit(2);
@@ -41,7 +42,7 @@ lightning.getInfo({}, function (err, info) {
     process.exit(3);
   }
   if (info) {
-    console.info(info);
+    console.info('lnd getinfo:', info);
     if (!info.synced_to_chain && !config.forceStart) {
       console.error('lnd not synced');
       // process.exit(4);

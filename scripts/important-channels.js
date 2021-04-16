@@ -143,7 +143,7 @@ lightning.listChannels({}, function (err, response) {
           '--connect',
           important_channels[important].uri.split('@')[1],
           '--local_amt',
-          important_channels[important].wumbo ? '50000000' : '16777215',
+          important_channels[important].wumbo ? '100000000' : '16777215',
           '--remote_csv_delay 144',
           '--sat_per_byte 10',
           '#',
