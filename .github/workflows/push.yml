@@ -12,12 +12,7 @@ jobs:
   build:
     name: Build image
     runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
@@ -49,6 +44,6 @@ jobs:
                 docker buildx build \
                 --cache-from "type=local,src=/tmp/.buildx-cache" \
                 --cache-to "type=local,dest=/tmp/.buildx-cache" \
-                --platform ${{matrix.platform}} \
+                --platform linux/arm64,linux/amd64 \
                 --tag ${{ secrets.DOCKER_CONTAINER_USERNAME }}/lndhub:$BRANCH \
                 --output "type=registry" ./
