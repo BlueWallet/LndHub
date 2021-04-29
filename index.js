@@ -20,7 +20,7 @@ app.enable('trust proxy');
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: config.rateLimit | 200,
+  max: config.rateLimit || 200,
 });
 app.use(limiter);
 
