@@ -9,18 +9,23 @@ const important_channels = {
     uri: '03abf6f44c355dec0d5aa155bdbdd6e0c8fefe318eff402de65c6eb2e1be55dc3e@18.221.23.28:9735',
     wumbo: 1,
   },
-  '0242a4ae0c5bef18048fbecf995094b74bfb0f7391418d71ed394784373f41e4f3': {
-    name: 'coingate.com',
-    uri: '0242a4ae0c5bef18048fbecf995094b74bfb0f7391418d71ed394784373f41e4f3@3.124.63.44:9735',
-  },
+  // '0242a4ae0c5bef18048fbecf995094b74bfb0f7391418d71ed394784373f41e4f3': {
+  //   name: 'coingate.com',
+  //   uri: '0242a4ae0c5bef18048fbecf995094b74bfb0f7391418d71ed394784373f41e4f3@3.124.63.44:9735',
+  // },
   //  '0254ff808f53b2f8c45e74b70430f336c6c76ba2f4af289f48d6086ae6e60462d3': {
   //    name: 'bitrefill thor',
   //    uri: '0254ff808f53b2f8c45e74b70430f336c6c76ba2f4af289f48d6086ae6e60462d3@52.30.63.2:9735',
   //    wumbo: 1,
   //  },
-  '030c3f19d742ca294a55c00376b3b355c3c90d61c6b6b39554dbc7ac19b141c14f': {
-    name: 'bitrefill 2',
-    uri: '030c3f19d742ca294a55c00376b3b355c3c90d61c6b6b39554dbc7ac19b141c14f@52.50.244.44:9735',
+  // '030c3f19d742ca294a55c00376b3b355c3c90d61c6b6b39554dbc7ac19b141c14f': {
+  //   name: 'bitrefill 2',
+  //   uri: '030c3f19d742ca294a55c00376b3b355c3c90d61c6b6b39554dbc7ac19b141c14f@52.50.244.44:9735',
+  //   wumbo: 1,
+  // },
+  '03d607f3e69fd032524a867b288216bfab263b6eaee4e07783799a6fe69bb84fac': {
+    name: 'bitrefill 3',
+    uri: '03d607f3e69fd032524a867b288216bfab263b6eaee4e07783799a6fe69bb84fac@3.237.23.179:9735',
     wumbo: 1,
   },
   //  '025f1456582e70c4c06b61d5c8ed3ce229e6d0db538be337a2dc6d163b0ebc05a5': {
@@ -40,6 +45,11 @@ const important_channels = {
     uri: '02816caed43171d3c9854e3b0ab2cf0c42be086ff1bd4005acc2a5f7db70d83774@35.238.153.25:9735',
     wumbo: 1,
   },
+  '02570432c30df86ff7dbe3b49e24e8280411674f96470154cadc76d447e339292b': {
+    name: 'okcoin',
+    uri: '02570432c30df86ff7dbe3b49e24e8280411674f96470154cadc76d447e339292b@8.210.75.128:26657',
+    wumbo: 1,
+  },
   //  '0331f80652fb840239df8dc99205792bba2e559a05469915804c08420230e23c7c': {
   //    name: 'LightningPowerUsers.com',
   //    uri: '0331f80652fb840239df8dc99205792bba2e559a05469915804c08420230e23c7c@34.200.181.109:9735',
@@ -52,10 +62,10 @@ const important_channels = {
   //    name: 'fixedfloat.com',
   //    uri: '037f990e61acee8a7697966afd29dd88f3b1f8a7b14d625c4f8742bd952003a590@185.5.53.91:9735',
   //  },
-  '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda': {
-    name: 'tippin.me',
-    uri: '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda@157.245.68.47:9735',
-  },
+  // '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda': {
+  //   name: 'tippin.me',
+  //   uri: '03c2abfa93eacec04721c019644584424aab2ba4dff3ac9bdab4e9c97007491dda@157.245.68.47:9735',
+  // },
 };
 
 let lightning = require('../lightning');

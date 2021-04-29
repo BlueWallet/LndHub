@@ -36,7 +36,6 @@ app.use(
 );
 
 let bodyParser = require('body-parser');
-let config = require('./config');
 
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json(null)); // parse application/json
