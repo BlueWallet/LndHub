@@ -1,4 +1,5 @@
 let config = {
+  rateLimit: 100,
   bitcoind: {
     rpc: 'http://login:password@1.1.1.1:8332/wallet/wallet.dat',
   },
