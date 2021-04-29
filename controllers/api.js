@@ -126,7 +126,7 @@ setInterval(updateDescribeGraph, 120000);
 const rateLimit = require('express-rate-limit');
 const postLimiter = rateLimit({
   windowMs: 30 * 60 * 1000,
-  max: 100,
+  max: config.postRateLimit || 100,
 });
 
 router.post('/create', postLimiter, async function (req, res) {

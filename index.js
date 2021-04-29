@@ -8,6 +8,7 @@ let express = require('express');
 let morgan = require('morgan');
 import { v4 as uuidv4 } from 'uuid';
 let logger = require('./utils/logger');
+const config = require('./config');
 
 morgan.token('id', function getId(req) {
   return req.id;
@@ -19,7 +20,7 @@ app.enable('trust proxy');
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: config.rateLimit || 200,
 });
 app.use(limiter);
 
