@@ -1,4 +1,5 @@
 let config = {
+  enableUpdateDescribeGraph: false,
   postRateLimit: 100,
   rateLimit: 200,
   bitcoind: {

@@ -118,8 +118,10 @@ function updateDescribeGraph() {
     console.log('updated graph');
   });
 }
-updateDescribeGraph();
-setInterval(updateDescribeGraph, 120000);
+if (config.enableUpdateDescribeGraph) {
+  updateDescribeGraph();
+  setInterval(updateDescribeGraph, 120000);
+}
 
 // ######################## ROUTES ########################
 
