@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "@babel/cli": "^7.14.3",
-    "@babel/core": "^7.14.0",
+    "@babel/core": "^7.14.3",
     "@babel/eslint-parser": "^7.14.2",
     "@babel/node": "^7.13.0",
     "@babel/preset-env": "^7.14.1",
