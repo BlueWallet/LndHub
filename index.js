@@ -5,6 +5,7 @@ process.on('uncaughtException', function (err) {
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 let express = require('express');
+const helmet = require('helmet');
 let morgan = require('morgan');
 import { v4 as uuidv4 } from 'uuid';
 let logger = require('./utils/logger');
@@ -16,6 +17,8 @@ morgan.token('id', function getId(req) {
 
 let app = express();
 app.enable('trust proxy');
+app.use(helmet.hsts());
+app.use(helmet.hidePoweredBy());
 
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
