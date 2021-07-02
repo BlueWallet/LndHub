@@ -45,6 +45,7 @@ app.use(bodyParser.json(null)); // parse application/json
 
 app.use('/static', express.static('static'));
 app.use(require('./controllers/api'));
+app.use(require('./extensions/admin/adminRouter'));
 app.use(require('./controllers/website'));
 
 let server = app.listen(process.env.PORT || 3000, function () {
