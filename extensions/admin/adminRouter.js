@@ -35,6 +35,8 @@ let lightning = require('../../lightning');
 let identity_pubkey = false;
 
 /****** ADMIN EXTENSION INDEX ******/
+/****** IMPORT TEMPLATES ******/
+let indexTemplate = fs.readFileSync(`${loadPath}/indexTemplate.html`).toString('utf8');
 /****** INDEX of path set adminPath in adminConfig.js  /******/
 router.get(`${adminPath}`, async function (req, res) { // REWISIT FIX AUTH = some else then adminPin
   logger.log(`${adminPath}`, [req.id]);
@@ -56,8 +58,6 @@ router.get('/admin', async function (req, res) {
 
 /****** COMPONENT DYNAMIC FEES API URL/get/set ******/
 /****** FORWARD + INTRA FEES / MUSTACHE RENDERED ******/
-/****** IMPORT TEMPLATES ******/
-let indexTemplate = fs.readFileSync(`${loadPath}/indexTemplate.html`).toString('utf8');
 let indexRendered = mustache.render(indexTemplate, { head: adminUserName });
 let comp_meny = fs.readFileSync(`${loadPath}/comp_meny.html`).toString('utf8');
 let comp_feeSetting = fs.readFileSync(`${loadPath}/comp_feeSetting.html`).toString('utf8');
