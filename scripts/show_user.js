@@ -50,7 +50,7 @@ let lightning = require('../lightning');
 
   let locked = await U.getLockedPayments();
   for (let loc of locked) {
-    console.log('-', loc.amount + /* fee limit */ Math.floor(loc.amount * 0.01), new Date(loc.timestamp * 1000).toString(), '[locked]');
+    console.log('-', loc.amount + /* fee limit */ Math.floor(loc.amount * config.defaultForwardReserveFee), new Date(loc.timestamp * 1000).toString(), '[locked]');
   }
 
   console.log('\ncalculatedBalance\n================\n', calculatedBalance, await U.getCalculatedBalance());

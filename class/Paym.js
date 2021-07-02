@@ -12,9 +12,9 @@ export class Paym {
     this._isPaid = null;
   }
 
-  static get fee() {
-    return 0.003;
-  }
+  // static get fee() {
+  //   return 0.003;
+  // }
 
   setInvoice(bolt11) {
     this._bolt11 = bolt11;
@@ -39,7 +39,7 @@ export class Paym {
       pub_key: this._decoded.destination,
       amt: this._decoded.num_satoshis,
       final_cltv_delta: 144,
-      fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * 0.01) + 1 },
+      fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * forwardFee) + 1 },
     };
     let that = this;
     return new Promise(function (resolve, reject) {
@@ -74,7 +74,7 @@ export class Paym {
     if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
       // paid just now
       this._isPaid = true;
-      payment.payment_route.total_fees = +payment.payment_route.total_fees + Math.floor(+payment.payment_route.total_amt * Paym.fee);
+      payment.payment_route.total_fees = +payment.payment_route.total_fees + Math.floor(+payment.payment_route.total_amt * internalFee);
       if (this._bolt11) payment.pay_req = this._bolt11;
       if (this._decoded) payment.decoded = this._decoded;
     }
@@ -87,7 +87,7 @@ export class Paym {
         if (this._bolt11) payment.pay_req = this._bolt11;
         // trying to guess the fee
         payment.payment_route = payment.payment_route || {};
-        payment.payment_route.total_fees = Math.floor(this._decoded.num_satoshis * 0.01); // we dont know the exact fee, so we use max (same as fee_limit)
+        payment.payment_route.total_fees = Math.floor(this._decoded.num_satoshis * forwardFee); // we dont know the exact fee, so we use max (same as fee_limit)
         payment.payment_route.total_amt = this._decoded.num_satoshis;
       }
     }

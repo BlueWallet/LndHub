@@ -15,6 +15,12 @@ redis.monitor(function (err, monitor) {
   });
 });
 
+/****** START SET FEES FROM CONFIG AT STARTUP ******/
+/** GLOBALS */
+global.forwardFee = config.defaultForwardReserveFee;
+global.internalFee = config.defaultIntraHubFee;
+/****** END SET FEES FROM CONFIG AT STARTUP ******/
+
 let bitcoinclient = require('../bitcoin');
 let lightning = require('../lightning');
 let identity_pubkey = false;
@@ -235,7 +241,7 @@ router.post('/payinvoice', async function (req, res) {
 
     logger.log('/payinvoice', [req.id, 'userBalance: ' + userBalance, 'num_satoshis: ' + info.num_satoshis]);
 
-    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * 0.01)) {
+    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * forwardFee)) {
       // got enough balance, including 1% of payment amount - reserve for fees
 
       if (identity_pubkey === info.destination) {
@@ -262,8 +268,8 @@ router.post('/payinvoice', async function (req, res) {
         await u.savePaidLndInvoice({
           timestamp: parseInt(+new Date() / 1000),
           type: 'paid_invoice',
-          value: +info.num_satoshis + Math.floor(info.num_satoshis * Paym.fee),
-          fee: Math.floor(info.num_satoshis * Paym.fee),
+          value: +info.num_satoshis + Math.floor(info.num_satoshis * internalFee),
+          fee: Math.floor(info.num_satoshis * internalFee),
           memo: decodeURIComponent(info.description),
           pay_req: req.body.invoice,
         });
@@ -316,7 +322,7 @@ router.post('/payinvoice', async function (req, res) {
       let inv = {
         payment_request: req.body.invoice,
         amt: info.num_satoshis, // amt is used only for 'tip' invoices
-        fee_limit: { fixed: Math.floor(info.num_satoshis * 0.005) + 1 },
+        fee_limit: { fixed: Math.floor(info.num_satoshis * internalFee) + 1 }, // fee setting was 0.005 now set as internalFee
       };
       try {
         await u.lockFunds(req.body.invoice, info);
@@ -419,8 +425,8 @@ router.get('/gettxs', async function (req, res) {
     for (let locked of lockedPayments) {
       txs.push({
         type: 'paid_invoice',
-        fee: Math.floor(locked.amount * 0.01) /* feelimit */,
-        value: locked.amount + Math.floor(locked.amount * 0.01) /* feelimit */,
+        fee: Math.floor(locked.amount * forwardFee) /* feelimit */,
+        value: locked.amount + Math.floor(locked.amount * forwardFee) /* feelimit */,
         timestamp: locked.timestamp,
         memo: 'Payment in transition',
       });

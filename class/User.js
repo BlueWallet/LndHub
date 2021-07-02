@@ -175,7 +175,7 @@ export class User {
     let lockedPayments = await this.getLockedPayments();
     for (let paym of lockedPayments) {
       // locked payments are processed in scripts/process-locked-payments.js
-      calculatedBalance -= +paym.amount + /* feelimit */ Math.floor(paym.amount * 0.01);
+      calculatedBalance -= +paym.amount + /* feelimit */ Math.floor(paym.amount * forwardFee);
     }
 
     return calculatedBalance;
@@ -579,7 +579,7 @@ export class User {
       try {
         json = JSON.parse(paym);
         result.push(json);
-      } catch (_) {}
+      } catch (_) { }
     }
 
     return result;
