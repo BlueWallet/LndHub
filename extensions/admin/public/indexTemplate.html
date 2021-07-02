@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel=icon href=../static/img/favicon.png>
+    <link rel="stylesheet" href="../static/css/style.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <title>LndHub Admin</title>
+  </head>
+  <body>
+    <div class="holder">
+      <!-- INFO BOXES -->
+      <div class="container32">
+        <div class="scroll">
+          <div class="boxes" id="boxes">
+            <div class="box container32">
+              <span id="info_1">Info 1</span>
+            </div>
+            <div class="box container32">
+              <span id="info_2">Info 2</span>
+            </div>
+            <div class="box container32">
+              <span id="info_3">Info 3</span>
+            </div>
+            <div class="box container32">
+              <span id="info_4">Info 4</span>
+            </div>
+            <!--  -->
+          </div>
+        </div>
+      </div>
+      <!-- MAIN -->
+      <div id="main"></div>
+      <!-- SPLASH -->
+      <section id="splash">
+        <div class="wrapper">
+          <h1 class="mega montserrat bold">
+            <!-- Movement is <span class="color-emphasis-1">here.</span><br />
+            And it is here <span class="color-emphasis-1">to stay.</span> -->
+            Here is another <span class="color-emphasis-1">good</span><br />
+            instance of a <span class="color-emphasis-1">day.</span><br />
+          </h1>
+        </div>
+      </section>
+      <!-- MODAL OVERLAY -->
+      <div class="body-blackout"></div>
+      <!-- MODALS -->
+      <div class="popup-modal shadow" data-popup-modal="components">
+        <div class="popup-modal__close">&#10062;</div>
+        <h1 class="font-weight-bold">Components :</h1>
+        <br />
+        Installed are <br />
+        - Fee Settings
+      </div>
+      <!--  -->
+      <div class="popup-modal shadow" data-popup-modal="forwardfeesettings">
+        <div class="popup-modal__close">&#10062;</div>
+        <h1 class="font-weight-bold">Set New Fee :</h1>
+        <div id="forwardFeeModalHtml"></div>
+      </div>
+      <!--  -->
+      <!--  -->
+      <div class="popup-modal shadow" data-popup-modal="channelfeesettings">
+        <div class="popup-modal__close">&#10062;</div>
+        <h1 class="font-weight-bold">Channel Fee Settings :</h1>
+        <div id="channelFeeModalHtml"></div>
+      </div>
+      <!--  -->
+      <div class="popup-modal shadow" data-popup-modal="more">
+        <div class="popup-modal__close">&#10062;</div>
+        <h1 class="font-weight-bold">Here is More :</h1>
+        <div id="moretext"></div>
+      </div>
+      <!--  -->
+      <!-- SIDEBAR MENY -->
+      <div class="sidebar container32">
+        <hr />
+        <div class="adminMenyBoxes">
+          <div class="box container16">
+            <h3
+              class="meta popup-trigger compButton"
+              data-popup-trigger="components"
+            >
+              Components
+            </h3>
+          </div>
+          <hr />
+          <div class="box container24" id="loginBox">
+            <h3 id="target">{{head}}</h3>
+            <input
+              id="inputAuth"
+              type="password"
+              class="formItem"
+              placeholder="@"
+              style="margin-top: 3px"
+              autofocus
+            />
+            <div id="closeSession"></div>
+          </div>
+          <div id="componentsMeny"></div>
+        </div>
+        <!-- FOOTER -->
+        <footer>
+          <a href="https://bluewallet.io/lndhub" target="_blank">about</a> |
+          <a href="https://t.me/bwalphabeta" target="_blank">community</a> |
+          <a href="https://github.com/BlueWallet/LndHub" target="_blank"
+            >github</a
+          >
+        </footer>
+      </div>
+    </div>
+    <!-- SCRIPTS -->
+    <script>
+      /** LOGIN INPUT */
+      let loggedIN = false;
+      let textBox = document.getElementById("inputAuth");
+      /** */
+      textBox.addEventListener("keydown", (event) => {
+        if (event.keyCode === 13) {
+          let authIN = getAuthInput();
+          if (authIN.length >= 3 && loggedIN == false) {
+            // REVISIT Set to >= 8
+            trylogin(authIN);
+          }
+        }
+      });
+
+      function getAuthInput() {
+        return textBox.value;
+      }
+      /** */
+      function clearAuthInput() {
+        textBox.value = "";
+      }
+      clearAuthInput(); // on-page-load
+
+      /** LOGIN SERVER */
+      /** */
+      function trylogin(tryThis) {
+        if (!tryThis) return false;
+        fetch(window.location.pathname, {
+          headers: {
+            Authorization: `Bearer ${tryThis}`,
+          },
+        })
+          .then(function (response) {
+            return response.text();
+          })
+          .then(function (html) {
+            let check = html.startsWith("<!DOCTYPE html>");
+            if (check == false) {
+              document.getElementById("componentsMeny").innerHTML = html;
+              refreshModals();
+              document.getElementById(
+                "closeSession"
+              ).innerHTML = `<br /><button onclick="window.location.reload(true)">Close Session</button>`;
+              loggedIN = true;
+            }
+          })
+          .catch(function (err) {
+            console.warn("Something went wrong.", err);
+          });
+      }
+    </script>
+    <script>
+      /** FEE SETTINGS COMPONENT */
+      var forwardFeeSettingsShowwing = false;
+
+      /** */
+      function getForwardFeeSettings(auth) {
+        if (forwardFeeSettingsShowwing) {
+          // document.getElementById("main").innerHTML = "";
+          forwardFeeSettingsShowwing = false;
+          return;
+        }
+        let tryThis = getAuthInput();
+        fetch(window.location.pathname + "feesettings/getfees", {
+          headers: {
+            Authorization: `Bearer ${tryThis}`,
+          },
+        })
+          .then(function (response) {
+            return response.text();
+          })
+          .then(function (html) {
+            document.getElementById("forwardFeeModalHtml").innerHTML = html;
+            forwardFeeSettingsShowwing = true;
+            refreshModals();
+          })
+          .catch(function (err) {
+            console.warn("Something went wrong.", err);
+          });
+      }
+
+      /** */
+      function setForwardFeeSettings() {
+        let ffee = document.getElementById("ffee").value;
+        let ifee = document.getElementById("ifee").value;
+        console.log(ffee, ifee);
+        console.log(parseFloat(ffee));
+
+        let tryThis = getAuthInput();
+        fetch(window.location.pathname + "feesettings/setfees", {
+          method: "POST",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tryThis}`,
+          },
+          body: JSON.stringify({
+            forwardFee: parseFloat(ffee),
+            internalFee: parseFloat(ifee),
+          }), 
+        })
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (html) {
+            console.log(html);
+            document.getElementById("spanffee").innerHTML = (
+              html.forwardFee * 100
+            ).toFixed(2);
+            document.getElementById("spanifee").innerHTML = (
+              html.internalFee * 100
+            ).toFixed(2);
+            refreshModals();
+          })
+          .catch(function (err) {
+            console.warn("Something went wrong.", err);
+          });
+      }
+    </script>
+    <script>
+      /** MODAL */
+      function refreshModals() {
+        /** LOAD MODAL */
+        var modalTriggers = document.querySelectorAll(".popup-trigger");
+        const modalCloseTrigger = document.querySelector(".popup-modal__close");
+        const bodyBlackout = document.querySelector(".body-blackout");
+
+        modalTriggers.forEach((trigger) => {
+          trigger.addEventListener("click", () => {
+            const { popupTrigger } = trigger.dataset;
+            const popupModal = document.querySelector(
+              `[data-popup-modal="${popupTrigger}"]`
+            );
+
+            popupModal.classList.add("is--visible");
+            bodyBlackout.classList.add("is-blacked-out");
+
+            popupModal
+              .querySelector(".popup-modal__close")
+              .addEventListener("click", () => {
+                popupModal.classList.remove("is--visible");
+                bodyBlackout.classList.remove("is-blacked-out");
+              });
+
+            bodyBlackout.addEventListener("click", () => {
+              // TODO: Turn into a function to close modal
+              popupModal.classList.remove("is--visible");
+              bodyBlackout.classList.remove("is-blacked-out");
+            });
+          });
+        });
+        /** END LOAD MODAL */
+      }
+      refreshModals(); // on-page-load ++ at dynamic fetch templates
+    </script>
+  </body>
+</html>

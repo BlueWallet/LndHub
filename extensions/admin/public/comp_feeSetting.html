@@ -1,0 +1,40 @@
+<div class="box container32">
+  <p>Forward Reserve Fee : now at <span id="spanffee">{{ffeep}}</span> %</p>
+  <input
+    id="ffee"
+    type="number"
+    class="formItem"
+    value="{{forwardFee}}"
+    style="margin-bottom: 3px"
+    step="0.001"
+    min="0"
+    max="10"
+    autofocus
+  />
+</div>
+<br />
+<div class="box container32">
+  <p>Internal Hub Fee : now at <span id="spanifee">{{ifeep}} </span> %</p>
+  <input
+    id="ifee"
+    type="number"
+    class="formItem"
+    value="{{internalFee}}"
+    style="margin-bottom: 3px"
+    step="0.001"
+    min="0"
+    max="10"
+  />
+</div>
+<br />
+<div>
+  <button
+    class="box button"
+    style="height: 90px; width: 90px"
+    onclick="setForwardFeeSettings()"
+  >
+    Update
+    <br />
+    Fees
+  </button>
+</div>

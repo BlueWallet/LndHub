@@ -1,0 +1,133 @@
+/** FILE: LndHub/extensions/admin/admin.css */
+/** CASCADING LndHub/static/css/style.css */
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,300,700|Montserrat:400,700);
+
+body {
+  height: 100%;
+  background: rgba(21, 59, 75, 0.76);
+  color: #000;
+}
+.sidebar {
+  background: rgba(21, 59, 75, 0.76);
+  box-shadow: 0 -1px 4px 0 rgba(8, 8, 8, 0.2);
+}
+.adminMenyBoxes {
+  width: 100%;
+  padding-top: 30px;
+  display: inline;
+  margin: 40px 0 56px 0;
+}
+.box {
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  position: relative;
+  margin: 10px 0 10px 0;
+}
+footer {
+  color: #9aa0aa;
+}
+/** ADMIN CSS NEW */
+.button {
+  opacity: 90%;
+}
+.button:hover {
+  background: rgb(175, 214, 192);
+}
+.compButton {
+  opacity: 90%;
+}
+.compButton:hover {
+  color: rgb(117, 221, 117);
+}
+/** MAIN */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1;
+  margin-top: 0;
+  color: #fff;
+  display: inline-block;
+  position: relative;
+}
+/** MAIN SPLASH */
+section {
+  height: 600px;
+  padding: 3rem 0;
+  position: relative;
+}
+.wrapper {
+  max-width: 53.33rem;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  transform: translateY(-50%);
+  top: 50%;
+  text-align: center;
+}
+.mega {
+  font-size: 4rem; /* 72 / 18 = 4 */
+  margin-bottom: 0.4125rem;
+}
+.montserrat {
+  font-family: "Montserrat";
+}
+.bold {
+  font-weight: 700;
+}
+.color-emphasis-1 {
+  color: #ff4056;
+}
+
+/** MODAL */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+.body-blackout {
+  position: absolute;
+  z-index: 1010;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: none;
+}
+.body-blackout.is-blacked-out {
+  display: block;
+}
+.popup-trigger {
+  display: inline-block;
+}
+.popup-modal {
+  height: auto;
+  min-height: 450px;
+  width: 650px;
+  /* max-width: 1200vw;
+  min-width: 650px; */
+  background-color: rgb(175, 214, 192);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 45px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 300ms ease-in-out;
+  z-index: 1011;
+}
+.popup-modal.is--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.popup-modal__close {
+  position: absolute;
+  font-size: 1.2rem;
+  right: -10px;
+  top: -10px;
+  cursor: pointer;
+}
