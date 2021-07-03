@@ -1,13 +1,13 @@
 import { User, Lock, Paym, Invo } from '../../class';
 import Frisbee from 'frisbee';
 import { getCipherInfo } from 'crypto';
-// import { send } from 'process';
 const config = require('../../config');
 const adminConfig = require('./adminConfig');
 let express = require('express');
 let router = express.Router();
 let logger = require('../../utils/logger');
 
+// import { send } from 'process';
 // const { exec } = require('child_process')
 
 const fs = require('fs');
@@ -34,9 +34,10 @@ redis.monitor(function (err, monitor) {
 let lightning = require('../../lightning');
 let identity_pubkey = false;
 
-/****** ADMIN EXTENSION INDEX ******/
+/****** INDEX ADMIN EXTENSION  ******/
 /****** IMPORT TEMPLATES ******/
 let indexTemplate = fs.readFileSync(`${loadPath}/indexTemplate.html`).toString('utf8');
+
 /****** INDEX of path set adminPath in adminConfig.js  /******/
 router.get(`${adminPath}`, async function (req, res) { // REWISIT FIX AUTH = some else then adminPin
   logger.log(`${adminPath}`, [req.id]);
@@ -64,10 +65,10 @@ let comp_feeSetting = fs.readFileSync(`${loadPath}/comp_feeSetting.html`).toStri
 
 /** */
 router.get(`${adminPath}/feesettings/getfees`, async function (req, res) {
-  logger.log('/settings/getfees', [req.id]);
+  logger.log('/feesettings/getfees', [req.id]);
 
   if (authAdmin(req.headers.authorization)) {
-    // logger.log('**************** AUTHED ****************', ['OK'])
+    // logger.log('**************** AUTHORRIZATED ****************', ['OK'])
     let ffeep = (forwardFee * 100).toFixed(2)
     let ifeep = (internalFee * 100).toFixed(2)
     let viuw = { forwardFee: forwardFee, internalFee: internalFee, ffeep: ffeep, ifeep: ifeep }
@@ -84,7 +85,7 @@ router.get(`${adminPath}/feesettings/getfees`, async function (req, res) {
 
 /** */
 router.post(`${adminPath}/feesettings/setfees`, async function (req, res) { // REVISIT
-  logger.log('/settings/setfees', [req.id]);
+  logger.log('/feesettings/setfees', [req.id]);
 
   let newInternalFee = req.body.internalFee; // TODO: ADD validate and check sanity of fee
   let newForwardFee = req.body.forwardFee;
@@ -107,10 +108,8 @@ router.post(`${adminPath}/feesettings/setfees`, async function (req, res) { // R
 
 module.exports = router;
 
-// ** START DYNAMIC FEE SETTINGS FUNCTIONS * /
+/****** AUTH FUNCLIONS ******/
 global.adminPin = config.adminPin;
-/** global internalFee, forwardFee  are declared in LndHub/controllers/api.js from config.js*/
-
 /** */
 function authAdmin(authorization) {
   if (!authorization) return false;
@@ -120,18 +119,21 @@ function authAdmin(authorization) {
   }
   return false;
 }
+/****** END AUTH FUNCLIONS ******/
+
+// ** START DYNAMIC FEE SETTINGS FUNCTIONS * /
 
 /** set fees function for runtime change of ForwardReserveFee ******/
 async function setForwardReserveFee(incommingForwardFee) {
   forwardFee = incommingForwardFee;
   await redis.set('_forwardFee', forwardFee); // for UI "read only" reference
-  logger.log('Config Fee ForwardReserveFee set ', forwardFee);
+  // logger.log('Config Fee ForwardReserveFee set ', forwardFee);
 }
 /** set fees function for runtime change of IntraHubFee */
 async function setInternalHubFee(incommingInternalFee) {
   internalFee = incommingInternalFee;
   await redis.set('_internalFee', internalFee); // for UI "read only" reference
-  logger.log('Config Fee IntraHubFee set ', internalFee);
+  // logger.log('Config Fee IntraHubFee set ', internalFee);
 }
 /** set fees function for runtime change of fees */
 async function setFees(incommingInternalFee, incommingForwardFee) {

@@ -168,10 +168,9 @@
       /** FEE SETTINGS COMPONENT */
       var forwardFeeSettingsShowwing = false;
 
-      /** */
+      /** GET */
       function getForwardFeeSettings(auth) {
         if (forwardFeeSettingsShowwing) {
-          // document.getElementById("main").innerHTML = "";
           forwardFeeSettingsShowwing = false;
           return;
         }
@@ -194,7 +193,7 @@
           });
       }
 
-      /** */
+      /** SET */
       function setForwardFeeSettings() {
         let ffee = document.getElementById("ffee").value;
         let ifee = document.getElementById("ifee").value;
