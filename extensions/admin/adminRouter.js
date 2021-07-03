@@ -43,7 +43,7 @@ router.get(`${adminPath}`, async function (req, res) { // REWISIT FIX AUTH = som
   logger.log(`${adminPath}`, [req.id]);
   res.setHeader('Content-Type', 'text/html');
   if (authAdmin(req.headers.authorization)) {
-    // console.log('**************** AUTHORRIZATED ****************')
+    // console.log('**************** AUTHORIZED ****************')
     return res.send(comp_meny);
   }
   return res.send(indexRendered);
@@ -68,7 +68,7 @@ router.get(`${adminPath}/feesettings/getfees`, async function (req, res) {
   logger.log('/feesettings/getfees', [req.id]);
 
   if (authAdmin(req.headers.authorization)) {
-    // logger.log('**************** AUTHORRIZATED ****************', ['OK'])
+    // logger.log('**************** AUTHORIZED ****************', ['OK'])
     let ffeep = (forwardFee * 100).toFixed(2)
     let ifeep = (internalFee * 100).toFixed(2)
     let viuw = { forwardFee: forwardFee, internalFee: internalFee, ffeep: ffeep, ifeep: ifeep }
