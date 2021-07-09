@@ -12,10 +12,6 @@ export class Paym {
     this._isPaid = null;
   }
 
-  // static get fee() {
-  //   return 0.003;
-  // }
-
   setInvoice(bolt11) {
     this._bolt11 = bolt11;
   }
