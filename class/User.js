@@ -579,7 +579,7 @@ export class User {
       try {
         json = JSON.parse(paym);
         result.push(json);
-      } catch (_) { }
+      } catch (_) {}
     }
 
     return result;
