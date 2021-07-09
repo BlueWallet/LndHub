@@ -231,7 +231,10 @@ router.post('/payinvoice', async function (req, res) {
 
     logger.log('/payinvoice', [req.id, 'userBalance: ' + userBalance, 'num_satoshis: ' + info.num_satoshis]);
 
-    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * 0.01)) {
+    if (!(await redis.exists('forwardReserveFee'))) await redis.set('forwardReserveFee', config.forwardReserveFee || 0.01);
+    const forwardReserveFee = (await redis.get('forwardReserveFee')) || 0.01;
+
+    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * forwardReserveFee)) {
       // got enough balance, including 1% of payment amount - reserve for fees
 
       if (identity_pubkey === info.destination) {
@@ -255,11 +258,15 @@ router.post('/payinvoice', async function (req, res) {
 
         // sender spent his balance:
         await u.clearBalanceCache();
+
+        if (!(await redis.exists('intraHubFee'))) await redis.set('intraHubFee', config.intraHubFee || 0.003);
+        const intraHubFee = (await redis.get('intraHubFee')) || 0.003;
+
         await u.savePaidLndInvoice({
           timestamp: parseInt(+new Date() / 1000),
           type: 'paid_invoice',
-          value: +info.num_satoshis + Math.floor(info.num_satoshis * Paym.fee),
-          fee: Math.floor(info.num_satoshis * Paym.fee),
+          value: +info.num_satoshis + Math.floor(info.num_satoshis * intraHubFee),
+          fee: Math.floor(info.num_satoshis * intraHubFee),
           memo: decodeURIComponent(info.description),
           pay_req: req.body.invoice,
         });
@@ -406,6 +413,10 @@ router.get('/gettxs', async function (req, res) {
   logger.log('/gettxs', [req.id, 'userid: ' + u.getUserId()]);
 
   if (!(await u.getAddress())) await u.generateAddress(); // onchain addr needed further
+
+  if (!(await redis.exists('forwardReserveFee'))) await redis.set('forwardReserveFee', config.forwardReserveFee || 0.01);
+  const forwardReserveFee = (await redis.get('forwardReserveFee')) || 0.01;
+
   try {
     await u.accountForPosibleTxids();
     let txs = await u.getTxs();
@@ -413,8 +424,8 @@ router.get('/gettxs', async function (req, res) {
     for (let locked of lockedPayments) {
       txs.push({
         type: 'paid_invoice',
-        fee: Math.floor(locked.amount * 0.01) /* feelimit */,
-        value: locked.amount + Math.floor(locked.amount * 0.01) /* feelimit */,
+        fee: Math.floor(locked.amount * forwardReserveFee) /* feelimit */,
+        value: locked.amount + Math.floor(locked.amount * forwardReserveFee) /* feelimit */,
         timestamp: locked.timestamp,
         memo: 'Payment in transition',
       });

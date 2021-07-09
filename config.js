@@ -16,6 +16,9 @@ let config = {
     url: '1.1.1.1:10009',
     password: '',
   },
+  forwardReserveFee: 0.01,
+  // Fee for transactions between users on the same hub
+  intraHubFee: 0.003,
 };
 
 if (process.env.CONFIG) {

@@ -172,10 +172,13 @@ export class User {
       }
     }
 
+    if (!(await this._redis.exists('forwardReserveFee'))) await this._redis.set('forwardReserveFee', config.forwardReserveFee || 0.01);
+    const forwardReserveFee = (await this._redis.get('forwardReserveFee')) || 0.01;
+
     let lockedPayments = await this.getLockedPayments();
     for (let paym of lockedPayments) {
       // locked payments are processed in scripts/process-locked-payments.js
-      calculatedBalance -= +paym.amount + /* feelimit */ Math.floor(paym.amount * 0.01);
+      calculatedBalance -= +paym.amount + /* feelimit */ Math.floor(paym.amount * forwardReserveFee);
     }
 
     return calculatedBalance;

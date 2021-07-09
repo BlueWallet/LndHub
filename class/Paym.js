@@ -1,6 +1,5 @@
-var crypto = require('crypto');
-var lightningPayReq = require('bolt11');
-import { BigNumber } from 'bignumber.js';
+const lightningPayReq = require('bolt11');
+const config = require('../config');
 
 export class Paym {
   constructor(redis, bitcoindrpc, lightning) {
@@ -34,12 +33,15 @@ export class Paym {
   async queryRoutes() {
     if (!this._bolt11) throw new Error('bolt11 is not provided');
     if (!this._decoded) await this.decodePayReqViaRpc(this._bolt11);
+    if (!(await this._redis.exists('forwardReserveFee'))) await this._redis.set('forwardReserveFee', config.forwardReserveFee || 0.01);
+
+    const forwardReserveFee = (await this._redis.get('forwardReserveFee')) || 0.01;
 
     var request = {
       pub_key: this._decoded.destination,
       amt: this._decoded.num_satoshis,
       final_cltv_delta: 144,
-      fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * 0.01) + 1 },
+      fee_limit: { fixed: Math.floor(this._decoded.num_satoshis * forwardReserveFee) + 1 },
     };
     let that = this;
     return new Promise(function (resolve, reject) {
@@ -70,11 +72,16 @@ export class Paym {
     });
   }
 
-  processSendPaymentResponse(payment) {
+  async processSendPaymentResponse(payment) {
+    if (!(await this._redis.exists('forwardReserveFee'))) await this._redis.set('forwardReserveFee', config.forwardReserveFee || 0.01);
+    if (!(await this._redis.exists('intraHubFee'))) await this._redis.set('intraHubFee', config.intraHubFee || 0.003);
+    const forwardReserveFee = (await this._redis.get('forwardReserveFee')) || 0.01;
+    const intraHubFee = (await this._redis.get('intraHubFee')) || 0.003;
+
     if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
       // paid just now
       this._isPaid = true;
-      payment.payment_route.total_fees = +payment.payment_route.total_fees + Math.floor(+payment.payment_route.total_amt * Paym.fee);
+      payment.payment_route.total_fees = +payment.payment_route.total_fees + Math.floor(+payment.payment_route.total_amt * intraHubFee);
       if (this._bolt11) payment.pay_req = this._bolt11;
       if (this._decoded) payment.decoded = this._decoded;
     }
@@ -87,7 +94,7 @@ export class Paym {
         if (this._bolt11) payment.pay_req = this._bolt11;
         // trying to guess the fee
         payment.payment_route = payment.payment_route || {};
-        payment.payment_route.total_fees = Math.floor(this._decoded.num_satoshis * 0.01); // we dont know the exact fee, so we use max (same as fee_limit)
+        payment.payment_route.total_fees = Math.floor(this._decoded.num_satoshis * forwardReserveFee); // we dont know the exact fee, so we use max (same as fee_limit)
         payment.payment_route.total_amt = this._decoded.num_satoshis;
       }
     }

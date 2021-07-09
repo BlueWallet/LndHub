@@ -49,8 +49,17 @@ let lightning = require('../lightning');
   }
 
   let locked = await U.getLockedPayments();
+
+  if (!(await redis.exists('forwardReserveFee'))) await redis.set('forwardReserveFee', config.forwardReserveFee || 0.01);
+  const forwardReserveFee = (await redis.get('forwardReserveFee')) || 0.01;
+
   for (let loc of locked) {
-    console.log('-', loc.amount + /* fee limit */ Math.floor(loc.amount * 0.01), new Date(loc.timestamp * 1000).toString(), '[locked]');
+    console.log(
+      '-',
+      loc.amount + /* fee limit */ Math.floor(loc.amount * forwardReserveFee),
+      new Date(loc.timestamp * 1000).toString(),
+      '[locked]',
+    );
   }
 
   console.log('\ncalculatedBalance\n================\n', calculatedBalance, await U.getCalculatedBalance());
