@@ -17,8 +17,8 @@ redis.monitor(function (err, monitor) {
 
 /****** START SET FEES FROM CONFIG AT STARTUP ******/
 /** GLOBALS */
-global.forwardFee = config.defaultForwardReserveFee;
-global.internalFee = config.defaultIntraHubFee;
+global.forwardFee = config.forwardReserveFee;
+global.internalFee = config.intraHubFee;
 /****** END SET FEES FROM CONFIG AT STARTUP ******/
 
 let bitcoinclient = require('../bitcoin');
