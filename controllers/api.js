@@ -494,6 +494,7 @@ router.get('/queryroutes/:source/:dest/:amt', async function (req, res) {
 
   let request = {
     pub_key: req.params.dest,
+    use_mission_control: true,
     amt: req.params.amt,
     source_pub_key: req.params.source,
   };

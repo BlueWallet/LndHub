@@ -14,6 +14,7 @@ function updateLightning() {
     lightning.getInfo({}, function (err, info) {
       if (err) {
         console.error('lnd failure:', err);
+        process.exit(4);
         return;
       }
       lightningGetInfo = info;
@@ -22,6 +23,7 @@ function updateLightning() {
     lightning.listChannels({}, function (err, response) {
       if (err) {
         console.error('lnd failure:', err);
+        process.exit(4);
         return;
       }
       console.log('updated');
