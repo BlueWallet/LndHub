@@ -27,7 +27,7 @@ http://redis.io/topics/persistence for more information).
 
 If you have no `bitcoind` instance, for example if you use neutrino, or you have no bitcoind wallet, 
 for example if you use LND for wallet managment, you can remove the bitcoind settings from `config.js`.
-Please not that this feature is limited to Bitcoin, so you can't use it if you use any other cryptocurrency with LND (e.g., Litecoin).
+Please note that this feature is limited to Bitcoin, so you can't use it if you use any other cryptocurrency with LND (e.g., Litecoin).
 
 ### Deploy to Heroku
 
