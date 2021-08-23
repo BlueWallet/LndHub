@@ -11,10 +11,22 @@ You can use those guides or follow instructions below:
 * https://github.com/dangeross/guides/blob/master/raspibolt/raspibolt_6B_lndhub.md
 * https://medium.com/@jpthor/running-lndhub-on-mac-osx-5be6671b2e0c
 
-```
-git clone git@github.com:BlueWallet/LndHub.git
-cd LndHub
-npm i
+```bash
+git clone git@github.com:BlueWallet/LndHub.git && cd LndHub
+
+npm install && npm install -g @babel/core @babel/cli
+
+ln -si "${LND_DATA_DIR}/data/chain/bitcoin/mainnet/admin.macaroon" ./
+ln -si "${LND_DATA_DIR}/tls.cert" ./
+ln -si "${LNDHUB_CFG}" ./config.js
+
+rm -rf ./build || true
+mkdir ./build
+
+babel ./ --out-dir ./build --copy-files --ignore node_modules
+
+export PORT=3000
+node build/index.js
 ```
 
 Install `bitcoind`, `lnd`, and `redis`. Edit LndHub's `config.js` to set it up correctly.
