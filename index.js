@@ -47,7 +47,10 @@ app.use('/static', express.static('static'));
 app.use(require('./controllers/api'));
 app.use(require('./controllers/website'));
 
-let server = app.listen(process.env.PORT || 3000, function () {
-  logger.log('BOOTING UP', 'Listening on port ' + (process.env.PORT || 3000));
+const bindHost = process.env.HOST || '0.0.0.0';
+const bindPort = process.env.PORT || 3000;
+
+let server = app.listen(bindPort, bindHost, function () {
+  logger.log('BOOTING UP', 'Listening on ' + bindHost + ':' + bindPort);
 });
 module.exports = server;
