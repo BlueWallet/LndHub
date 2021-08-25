@@ -46,7 +46,8 @@ You can also view Umbrel's implementation using docker-compose [here](https://gi
 
 Can be used in ReactNative or Nodejs environment
 
-* https://github.com/BlueWallet/BlueWallet/blob/master/class/lightning-custodian-wallet.js
+* https://github.com/BlueWallet/BlueWallet/blob/master/class/wallets/lightning-custodian-wallet.js
+
 
 
 ### Tests
