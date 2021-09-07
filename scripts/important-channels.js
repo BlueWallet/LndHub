@@ -78,7 +78,7 @@ lightning.listChannels({}, function (err, response) {
   }
   let lightningListChannels = response;
   for (let channel of lightningListChannels.channels) {
-    if (channel.capacity < 0.05 / 100000000) {
+    if (channel.capacity <= 1000000) {
       console.log(
         'lncli closechannel',
         channel.channel_point.replace(':', ' '),

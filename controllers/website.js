@@ -82,6 +82,10 @@ const pubkey2name = {
   '033d8656219478701227199cbd6f670335c8d408a92ae88b962c49d4dc0e83e025': 'bfx-lnd0',
   '03021c5f5f57322740e4ee6936452add19dc7ea7ccf90635f95119ab82a62ae268': 'lnd1.bluewallet.io',
   '037cc5f9f1da20ac0d60e83989729a204a33cc2d8e80438969fadf35c1c5f1233b': 'lnd2.bluewallet.io',
+  '036b53093df5a932deac828cca6d663472dbc88322b05eec1d42b26ab9b16caa1c': 'okcoin',
+  '038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6': 'magnetron',
+  '03829249ef39746fd534a196510232df08b83db0967804ec71bf4120930864ff97': 'blokada.org',
+  '02ce691b2e321954644514db708ba2a72769a6f9142ac63e65dd87964e9cf2add9': 'Satoshis.Games',
 };
 
 router.get('/', function (req, res) {
@@ -100,7 +104,8 @@ router.get('/qr', function (req, res) {
   if (process.env.TOR_URL) {
     host = process.env.TOR_URL;
   }
-  const url = 'bluewallet:setlndhuburl?url=' + encodeURIComponent(req.protocol + '://' + host);
+  const customPath = req.url.replace('/qr/', '');
+  const url = 'bluewallet:setlndhuburl?url=' + encodeURIComponent(req.protocol + '://' + host + customPath);
   var code = qr.image(url, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);

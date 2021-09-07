@@ -54,5 +54,6 @@ let lightning = require('../lightning');
   }
 
   console.log('\ncalculatedBalance\n================\n', calculatedBalance, await U.getCalculatedBalance());
+  console.log('txs:', txs.length, 'userinvoices:', userinvoices.length);
   process.exit();
 })();
