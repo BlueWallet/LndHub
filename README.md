@@ -52,7 +52,7 @@ Can be used in ReactNative or Nodejs environment
 
 ### Tests
 
-Acceptance tests are in https://github.com/BlueWallet/BlueWallet/blob/master/LightningCustodianWallet.test.js
+Acceptance tests are in https://github.com/BlueWallet/BlueWallet/blob/master/tests/integration/lightning-custodian-wallet.test.js
 
 ![image](https://user-images.githubusercontent.com/1913337/52418916-f30beb00-2ae6-11e9-9d63-17189dc1ae8c.png)
 
