@@ -9,6 +9,11 @@ const important_channels = {
     uri: '03abf6f44c355dec0d5aa155bdbdd6e0c8fefe318eff402de65c6eb2e1be55dc3e@18.221.23.28:9735',
     wumbo: 1,
   },
+  '028d98b9969fbed53784a36617eb489a59ab6dc9b9d77fcdca9ff55307cd98e3c4': {
+    name: 'OpenNode 2',
+    uri: '028d98b9969fbed53784a36617eb489a59ab6dc9b9d77fcdca9ff55307cd98e3c4@18.222.70.85:9735',
+    wumbo: 1,
+  },
   // '0242a4ae0c5bef18048fbecf995094b74bfb0f7391418d71ed394784373f41e4f3': {
   //   name: 'coingate.com',
   //   uri: '0242a4ae0c5bef18048fbecf995094b74bfb0f7391418d71ed394784373f41e4f3@3.124.63.44:9735',
