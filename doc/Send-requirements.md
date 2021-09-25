@@ -33,7 +33,7 @@ associated with corresponding user id.
 | Call          | Method        |       Handler |        Params |   Return      |   Description |
 | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
 | Create Account | POST  | /create | {none} | JSON Auth Data | Create new user account and get credentials |
-| Authorize | POST | /auth  | auth params (login/password of refresh_token) | JSON token data | Authorize user with Oauth. When user use refresh_token to auth, then this refresh_token not available for access once again. Use new refresh_token |
+| Authorize | POST | /auth  | auth params (login/password or refresh_token) | JSON token data | Authorize user with Oauth. When user use refresh_token to auth, then this refresh_token not available for access once again. Use new refresh_token |
 | Get token | POST | /oauth2/token  | user id, secret, grant_type and scope | token data | Get token data from user id, secret, grant_type and scope |
 | Get BTC Addr | GET | /getbtc  | {none} | Text address | Get user's BTC address to top-up his account |
 | New BTC Addr | POST | /newbtc  | {none} | Text address | Create new BTC address for user. Old addresses should remain valid, so if user accidentaly sends money to old address transaction will be assigned to his account |
