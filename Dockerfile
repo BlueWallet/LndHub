@@ -6,7 +6,7 @@ RUN adduser --disabled-password \
             --gecos "" \
             "lndhub"
 
-FROM node:12-buster-slim AS builder
+FROM node:16-bullseye-slim AS builder
 
 # These packages are required for building LNDHub
 RUN apt-get update && apt-get -y install python3
@@ -25,7 +25,7 @@ COPY . .
 # Delete git data as it's not needed inside the container
 RUN rm -rf .git
 
-FROM node:12-buster-slim
+FROM node:16-bullseye-slim
 
 # Create a specific user so LNDHub doesn't run as root
 COPY  --from=perms /etc/group /etc/passwd /etc/shadow  /etc/
