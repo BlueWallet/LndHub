@@ -441,7 +441,7 @@ Response:
     	"version": "..."                       // string, lnd version
     }
     
-## GET /getaddinvoice
+## GET /getinvoice
 
 Returns fees user pays for payments, status of the system, etc.
 
