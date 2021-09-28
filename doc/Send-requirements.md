@@ -95,15 +95,15 @@ Create new user account and get credentials. Not whitelisted partners should ret
 Request:
 
     {
-        "partnerid" : "bluewallet" // string, not mandatory parameter
-	"accounttype" : "..." // string, not mandatory, default is common, also can be test or core
+        "partnerid" : "bluewallet"  // string, not mandatory parameter
+        "accounttype" : "..."       // string, not mandatory, default is common, also can be test or core
     }
     
 Response:
     
     {
-        "login":"...", // srting
-        "password":"...", // srting
+        "login":"...",     // string
+        "password":"...",  // string
     } 
 
 ## POST /auth?type=auth  
@@ -120,9 +120,9 @@ Request:
 Response:
     
     {
-        "access_token": "...",             //string
-        "token_type": "...",               //string
-        "refresh_token": "...",            //string
+        "access_token": "...",             // string
+        "token_type": "...",               // string
+        "refresh_token": "...",            // string
         "expiry": "0001-01-01T00:00:00Z"   // datetime
     }
     
@@ -135,16 +135,16 @@ Authorize user with Oauth user and login
 Request:
 
     {
-	    "refresh_token": "...",   //string
+	    "refresh_token": "...",       // string
     }
     
 Response:
     
     {
-        "access_token": "...",             //string
-        "token_type": "...",               //string
-        "refresh_token": "...",            //string
-        "expiry": "0001-01-01T00:00:00Z"   // datetime
+        "access_token": "...",            // string
+        "token_type": "...",              // string
+        "refresh_token": "...",           // string
+        "expiry": "0001-01-01T00:00:00Z"  // datetime
     } 
 
 ## POST /oauth2/token 
@@ -154,17 +154,17 @@ Authorize user with Oauth user and login
 Request:
 
     {
-	    "grant_type": "client_credentials",   //string
-	    "client_id": "...",                   //string
+	    "grant_type": "client_credentials",   // string
+	    "client_id": "...",                   // string
 	    "client_secret": "..."                // string
     }
     
 Response:
     
     {
-        "access_token": "...",             //string
-        "token_type": "...",               //string
-        "refresh_token": "...",            //string
+        "access_token": "...",             // string
+        "token_type": "...",               // string
+        "refresh_token": "...",            // string
         "expiry": "0001-01-01T00:00:00Z"   // datetime
     }
 
@@ -229,34 +229,34 @@ Request:
 Response:
     
     {
-        "destination": "...",         //string, lnd node address
-    	"payment_hash": "...",        //string
-    	"num_satoshis": "78497",      //string, satoshis
-    	"timestamp": "1534430501",    //string, unixtime
-    	"expiry": "3600",             //string, seconds
-    	"description": "...",         //string
-    	"description_hash": "",       //string
-    	"fallback_addr": "...",       //string, fallback on-chain address
-    	"cltv_expiry": "...",         //string, delta to use for the time-lock of the CLTV extended to the final hop
+        "destination": "...",         // string, lnd node address
+    	"payment_hash": "...",        // string
+    	"num_satoshis": "78497",      // string, satoshis
+    	"timestamp": "1534430501",    // string, unixtime
+    	"expiry": "3600",             // string, seconds
+    	"description": "...",         // string
+    	"description_hash": "",       // string
+    	"fallback_addr": "...",       // string, fallback on-chain address
+    	"cltv_expiry": "...",         // string, delta to use for the time-lock of the CLTV extended to the final hop
     	"route_hints": [
 		{
 			"hop_hints" : [
 				{
-					"node_id": "..",       //string, the public key of the node at the start of the
+					"node_id": "..",       // string, the public key of the node at the start of the
 							       // channel.
 							       
-					"chan_id": ...,        //int, the unique identifier of the channel.
+					"chan_id": ...,        // int, the unique identifier of the channel.
 			
-					"fee_base_msat": ...,  //int, The base fee of the channel denominated in
+					"fee_base_msat": ...,  // int, The base fee of the channel denominated in
 							       // millisatoshis.
 			
 					"fee_proportional_millionths": ...,    
-					                       //int, the fee rate of the channel 
+					                       // int, the fee rate of the channel 
 			  				       // for sending one satoshi across it denominated 
 							       // in millionths of a satoshi
 			
 					"cltv_expiry_delta": ...   
-					                       //int, the fee rate of the channel for sending one satoshi
+					                       // int, the fee rate of the channel for sending one satoshi
 							       // across it denominated in millionths of a satoshi
 				}, ...
 			]
@@ -288,7 +288,7 @@ Request:
 
     {
         "destination" : "..." // string, destination lnd node address
-	"amt": "..."          // string, 
+        "amt": "..."          // string, 
     }
     
 Response:
@@ -311,26 +311,26 @@ Request:
 Response:
     
     {
-    	"payment_error": "..."                         //string
-	"payment_preimage": "..."                      //string
-	"payment_route": {
-			"total_time_lock": ... ,       //int
-			"total_fees": ... ,            //int
-			"total_amt": ... ,             //int
-			"total_fees_msat": ... ,       //int
-			"total_amt_msat": ... ,        //int
-			"hops": [
-				{
-					"chan_id": ... ,             //int
-					"chan_capacity": ... ,       //int
-					"amt_to_forward": ... ,      //int
-					"fee": ... ,                 //int
-					"expiry": ... ,              //int
-					"amt_to_forward_msat": ... , //int
-					"fee_msat": ... ,            //int
-				},
-			]
-	}
+        "payment_error": "..."                 // string
+        "payment_preimage": "..."              // string
+        "payment_route": {
+                "total_time_lock": ... ,       // int
+                "total_fees": ... ,            // int
+                "total_amt": ... ,             // int
+                "total_fees_msat": ... ,       // int
+                "total_amt_msat": ... ,        // int
+                "hops": [
+                                {
+                                        "chan_id": ... ,             // int
+                                        "chan_capacity": ... ,       // int
+                                        "amt_to_forward": ... ,      // int
+                                        "fee": ... ,                 // int
+                                        "expiry": ... ,              // int
+                                        "amt_to_forward_msat": ... , // int
+                                        "fee_msat": ... ,            // int
+                                },
+                        ]
+                }
     }
 
 ## POST /sendcoins 
@@ -357,7 +357,7 @@ Request:
 
     {
         "limit" : 10, // INT
-        "offset": 0, // INT
+        "offset": 0,  // INT
     }
     
 Response:
@@ -398,10 +398,10 @@ Request:
 Response:
 
     {
-    	"BTC": {                              //string, currency
-        	"TotalBalance": 109388,       //int, satoshis
+    	"BTC": {                              // string, currency
+        	"TotalBalance": 109388,       // int, satoshis
         	"AvailableBalance": 109388,   // int, satoshis
-        	"UncomfirmedBalance": 0       //int, satoshis
+        	"UncomfirmedBalance": 0       // int, satoshis
 	}, ... 
 		//now available only btc balance
     
@@ -422,22 +422,22 @@ Response:
         "fee": 0, // int, in cents of percent, i.e. 100 for 1%, 50 for 0.5%, 1 for 0.01%
        
        
-        "identity_pubkey": "...",              //string, lnd node identity pubkey
-        "alias": "...",                        //string, lnd node alias
-        "num_pending_channels": 0,             //int
-        "num_active_channels": 3,              //int
-        "num_peers": 6,                        //int
-        "block_height": 542389,                //int
-        "block_hash": "...",                   //string
-        "synced_to_chain": true,               //bool
+        "identity_pubkey": "...",              // string, lnd node identity pubkey
+        "alias": "...",                        // string, lnd node alias
+        "num_pending_channels": 0,             // int
+        "num_active_channels": 3,              // int
+        "num_peers": 6,                        // int
+        "block_height": 542389,                // int
+        "block_hash": "...",                   // string
+        "synced_to_chain": true,               // bool
         "testnet": false, 
         "chains": [
-            "bitcoin"              //string, available chans to operate by lnd
+            "bitcoin"              // string, available chans to operate by lnd
         ],
         "uris": [
-            "...",	                       //string, uris of lnd node
+            "...",	                       // string, uris of lnd node
         ],
-        "best_header_timestamp": "...",        //string, unixtime
+        "best_header_timestamp": "...",        // string, unixtime
         "version": "..."                       // string, lnd version
     }
     
@@ -448,21 +448,21 @@ Returns fees user pays for payments, status of the system, etc.
 Request:
     
     {
-        "amt": "...",            //string
-        "memo":"...",            //string
-        "receipt":"...",         //string, not mandatory parameter
-        "preimage": "...",       //string, not mandatory parameter
-        "fallbackAddr": "...",   //string, not mandatory parameter
-        "expiry": "...",         //string, not mandatory parameter
-        "private": "..."         //string, not mandatory parameter
+        "amt": "...",            // string
+        "memo":"...",            // string
+        "receipt":"...",         // string, not mandatory parameter
+        "preimage": "...",       // string, not mandatory parameter
+        "fallbackAddr": "...",   // string, not mandatory parameter
+        "expiry": "...",         // string, not mandatory parameter
+        "private": "..."         // string, not mandatory parameter
     }
     
 Response:
 
     {
-        "r_hash": "...",     //string,
-        "pay_req": "...",    //string, a bare-bones invoice for a payment within the Lightning Network
-        "add_index": ...     //int, The “add” index of this invoice. Each newly created invoice will 
+        "r_hash": "...",     // string,
+        "pay_req": "...",    // string, a bare-bones invoice for a payment within the Lightning Network
+        "add_index": ...     // int, The “add” index of this invoice. Each newly created invoice will 
 	                     // increment this index making it monotonically increasing. 
 			     // Callers to the SubscribeInvoices call can use this to instantly 
 			     // get notified of all added invoices with an add_index greater than this one.
@@ -479,12 +479,12 @@ Request:
 Response:
 
     {
-        "r_hash": "...",            //string
-        "payment_request": "...",   //string
-        "add_index": "...",         //string
-        "description": "...",       //string
-        "amt": ... ,                //int
-        "ispaid": ...               //bool
+        "r_hash": "...",            // string
+        "payment_request": "...",   // string
+        "add_index": "...",         // string
+        "description": "...",       // string
+        "amt": ... ,                // int
+        "ispaid": ...               // bool
     }
 
 # Data structures
@@ -498,14 +498,14 @@ Response:
                        // paid_invoice  - user paid someone's invoice
                        // sent_coins - user sent coins by lnd to someone's btc account
                        // received_invoice_payments - user received payments by invoice
-        "txid": "...", // string, internal tx id. not related to onchain transaction id
-        "amt": 666, // satoshi, int
-        "fee": 11, // satoshi, int
-        "timestamp": 1234567, // int, unixtime
-        "from": "...", // string 
-        "to": "...", // string
-        "description": "...", // string, user-defined text
-        "invoice": "...", // string, original bolt11-format invoice
+        "txid": "...",         // string, internal tx id. not related to onchain transaction id
+        "amt": 666,            // satoshi, int
+        "fee": 11,             // satoshi, int
+        "timestamp": 1234567,  // int, unixtime
+        "from": "...",         // string 
+        "to": "...",           // string
+        "description": "...",  // string, user-defined text
+        "invoice": "...",      // string, original bolt11-format invoice
     }
 
 # Explaining oauth2 mechanism
