@@ -70,9 +70,9 @@ Response is always JSON.
 `error:true` should be always present.
 
     {
-        "error" : true, // boolean
-        "code" : 1, // int
-        "message": "..." // string
+        "error" : true,  // boolean
+        "code" : 1,       // int
+        "message": "..."  // string
     }
     
  Error code    | Error message        
@@ -113,8 +113,8 @@ Authorize user with Oauth user and login
 Request:
 
     {
-	    "login": "...",   //string
-	    "password": "..." //string
+	    "login": "...",    // string
+	    "password": "..."  // string
     }
     
 Response:
@@ -356,14 +356,14 @@ Get successful lightning and btc transactions user made. Order newest to oldest.
 Request:
 
     {
-        "limit" : 10, // INT
-        "offset": 0,  // INT
+        "limit" : 10,  // INT
+        "offset": 0,   // INT
     }
     
 Response:
     
     {
-        [ // array of Transaction object (see below)
+        [  // array of Transaction object (see below)
             {
                 ...
             }
