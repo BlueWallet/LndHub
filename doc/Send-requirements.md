@@ -422,23 +422,23 @@ Response:
         "fee": 0, // int, in cents of percent, i.e. 100 for 1%, 50 for 0.5%, 1 for 0.01%
        
        
-    	"identity_pubkey": "...",              //string, lnd node identity pubkey
-    	"alias": "...",                        //string, lnd node alias
-    	"num_pending_channels": 0,             //int
-    	"num_active_channels": 3,              //int
-    	"num_peers": 6,                        //int
-    	"block_height": 542389,                //int
-    	"block_hash": "...",                   //string
-    	"synced_to_chain": true,               //bool
-    	"testnet": false,
-    		"chains": [
-        		"bitcoin"              //string, available chans to operate by lnd
-    		],
-    	"uris": [
-        	"...",	                       //string, uris of lnd node
-    	],
-    	"best_header_timestamp": "...",        //string, unixtime
-    	"version": "..."                       // string, lnd version
+        "identity_pubkey": "...",              //string, lnd node identity pubkey
+        "alias": "...",                        //string, lnd node alias
+        "num_pending_channels": 0,             //int
+        "num_active_channels": 3,              //int
+        "num_peers": 6,                        //int
+        "block_height": 542389,                //int
+        "block_hash": "...",                   //string
+        "synced_to_chain": true,               //bool
+        "testnet": false, 
+        "chains": [
+            "bitcoin"              //string, available chans to operate by lnd
+        ],
+        "uris": [
+            "...",	                       //string, uris of lnd node
+        ],
+        "best_header_timestamp": "...",        //string, unixtime
+        "version": "..."                       // string, lnd version
     }
     
 ## GET /getaddinvoice
@@ -448,24 +448,26 @@ Returns fees user pays for payments, status of the system, etc.
 Request:
     
     {
-	"amt": "...",            //string
-	"memo":"...",            //string
-	"receipt":"...",         //string, not mandatory parameter
-	"preimage": "...",       //string, not mandatory parameter
-	"fallbackAddr": "...",   //string, not mandatory parameter
-	"expiry": "...",         //string, not mandatory parameter
-	"private": "..."         //string, not mandatory parameter
+        "amt": "...",            //string
+        "memo":"...",            //string
+        "receipt":"...",         //string, not mandatory parameter
+        "preimage": "...",       //string, not mandatory parameter
+        "fallbackAddr": "...",   //string, not mandatory parameter
+        "expiry": "...",         //string, not mandatory parameter
+        "private": "..."         //string, not mandatory parameter
     }
     
 Response:
+
     {
-	"r_hash": "...",     //string,
-	"pay_req": "...",    //string, a bare-bones invoice for a payment within the Lightning Network
-	"add_index": ...     //int, The “add” index of this invoice. Each newly created invoice will 
+        "r_hash": "...",     //string,
+        "pay_req": "...",    //string, a bare-bones invoice for a payment within the Lightning Network
+        "add_index": ...     //int, The “add” index of this invoice. Each newly created invoice will 
 	                     // increment this index making it monotonically increasing. 
 			     // Callers to the SubscribeInvoices call can use this to instantly 
 			     // get notified of all added invoices with an add_index greater than this one.
     }
+
 ## GET /getuserinvoices
 
 Returns fees user pays for payments, status of the system, etc.
@@ -475,26 +477,28 @@ Request:
     none
     
 Response:
-  {
-	"r_hash": "...",            //string
-	"payment_request": "...",   //string
-	"add_index": "...",         //string
-	"description": "...",       //string
-	"amt": ... ,                //int
-	"ispaid": ...               //bool
- }
+
+    {
+        "r_hash": "...",            //string
+        "payment_request": "...",   //string
+        "add_index": "...",         //string
+        "description": "...",       //string
+        "amt": ... ,                //int
+        "ispaid": ...               //bool
+    }
+
 # Data structures
 
 ## Transaction object
     
     {
         "type": "...", // string, type of txs. Types:
-	               // bitcoind_internal_tx   - moves to user btc address or account
-		       // bitcoind_tx   - received by address or account
-		       // paid_invoice  - user paid someone's invoice
-		       // sent_coins - user sent coins by lnd to someone's btc account
-		       // received_invoice_payments - user received payments by invoice
-	"txid": "...", // string, internal tx id. not related to onchain transaction id
+                       // bitcoind_internal_tx   - moves to user btc address or account
+                       // bitcoind_tx   - received by address or account
+                       // paid_invoice  - user paid someone's invoice
+                       // sent_coins - user sent coins by lnd to someone's btc account
+                       // received_invoice_payments - user received payments by invoice
+        "txid": "...", // string, internal tx id. not related to onchain transaction id
         "amt": 666, // satoshi, int
         "fee": 11, // satoshi, int
         "timestamp": 1234567, // int, unixtime
