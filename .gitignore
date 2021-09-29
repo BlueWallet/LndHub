@@ -2,6 +2,7 @@
 
 admin.macaroon
 tls.cert
+build/
 logs/
 
 # dependencies

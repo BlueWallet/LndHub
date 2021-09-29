@@ -1,0 +1,15 @@
+*
+!build/
+!class/
+!controllers/
+!scripts/
+!static/
+!templates/
+!utils/
+!*.js
+!.babelrc
+!.eslint*
+!admin.macaroon
+!package*.json
+!rpc.proto
+!tls.cert
