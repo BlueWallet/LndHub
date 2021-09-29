@@ -5,7 +5,9 @@ let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
 const MIN_BTC_BLOCK = 670000;
-console.log('using config', JSON.stringify(config));
+if (process.env.NODE_ENV !== 'prod') {
+  console.log('using config', JSON.stringify(config));
+}
 
 var Redis = require('ioredis');
 var redis = new Redis(config.redis);
