@@ -34,7 +34,7 @@
     "jayson": "^3.6.4",
     "morgan": "^1.10.0",
     "mustache": "^4.1.0",
-    "prettier": "^2.3.0",
+    "prettier": "^2.4.0",
     "qr-image": "3.2.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
