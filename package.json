@@ -12,7 +12,7 @@
   "author": "Igor Korsakov <overtorment@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@babel/cli": "^7.14.8",
+    "@babel/cli": "^7.15.7",
     "@babel/core": "^7.15.0",
     "@babel/eslint-parser": "^7.14.2",
     "@babel/node": "^7.14.9",
