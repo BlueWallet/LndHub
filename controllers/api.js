@@ -527,7 +527,7 @@ router.get('/getchaninfo/:chanid', async function (req, res) {
   res.send('');
 });
 
-module.exports = router;
+export default  router;
 
 // ################# HELPERS ###########################
 

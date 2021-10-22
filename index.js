@@ -55,4 +55,4 @@ const bindPort = process.env.PORT || 3000;
 let server = app.listen(bindPort, bindHost, function () {
   logger.log('BOOTING UP', 'Listening on ' + bindHost + ':' + bindPort);
 });
-module.exports = server;
+export default server;

@@ -74,6 +74,6 @@ class TxDecoder {
   }
 }
 
-module.exports.decodeRawHex = (rawTx, network = bitcoin.networks.bitcoin) => {
+export function decodeRawHex(rawTx, network = bitcoin.networks.bitcoin) {
   return new TxDecoder(rawTx, network).decode();
 };
