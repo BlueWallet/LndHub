@@ -1,10 +1,10 @@
-import { Lock } from './Lock';
+import { Lock } from './Lock.js';
 
-var crypto = require('crypto');
-var lightningPayReq = require('bolt11');
+import * as  crypto from 'crypto';
+import lightningPayReq from 'bolt11';
 import { BigNumber } from 'bignumber.js';
 import { decodeRawHex } from '../btc-decoder';
-const config = require('../config');
+import config from '../config.js';
 
 // static cache:
 let _invoice_ispaid_cache = {};

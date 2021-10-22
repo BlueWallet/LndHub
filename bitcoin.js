@@ -1,7 +1,7 @@
 // setup bitcoind rpc
-const config = require('./config');
-let jayson = require('jayson/promise');
-let url = require('url');
+import config from './config.js';
+import jayson from 'jayson/promise/index.js';
+import url from 'url';
 if (config.bitcoind) {
   let rpc = url.parse(config.bitcoind.rpc);
   rpc.timeout = 15000;

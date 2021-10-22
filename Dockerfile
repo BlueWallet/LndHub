@@ -17,7 +17,7 @@ WORKDIR /lndhub
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm i
+RUN npm i --only=production
 
 # Copy project files and folders to the current working directory
 COPY . .

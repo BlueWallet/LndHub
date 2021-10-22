@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
+import * as fs from 'fs';
+import mustache from 'mustache';
+import lightning from '../lightning';
+import logger from '../utils/logger';
+import qr from 'qr-image';
 const router = express.Router();
-const fs = require('fs');
-const mustache = require('mustache');
-const lightning = require('../lightning');
-const logger = require('../utils/logger');
-const qr = require('qr-image');
 
 let lightningGetInfo = {};
 let lightningListChannels = {};

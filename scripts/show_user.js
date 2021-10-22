@@ -1,9 +1,12 @@
 import { User } from '../class/';
 import { BigNumber } from 'bignumber.js';
-const config = require('../config');
+import config from '../config.js';
 
-var Redis = require('ioredis');
-var redis = new Redis(config.redis);
+import Redis from 'ioredis';
+
+import bitcoinclient from '../bitcoin.js';
+import lightning from '../lightning.js';
+const redis = new Redis(config.redis);
 
 redis.info(function (err, info) {
   if (err || !info) {
@@ -12,8 +15,6 @@ redis.info(function (err, info) {
   }
 });
 
-let bitcoinclient = require('../bitcoin');
-let lightning = require('../lightning');
 
 (async () => {
   let userid = process.argv[2];

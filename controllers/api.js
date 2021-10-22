@@ -1,13 +1,16 @@
 import { User, Lock, Paym, Invo } from '../class/';
 import Frisbee from 'frisbee';
-const config = require('../config');
-let express = require('express');
-let router = express.Router();
-let logger = require('../utils/logger');
+import express from 'express';
+import Redis from 'ioredis';
+import rateLimit from 'express-rate-limit';
+import bitcoinclient from '../bitcoin.js';
+import lightning from '../lightning.js';
+import logger from '../utils/logger.js';
+import config from '../config.js';
 const MIN_BTC_BLOCK = 670000;
+const router = express.Router();
 console.log('using config', JSON.stringify(config));
 
-var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 redis.monitor(function (err, monitor) {
   monitor.on('monitor', function (time, args, source, database) {
@@ -15,14 +18,6 @@ redis.monitor(function (err, monitor) {
   });
 });
 
-/****** START SET FEES FROM CONFIG AT STARTUP ******/
-/** GLOBALS */
-global.forwardFee = config.forwardReserveFee || 0.01;
-global.internalFee = config.intraHubFee || 0.003;
-/****** END SET FEES FROM CONFIG AT STARTUP ******/
-
-let bitcoinclient = require('../bitcoin');
-let lightning = require('../lightning');
 let identity_pubkey = false;
 // ###################### SMOKE TESTS ########################
 
@@ -131,7 +126,6 @@ if (config.enableUpdateDescribeGraph) {
 
 // ######################## ROUTES ########################
 
-const rateLimit = require('express-rate-limit');
 const postLimiter = rateLimit({
   windowMs: 30 * 60 * 1000,
   max: config.postRateLimit || 100,

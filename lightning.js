@@ -1,8 +1,9 @@
 // setup lnd rpc
-const config = require('./config');
-var fs = require('fs');
-var grpc = require('@grpc/grpc-js');
-const protoLoader = require('@grpc/proto-loader');
+import config from './config.js';
+import fs from 'fs';
+import grpc from '@grpc/grpc-js';
+import protoLoader from '@grpc/proto-loader';
+
 const loaderOptions = {
   keepCase: true,
   longs: String,
@@ -10,6 +11,7 @@ const loaderOptions = {
   defaults: true,
   oneofs: true,
 };
+
 const packageDefinition = protoLoader.loadSync('rpc.proto', loaderOptions);
 var lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;
 

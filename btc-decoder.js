@@ -1,5 +1,5 @@
-const bitcoin = require('bitcoinjs-lib');
-const classify = require('bitcoinjs-lib/src/classify');
+import bitcoin from 'bitcoinjs-lib';
+import classify from 'bitcoinjs-lib/src/classify.js';
 
 const decodeFormat = (tx) => ({
   txid: tx.getId(),

@@ -1,5 +1,4 @@
 {
-  "parser": "@babel/eslint-parser",
   "plugins": [
       "prettier"
   ],
@@ -17,5 +16,6 @@
   "env":{
     "es6": true
   },
-  "globals": { "fetch": false }
+  "globals": { "fetch": false },
+  "sourceType": "module"
 }

@@ -1,6 +1,5 @@
-var crypto = require('crypto');
-var lightningPayReq = require('bolt11');
-import { BigNumber } from 'bignumber.js';
+import * as crypto from 'crypto';
+import lightningPayReq from 'bolt11';
 
 export class Paym {
   constructor(redis, bitcoindrpc, lightning) {
