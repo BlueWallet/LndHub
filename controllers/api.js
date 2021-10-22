@@ -11,7 +11,7 @@ const MIN_BTC_BLOCK = 670000;
 const router = express.Router();
 console.log('using config', JSON.stringify(config));
 
-var redis = new Redis(config.redis);
+const redis = new Redis(config.redis);
 redis.monitor(function (err, monitor) {
   monitor.on('monitor', function (time, args, source, database) {
     // console.log('REDIS', JSON.stringify(args));
@@ -293,7 +293,7 @@ router.post('/payinvoice', async function (req, res) {
 
       // else - regular lightning network payment:
 
-      var call = lightning.sendPayment();
+      const call = lightning.sendPayment();
       call.on('data', async function (payment) {
         // payment callback
         await u.unlockFunds(req.body.invoice);

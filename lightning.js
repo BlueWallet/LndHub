@@ -13,10 +13,10 @@ const loaderOptions = {
 };
 
 const packageDefinition = protoLoader.loadSync('rpc.proto', loaderOptions);
-var lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;
+const lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;
 
 process.env.GRPC_SSL_CIPHER_SUITES = 'HIGH+ECDSA';
-var lndCert;
+let lndCert;
 if (process.env.TLSCERT) {
   lndCert = Buffer.from(process.env.TLSCERT, 'hex');
 } else {
@@ -41,7 +41,7 @@ let creds = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
 // trying to unlock the wallet:
 if (config.lnd.password) {
   process.env.VERBOSE && console.log('trying to unlock the wallet');
-  var walletUnlocker = new lnrpc.WalletUnlocker(config.lnd.url, creds);
+  const walletUnlocker = new lnrpc.WalletUnlocker(config.lnd.url, creds);
   walletUnlocker.unlockWallet(
     {
       wallet_password: Buffer.from(config.lnd.password).toString('base64'),

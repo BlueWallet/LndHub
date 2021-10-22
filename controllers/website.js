@@ -107,7 +107,7 @@ router.get('/qr', function (req, res) {
   }
   const customPath = req.url.replace('/qr', '');
   const url = 'bluewallet:setlndhuburl?url=' + encodeURIComponent(req.protocol + '://' + host + customPath);
-  var code = qr.image(url, { type: 'png' });
+  const code = qr.image(url, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);
 });
