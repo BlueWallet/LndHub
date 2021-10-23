@@ -18,6 +18,13 @@ redis.monitor(function (err, monitor) {
   });
 });
 
+
+/****** START SET FEES FROM CONFIG AT STARTUP ******/
+/** GLOBALS */
+global.forwardFee = config.forwardReserveFee || 0.01;
+global.internalFee = config.intraHubFee || 0.003;
+/****** END SET FEES FROM CONFIG AT STARTUP ******/
+
 let identity_pubkey = false;
 // ###################### SMOKE TESTS ########################
 
