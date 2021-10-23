@@ -3,14 +3,14 @@
  * so in our database. Does this only for invoices younger than week. *
  */
 import { Invo } from '../class/';
-const config = require('../config');
+import config from '../config.js';
 
-const fs = require('fs');
-const Redis = require('ioredis');
+import fs from 'fs';
+import Redis from 'ioredis';
 const redis = new Redis(config.redis);
 
-let bitcoinclient = require('../bitcoin');
-let lightning = require('../lightning');
+import bitcoinclient from '../bitcoin.js';
+import lightning from '../lightning.js';
 
 (async () => {
   console.log('fetching listinvoices...');

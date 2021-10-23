@@ -3,15 +3,15 @@
  * sentout payments from LND. If locked payment is in there we moe locked payment to array of real payments for the user
  * (it is effectively spent coins by user), if not - we attempt to pay it again (if it is not too old).
  */
-import { User, Lock, Paym } from '../class/';
-const config = require('../config');
+import { User, Paym } from '../class/';
+import config from '../config.js';
 
-const fs = require('fs');
-var Redis = require('ioredis');
-var redis = new Redis(config.redis);
+import * as fs from 'fs';
+import Redis from 'ioredis';
 
-let bitcoinclient = require('../bitcoin');
-let lightning = require('../lightning');
+import bitcoinclient from '../bitcoin.js';
+import lightning from '../lightning.js';
+const redis = new Redis(config.redis);
 
 (async () => {
   let keys = await redis.keys('locked_payments_for_*');

@@ -25,4 +25,4 @@ if (process.env.CONFIG) {
   config = JSON.parse(process.env.CONFIG);
 }
 
-module.exports = config;
+export default config;

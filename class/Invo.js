@@ -1,5 +1,5 @@
-var crypto = require('crypto');
-var lightningPayReq = require('bolt11');
+import crypto from 'crypto';
+import lightningPayReq from 'bolt11';
 
 export class Invo {
   constructor(redis, bitcoindrpc, lightning) {
@@ -80,7 +80,7 @@ export class Invo {
   }
 
   async savePreimage(preimageHex) {
-    const paymentHashHex = require('crypto').createHash('sha256').update(Buffer.from(preimageHex, 'hex')).digest('hex');
+    const paymentHashHex = crypto.createHash('sha256').update(Buffer.from(preimageHex, 'hex')).digest('hex');
     const key = 'preimage_for_' + paymentHashHex;
     await this._redis.set(key, preimageHex);
     await this._redis.expire(key, 3600 * 24 * 30); // 1 month

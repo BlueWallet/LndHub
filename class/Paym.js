@@ -1,6 +1,4 @@
-var crypto = require('crypto');
-var lightningPayReq = require('bolt11');
-import { BigNumber } from 'bignumber.js';
+import lightningPayReq from 'bolt11';
 
 export class Paym {
   constructor(redis, bitcoindrpc, lightning) {
@@ -31,7 +29,7 @@ export class Paym {
     if (!this._bolt11) throw new Error('bolt11 is not provided');
     if (!this._decoded) await this.decodePayReqViaRpc(this._bolt11);
 
-    var request = {
+    const request = {
       pub_key: this._decoded.destination,
       amt: this._decoded.num_satoshis,
       final_cltv_delta: 144,

@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
+import * as fs from 'fs';
+import mustache from 'mustache';
+import lightning from '../lightning';
+import logger from '../utils/logger';
+import qr from 'qr-image';
 const router = express.Router();
-const fs = require('fs');
-const mustache = require('mustache');
-const lightning = require('../lightning');
-const logger = require('../utils/logger');
-const qr = require('qr-image');
 
 let lightningGetInfo = {};
 let lightningListChannels = {};
@@ -107,7 +107,7 @@ router.get('/qr', function (req, res) {
   }
   const customPath = req.url.replace('/qr', '');
   const url = 'bluewallet:setlndhuburl?url=' + encodeURIComponent(req.protocol + '://' + host + customPath);
-  var code = qr.image(url, { type: 'png' });
+  const code = qr.image(url, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);
 });
@@ -116,4 +116,4 @@ router.use(function (req, res) {
   res.status(404).send('404');
 });
 
-module.exports = router;
+export default router;

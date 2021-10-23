@@ -73,7 +73,7 @@ const important_channels = {
   // },
 };
 
-let lightning = require('../lightning');
+import lightning from '../lightning.js';
 
 lightning.listChannels({}, function (err, response) {
   console.log();

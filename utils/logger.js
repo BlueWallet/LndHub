@@ -6,7 +6,7 @@
 * Author: Michael Samonte
 *
 + + + + + + + + + + + + + + + + + + + + + */
-let fs = require('fs');
+import * as fs from 'fs';
 import { createLogger, format, transports } from 'winston';
 
 /* + + + + + + + + + + + + + + + + + + + + +
