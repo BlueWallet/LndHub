@@ -3,7 +3,7 @@
  * sentout payments from LND. If locked payment is in there we moe locked payment to array of real payments for the user
  * (it is effectively spent coins by user), if not - we attempt to pay it again (if it is not too old).
  */
-import { User, Lock, Paym } from '../class/';
+import { User, Paym } from '../class/';
 const config = require('../config');
 
 /****** START SET FEES FROM CONFIG AT STARTUP ******/
@@ -12,7 +12,6 @@ global.forwardFee = config.forwardReserveFee || 0.01;
 global.internalFee = config.intraHubFee || 0.003;
 /****** END SET FEES FROM CONFIG AT STARTUP ******/
 
-const fs = require('fs');
 var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 
@@ -28,7 +27,6 @@ let lightning = require('../lightning');
   let listPayments = await tempPaym.listPayments();
   // DEBUG let listPayments = JSON.parse(fs.readFileSync('listpayments.txt').toString('ascii'));
   console.log('done', 'got', listPayments['payments'].length, 'payments');
-  fs.writeFileSync('listPayments.json', JSON.stringify(listPayments['payments'], null, 2));
 
   for (let key of keys) {
     const userid = key.replace('locked_payments_for_', '');
