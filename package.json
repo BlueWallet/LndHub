@@ -30,7 +30,7 @@
     "express-rate-limit": "^5.4.1",
     "frisbee": "^3.1.4",
     "helmet": "^4.6.0",
-    "ioredis": "^4.27.10",
+    "ioredis": "^4.28.0",
     "jayson": "^3.6.4",
     "morgan": "^1.10.0",
     "mustache": "^4.1.0",
