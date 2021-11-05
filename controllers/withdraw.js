@@ -4,6 +4,7 @@ let { bech32 } = require('bech32')
 const config = require('../config');
 const fs = require('fs');
 const mustache = require('mustache');
+const qr = require('qr-image');
 
 let express = require('express');
 let router = express.Router();
@@ -33,10 +34,8 @@ router.post('/createwithdrawlink', async function (req, res) {
   try {
     let savedWidr = await widr.saveWithdrawal();
     let withdrawPageLink = req.protocol + "://" + req.headers.host + withdrawPageRoute + savedWidr.secret;
-    let withdrawAPILink = req.protocol + "://" + req.headers.host + withdrawPrimaryAPIRoute + savedWidr.secret;
-    let words = bech32.toWords(Buffer.from(withdrawAPILink, 'utf8'));
     let responsePayload = {
-      lnurl: bech32.encode("lnurl", words, 1023),
+      lnurl: getLNURLFromSecret(req, savedWidr.secret),
       withdrawPage: withdrawPageLink
     }
     res.send(responsePayload);
@@ -57,10 +56,22 @@ router.get('/withdraw/:secret', async function (req, res) {
   }
   let html = fs.readFileSync('./templates/withdraw.html').toString('utf8');
   let parsedWd = JSON.parse(wd);
-  return res.status(200).send(mustache.render(html, Object.assign({}, {amount: parsedWd.amount})));
+  return res.status(200).send(mustache.render(html, Object.assign({}, {lnurl: getLNURLFromSecret(req, parsedWd.secret)})));
   } catch(Err) {
     return res.status(500).send(Err.message)
   }
 });
+
+router.get('/withdrawqr/:lnurl', function (req, res) {
+  var code = qr.image(req.params.lnurl, { type: 'png' });
+  res.setHeader('Content-type', 'image/png');
+  code.pipe(res);
+});
+
+function getLNURLFromSecret(req, secret) {
+	let withdrawAPILink = req.protocol + "://" + req.headers.host + withdrawPrimaryAPIRoute + secret;
+	let words = bech32.toWords(Buffer.from(withdrawAPILink, 'utf8'));
+	return bech32.encode("lnurl", words, 1023);
+}
 
 module.exports = router;
