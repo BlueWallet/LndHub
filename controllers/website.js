@@ -2,9 +2,20 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const mustache = require('mustache');
+const config = require('../config');
 const lightning = require('../lightning');
 const logger = require('../utils/logger');
 const qr = require('qr-image');
+const { Widr } = require('../class');
+
+var Redis = require('ioredis');
+var redis = new Redis(config.redis);
+
+const rateLimit = require('express-rate-limit');
+const postLimiter = rateLimit({
+  windowMs: 30 * 60 * 1000,
+  max: config.postRateLimit || 100,
+});
 
 let lightningGetInfo = {};
 let lightningListChannels = {};
@@ -110,6 +121,22 @@ router.get('/qr', function (req, res) {
   var code = qr.image(url, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);
+});
+
+router.get('/withdraw/:secret', postLimiter, async function (req, res) {
+  logger.log('/withdraw', [req.id]);
+  res.setHeader('Content-Type', 'text/html');
+  try {
+  let wd = await new Widr(redis).lookUpWithdrawal(req.params.secret);
+  if (!wd) {
+    return res.status(404).send("not found, already claimed or expired")
+  }
+  let html = fs.readFileSync('./templates/withdraw.html').toString('utf8');
+  let parsedWd = JSON.parse(wd);
+  return res.status(200).send(mustache.render(html, Object.assign({}, {amount: parsedWd.amount})));
+  } catch(Err) {
+    return res.status(500).send(Err.message)
+  }
 });
 
 router.use(function (req, res) {

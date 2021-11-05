@@ -31,4 +31,8 @@ export class Widr {
     return withdrawal;
   }
 
+  async lookUpWithdrawal(secret) {
+    return await this._redis.get('withdrawal_link_' + secret);
+  }
+
 }

@@ -222,8 +222,8 @@ router.post('/createwithdrawlink', postLimiter, async function (req, res) {
   const widr = new Widr(redis, req.body.amt, u.getUserId());
   try {
     let savedWidr = await widr.saveWithdrawal();
-    let withdrawPageLink = "https://" + req.headers.host + withdrawPageRoute + savedWidr.secret;
-    let withdrawAPILink = "https://" + req.headers.host + withdrawPrimaryAPIRoute + savedWidr.secret;
+    let withdrawPageLink = req.protocol + "://" + req.headers.host + withdrawPageRoute + savedWidr.secret;
+    let withdrawAPILink = req.protocol + "://" + req.headers.host + withdrawPrimaryAPIRoute + savedWidr.secret;
     let words = bech32.toWords(Buffer.from(withdrawAPILink, 'utf8'));
     let responsePayload = {
       lnurl: bech32.encode("lnurl", words, 1023),
