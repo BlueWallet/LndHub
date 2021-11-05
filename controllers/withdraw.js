@@ -62,6 +62,25 @@ router.get('/withdraw/:secret', async function (req, res) {
   }
 });
 
+router.get(withdrawPrimaryAPIRoute + ':secret', async function (req, res) {
+	//look up wd from db
+	//check status
+	//respond with lnurl payload (description invoice must contain secret)
+});
+
+router.get(withdrawSecondaryAPIRoute + ':secret', async function (req, res) {
+	//look up wd from db
+	//check amount
+	//check status
+	//check if invoice description matches (contains secret)
+	//set status to pending in db
+	//get token for user
+	//use frisbee to call our own server impersonating as user and attempt to pay invoice
+	//callback: set to success (== remove) or failed
+	//Q: what if payment stuck?
+	//respond with lnurl payload and response from frisbee (success / fail / pending)
+});
+
 router.get('/withdrawqr/:lnurl', function (req, res) {
   var code = qr.image(req.params.lnurl, { type: 'png' });
   res.setHeader('Content-type', 'image/png');
