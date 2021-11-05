@@ -1,14 +1,11 @@
-import { User, Lock, Paym, Invo, Widr } from '../class/';
+import { User, Lock, Paym, Invo} from '../class/';
 import Frisbee from 'frisbee';
-let { bech32 } = require('bech32')
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
 const MIN_BTC_BLOCK = 670000;
-const withdrawPageRoute = "/withdraw/";
-const withdrawPrimaryAPIRoute = "/lnurl-withdraw-primary/";
-const withdrawSecondaryAPIRoute = "/lnurl-withdraw-secondary/";
+
 console.log('using config', JSON.stringify(config));
 
 var Redis = require('ioredis');
@@ -206,35 +203,7 @@ router.post('/addinvoice', postLimiter, async function (req, res) {
   );
 });
 
-router.post('/createwithdrawlink', postLimiter, async function (req, res) {
-  logger.log('/createwithdrawlink', [req.id]);
-  let u = new User(redis, bitcoinclient, lightning);
-  if (!(await u.loadByAuthorization(req.headers.authorization))) {
-    return errorBadAuth(res);
-  }
-  logger.log('/createwithdrawlink', [req.id, 'userid: ' + u.getUserId()]);
 
-  if (!req.body.amt || /*stupid NaN*/ !(req.body.amt > 0)) return errorBadArguments(res);
-
-  if (config.sunset) return errorSunsetAddInvoice(res);
-
-  // todo check if user's balance is sufficient at this time
-  const widr = new Widr(redis, req.body.amt, u.getUserId());
-  try {
-    let savedWidr = await widr.saveWithdrawal();
-    let withdrawPageLink = req.protocol + "://" + req.headers.host + withdrawPageRoute + savedWidr.secret;
-    let withdrawAPILink = req.protocol + "://" + req.headers.host + withdrawPrimaryAPIRoute + savedWidr.secret;
-    let words = bech32.toWords(Buffer.from(withdrawAPILink, 'utf8'));
-    let responsePayload = {
-      lnurl: bech32.encode("lnurl", words, 1023),
-      withdrawPage: withdrawPageLink
-    }
-    res.send(responsePayload);
-  } catch (Err) {
-    logger.log('', [req.id, 'error creating withdraw link:', Err.message, 'userid:', u.getUserId()]);
-    return errorGeneralServerError(res);
-  }
-});
 
 router.post('/payinvoice', async function (req, res) {
   let u = new User(redis, bitcoinclient, lightning);

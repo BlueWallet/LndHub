@@ -45,6 +45,7 @@ app.use(bodyParser.json(null)); // parse application/json
 
 app.use('/static', express.static('static'));
 app.use(require('./controllers/api'));
+app.use(require('./controllers/withdraw'));
 app.use(require('./controllers/website'));
 
 const bindHost = process.env.HOST || '0.0.0.0';
