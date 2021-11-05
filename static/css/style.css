@@ -29,6 +29,11 @@ body {
 .container24 {
 	padding: 24px;
 }
+.center {
+	text-align: center;
+	margin: auto;
+	width: 50%;
+}
 .container16 {
 	padding: 16px;
 }

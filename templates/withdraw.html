@@ -65,10 +65,18 @@
                 </g>
             </svg>
         </div>
-        <div class="box container24">
-            <h3>LNURL</h3>
+        <div class="box container24 center">
+            <h3>You've been sent bitcoin!</h3>
+            <h4>{{amount}} sats</h4>
             <img src="/withdrawqr/{{lnurl}}" class="qr">
-            <a href='lightning:{{lnurl}}'>Open in wallet</a>
+            <p>
+                <a href='lightning:{{lnurl}}'>Open in wallet</a>
+            </p>
+            <p>Use a Lightning wallet to scan the QR code or open the link. Don't have one? Try <a href='https://bluewallet.io'>Bluewallet</a>.</p>
         </div>
+    <footer>
+        <a href="https://bluewallet.io/lndhub" target="_blank">about</a> | 
+        <a href="https://t.me/bluewallet" target="_blank">community</a>
+    </footer>
 </body>
 </html>

@@ -56,7 +56,7 @@ router.get('/withdraw/:secret', async function (req, res) {
   }
   let html = fs.readFileSync('./templates/withdraw.html').toString('utf8');
   let parsedWd = JSON.parse(wd);
-  return res.status(200).send(mustache.render(html, Object.assign({}, {lnurl: getLNURLFromSecret(req, parsedWd.secret)})));
+  return res.status(200).send(mustache.render(html, Object.assign({}, {amount: parsedWd.amount ,lnurl: getLNURLFromSecret(req, parsedWd.secret)})));
   } catch(Err) {
     return res.status(500).send(Err.message)
   }
