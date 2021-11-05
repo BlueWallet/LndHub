@@ -1,11 +1,10 @@
-import { User, Lock, Paym, Invo} from '../class/';
+import { User, Lock, Paym, Invo } from '../class/';
 import Frisbee from 'frisbee';
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
 const MIN_BTC_BLOCK = 670000;
-
 console.log('using config', JSON.stringify(config));
 
 var Redis = require('ioredis');
@@ -202,8 +201,6 @@ router.post('/addinvoice', postLimiter, async function (req, res) {
     },
   );
 });
-
-
 
 router.post('/payinvoice', async function (req, res) {
   let u = new User(redis, bitcoinclient, lightning);

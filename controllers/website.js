@@ -6,7 +6,6 @@ const lightning = require('../lightning');
 const logger = require('../utils/logger');
 const qr = require('qr-image');
 
-
 let lightningGetInfo = {};
 let lightningListChannels = {};
 function updateLightning() {
@@ -112,7 +111,6 @@ router.get('/qr', function (req, res) {
   res.setHeader('Content-type', 'image/png');
   code.pipe(res);
 });
-
 
 router.use(function (req, res) {
   res.status(404).send('404');
