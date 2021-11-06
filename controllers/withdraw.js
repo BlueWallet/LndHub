@@ -14,6 +14,10 @@ const withdrawPageRoute = "/withdraw/";
 const withdrawPrimaryAPIRoute = "/lnurl-withdraw-primary/";
 const withdrawSecondaryAPIRoute = "/lnurl-withdraw-secondary/";
 
+const STATUS_UNCLAIMED = "unclaimed";
+const STATUS_PENDING = "pending";
+const MSAT_PER_SAT = 1000;
+
 var Redis = require('ioredis');
 var redis = new Redis(config.redis);
 
@@ -30,7 +34,7 @@ router.post('/createwithdrawlink', async function (req, res) {
   if (config.sunset) return errorSunsetAddInvoice(res);
 
   // todo check if user's balance is sufficient at this time
-  const widr = new Widr(redis, req.body.amt, u.getUserId());
+  const widr = new Widr(redis, req.body.amt, u.getUserId(), STATUS_UNCLAIMED);
   try {
     let savedWidr = await widr.saveWithdrawal();
     let withdrawPageLink = req.protocol + "://" + req.headers.host + withdrawPageRoute + savedWidr.secret;
@@ -63,18 +67,37 @@ router.get('/withdraw/:secret', async function (req, res) {
 });
 
 router.get(withdrawPrimaryAPIRoute + ':secret', async function (req, res) {
-	//look up wd from db
-	//check status
-	//respond with lnurl payload (description invoice must contain secret)
-});
+  try {
+    let wd = await new Widr(redis).lookUpWithdrawal(req.params.secret);
+    if (!wd) {
+      return lnurlError(res, 404, "Withdrawal already claimed, expired or does not exist.")
+    }
+    let parsedWd = JSON.parse(wd);
+    if (parsedWd.status == STATUS_PENDING){
+      return lnurlError(res, 400, "Payment is already pending.")
+    }
+    return res.send(
+    {
+      tag: "withdrawRequest", // type of LNURL
+      callback: req.protocol + "://" + req.headers.host + withdrawSecondaryAPIRoute + parsedWd.secret,
+      k1: parsedWd.secret,
+      defaultDescription: "LNDHub withdrawal " + parsedWd.secret,
+      minWithdrawable: parseInt(parsedWd.amount) * MSAT_PER_SAT,
+      maxWithdrawable: parseInt(parsedWd.amount) * MSAT_PER_SAT
+    })
+  }
+  catch (Err) {
+	  return lnurlError(res, 500, Err.message)
+  }
+})
 
 router.get(withdrawSecondaryAPIRoute + ':secret', async function (req, res) {
 	//look up wd from db
 	//check amount
 	//check status
 	//check if invoice description matches (contains secret)
-	//set status to pending in db
 	//get token for user
+	//set status to pending in db
 	//use frisbee to call our own server impersonating as user and attempt to pay invoice
 	//callback: set to success (== remove) or failed
 	//Q: what if payment stuck?
@@ -91,6 +114,13 @@ function getLNURLFromSecret(req, secret) {
 	let withdrawAPILink = req.protocol + "://" + req.headers.host + withdrawPrimaryAPIRoute + secret;
 	let words = bech32.toWords(Buffer.from(withdrawAPILink, 'utf8'));
 	return bech32.encode("lnurl", words, 1023);
+}
+
+function lnurlError(res, status, msg) {
+  return res.status(status).send({
+    status: 'ERROR',
+    reason: msg,
+  });
 }
 
 module.exports = router;

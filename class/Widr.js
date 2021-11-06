@@ -1,18 +1,15 @@
 var crypto = require('crypto');
 
-const STATUS_UNCLAIMED = "unclaimed"
-const STATUS_PENDING = "pending"
-
 export class Widr {
   /**
    *
    * @param {Redis} redis
    */
-  constructor(redis, amount, userid) {
+  constructor(redis, amount, userid, status) {
     this._redis = redis;
     this._userid = userid;
     this.amount = amount;
-    this.status = STATUS_UNCLAIMED;
+    this.status = status;
     let buffer = crypto.randomBytes(10);
     let secret = buffer.toString('hex');
     this.secret = secret;
