@@ -164,15 +164,38 @@ router.post('/auth', postLimiter, async function (req, res) {
   if (req.body.refresh_token) {
     // need to refresh token
     if (await u.loadByRefreshToken(req.body.refresh_token)) {
-      res.send({ refresh_token: u.getRefreshToken(), access_token: u.getAccessToken() });
+      const body = {
+        refresh_token: u.getRefreshToken(),
+        access_token: u.getAccessToken()
+      }
+      if (config.auth.accessTokenLifeTime) {
+        body.access_token_expires_in = config.auth.accessTokenLifeTime
+      }
+      if (config.auth.refreshTokenLifeTime) {
+        body.refresh_token_expires_in = config.auth.refreshTokenLifeTime
+      }
+      res.send(body);
     } else {
       return errorBadAuth(res);
     }
   } else {
     // need to authorize user
     let result = await u.loadByLoginAndPassword(req.body.login, req.body.password);
-    if (result) res.send({ refresh_token: u.getRefreshToken(), access_token: u.getAccessToken() });
-    else errorBadAuth(res);
+    if (result) {
+      const body = {
+        refresh_token: u.getRefreshToken(),
+        access_token: u.getAccessToken()
+      }
+      if (config.auth.accessTokenLifeTime) {
+        body.access_token_expires_in = config.auth.accessTokenLifeTime
+      }
+      if (config.auth.refreshTokenLifeTime) {
+        body.refresh_token_expires_in = config.auth.refreshTokenLifeTime
+      }
+      res.send(body);
+    } else {
+      errorBadAuth(res);
+    }
   }
 });
 
