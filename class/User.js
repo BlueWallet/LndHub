@@ -37,7 +37,7 @@ export class User {
     return this._password;
   }
   getAccessToken() {
-    return this._acess_token;
+    return this._access_token;
   }
   getRefreshToken() {
     return this._refresh_token;
@@ -48,23 +48,34 @@ export class User {
     let access_token = authorization.replace('Bearer ', '');
     let userid = await this._redis.get('userid_for_' + access_token);
 
-    if (userid) {
-      this._userid = userid;
-      return true;
+    if (!userid) {
+      return false
     }
 
-    return false;
+    let refresh_token = await this._redis.get('refresh_token_for_' + userid)
+    if (refresh_token === access_token) {
+      return false
+    }
+
+    this._userid = userid;
+    return true;
   }
 
   async loadByRefreshToken(refresh_token) {
     let userid = await this._redis.get('userid_for_' + refresh_token);
-    if (userid) {
-      this._userid = userid;
-      await this._generateTokens();
-      return true;
+
+    if (!userid) {
+      return false;
     }
 
-    return false;
+    let access_token = await this._redis.get('access_token_for_' + userid)
+    if (access_token === refresh_token) {
+      return false
+    }
+
+    this._userid = userid;
+    await this._generateTokens();
+    return true;
   }
 
   async create() {
@@ -479,16 +490,55 @@ export class User {
   }
 
   async _generateTokens() {
-    let buffer = crypto.randomBytes(20);
-    this._acess_token = buffer.toString('hex');
+    await this._invalidateCurrentTokens();
 
-    buffer = crypto.randomBytes(20);
+    await this._generateAccessToken();
+    await this._generateRefreshToken();
+  }
+
+  async _invalidateCurrentTokens() {
+    this._access_token = await this._redis.get('access_token_for_' + this._userid);
+    this._refresh_token = await this._redis.get('refresh_token_for_' + this._userid);
+
+    await this._redis.del('access_token_for_' + this._userid);
+    await this._redis.del('refresh_token_for_' + this._userid);
+    await this._redis.del('userid_for_' + this._access_token);
+    await this._redis.del('userid_for_' + this._refresh_token);
+
+    this._access_token = null
+    this._refresh_token = null
+  }
+
+  async _generateAccessToken() {
+    const buffer = crypto.randomBytes(20);
+    this._access_token = buffer.toString('hex');
+
+    const key_UId_AT = 'userid_for_' + this._access_token;
+    const key_AT_UId = 'access_token_for_' + this._userid;
+
+    await this._redis.set(key_UId_AT, this._userid);
+    await this._redis.set(key_AT_UId, this._access_token);
+
+    if (config.auth.accessTokenLifeTime) {
+      await this._redis.expire(key_UId_AT, config.auth.accessTokenLifeTime);
+      await this._redis.expire(key_AT_UId, config.auth.accessTokenLifeTime);
+    }
+  }
+
+  async _generateRefreshToken() {
+    const buffer = crypto.randomBytes(20);
     this._refresh_token = buffer.toString('hex');
 
-    await this._redis.set('userid_for_' + this._acess_token, this._userid);
-    await this._redis.set('userid_for_' + this._refresh_token, this._userid);
-    await this._redis.set('access_token_for_' + this._userid, this._acess_token);
-    await this._redis.set('refresh_token_for_' + this._userid, this._refresh_token);
+    const key_UId_RT = 'userid_for_' + this._refresh_token;
+    const key_RT_UId = 'refresh_token_for_' + this._userid;
+
+    await this._redis.set(key_UId_RT, this._userid);
+    await this._redis.set(key_RT_UId, this._refresh_token);
+
+    if (config.auth.refreshTokenLifeTime) {
+      await this._redis.expire(key_UId_RT, config.auth.refreshTokenLifeTime);
+      await this._redis.expire(key_RT_UId, config.auth.refreshTokenLifeTime);
+    }
   }
 
   async _saveUserToDatabase() {
