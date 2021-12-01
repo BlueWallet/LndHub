@@ -159,38 +159,28 @@ router.post('/create', postLimiter, async function (req, res) {
 
 router.post('/auth', postLimiter, async function (req, res) {
   logger.log('/auth', [req.id]);
-  if (!((req.body.login && req.body.password) || req.body.refresh_token)) return errorBadArguments(res);
 
-  let u = new User(redis, bitcoinclient, lightning);
+  const u = new User(redis, bitcoinclient, lightning);
 
-  if (req.body.refresh_token) {
-    // need to refresh token
-    if (await u.loadByRefreshToken(req.body.refresh_token)) {
-      const body = {
-        token_type: 'bearer',
-        refresh_token: u.getRefreshToken(),
-        access_token: u.getAccessToken(),
-        expires_in: accessTokenLifeTime,
-      }
-      res.send(body);
-    } else {
-      return errorBadAuth(res);
-    }
+  let authenticated = false
+  if (req.body.login && req.body.password) {
+    authenticated = await u.loadByLoginAndPassword(req.body.login, req.body.password);
+  } else if (req.body.refresh_token) {
+    authenticated = await u.loadByRefreshToken(req.body.refresh_token)
   } else {
-    // need to authorize user
-    let result = await u.loadByLoginAndPassword(req.body.login, req.body.password);
-    if (result) {
-      const body = {
-        token_type: 'bearer',
-        refresh_token: u.getRefreshToken(),
-        access_token: u.getAccessToken(),
-        expires_in: accessTokenLifeTime
-      }
-      res.send(body);
-    } else {
-      errorBadAuth(res);
-    }
+    return errorBadArguments(res);
   }
+
+  if (!authenticated) {
+    return errorBadAuth(res);
+  }
+
+  return res.send({
+    token_type: 'bearer',
+    refresh_token: u.getRefreshToken(),
+    access_token: u.getAccessToken(),
+    expires_in: accessTokenLifeTime,
+  });
 });
 
 router.post('/addinvoice', postLimiter, async function (req, res) {
