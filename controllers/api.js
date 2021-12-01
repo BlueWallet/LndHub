@@ -21,6 +21,8 @@ redis.monitor(function (err, monitor) {
 /** GLOBALS */
 global.forwardFee = config.forwardReserveFee || 0.01;
 global.internalFee = config.intraHubFee || 0.003;
+global.accessTokenLifeTime = config.auth?.accessTokenLifeTime || 3600;
+global.refreshTokenLifeTime = config.auth?.refreshTokenLifeTime || 86400;
 /****** END SET FEES FROM CONFIG AT STARTUP ******/
 
 let bitcoinclient = require('../bitcoin');
@@ -165,14 +167,10 @@ router.post('/auth', postLimiter, async function (req, res) {
     // need to refresh token
     if (await u.loadByRefreshToken(req.body.refresh_token)) {
       const body = {
+        token_type: 'bearer',
         refresh_token: u.getRefreshToken(),
-        access_token: u.getAccessToken()
-      }
-      if (config.auth.accessTokenLifeTime) {
-        body.access_token_expires_in = config.auth.accessTokenLifeTime
-      }
-      if (config.auth.refreshTokenLifeTime) {
-        body.refresh_token_expires_in = config.auth.refreshTokenLifeTime
+        access_token: u.getAccessToken(),
+        expires_in: accessTokenLifeTime,
       }
       res.send(body);
     } else {
@@ -183,14 +181,10 @@ router.post('/auth', postLimiter, async function (req, res) {
     let result = await u.loadByLoginAndPassword(req.body.login, req.body.password);
     if (result) {
       const body = {
+        token_type: 'bearer',
         refresh_token: u.getRefreshToken(),
-        access_token: u.getAccessToken()
-      }
-      if (config.auth.accessTokenLifeTime) {
-        body.access_token_expires_in = config.auth.accessTokenLifeTime
-      }
-      if (config.auth.refreshTokenLifeTime) {
-        body.refresh_token_expires_in = config.auth.refreshTokenLifeTime
+        access_token: u.getAccessToken(),
+        expires_in: accessTokenLifeTime
       }
       res.send(body);
     } else {

@@ -511,10 +511,8 @@ export class User {
     await this._redis.set(key_UId_AT, this._userid);
     await this._redis.set(key_AT_UId, this._access_token);
 
-    if (config.auth.accessTokenLifeTime) {
-      await this._redis.expire(key_UId_AT, config.auth.accessTokenLifeTime);
-      await this._redis.expire(key_AT_UId, config.auth.accessTokenLifeTime);
-    }
+    await this._redis.expire(key_UId_AT, accessTokenLifeTime);
+    await this._redis.expire(key_AT_UId, accessTokenLifeTime);
   }
 
   async _generateRefreshToken() {
@@ -526,10 +524,8 @@ export class User {
     await this._redis.set(key_UId_RT, this._userid);
     await this._redis.set(key_RT_UId, this._refresh_token);
 
-    if (config.auth.refreshTokenLifeTime) {
-      await this._redis.expire(key_UId_RT, config.auth.refreshTokenLifeTime);
-      await this._redis.expire(key_RT_UId, config.auth.refreshTokenLifeTime);
-    }
+    await this._redis.expire(key_UId_RT, refreshTokenLifeTime);
+    await this._redis.expire(key_RT_UId, refreshTokenLifeTime);
   }
 
   async _saveUserToDatabase() {
