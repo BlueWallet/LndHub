@@ -325,18 +325,19 @@ export class User {
   }
 
   /**
-   * User's onchain txs that are >= 3 confs
+   * User's onchain txs that are >= configured target confirmations
    * Queries bitcoind RPC.
    *
    * @returns {Promise<Array>}
    */
   async getTxs() {
     const addr = await this.getOrGenerateAddress();
+    const targetConfirmations = config.bitcoin.confirmations;
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations >= 3 && tx.address === addr && tx.category === 'receive') {
+      if (tx.confirmations >= targetConfirmations && tx.address === addr && tx.category === 'receive') {
         tx.type = 'bitcoind_tx';
         result.push(tx);
       }
@@ -461,17 +462,18 @@ export class User {
   }
 
   /**
-   * Returning onchain txs for user's address that are less than 3 confs
+   * Returning onchain txs for user's address that are less than configured target confirmations
    *
    * @returns {Promise<Array>}
    */
   async getPendingTxs() {
     const addr = await this.getOrGenerateAddress();
+    const targetConfirmations = config.bitcoin.confirmations;
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations < 3 && tx.address === addr && tx.category === 'receive') {
+      if (tx.confirmations < targetConfirmations && tx.address === addr && tx.category === 'receive') {
         result.push(tx);
       }
     }
