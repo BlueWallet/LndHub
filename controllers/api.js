@@ -444,6 +444,26 @@ router.get('/gettxs', async function (req, res) {
   }
 });
 
+router.get('/getuserinvoices/:invoice_hash', postLimiter, async function (req, res) {
+  const invoiceHash = req.params.invoice_hash;
+  logger.log('/getuserinvoices/' + invoiceHash, [req.id]);
+
+  let u = new User(redis, bitcoinclient, lightning);
+  if (!(await u.loadByAuthorization(req.headers.authorization))) {
+    return errorBadAuth(res);
+  }
+
+  logger.log('/getuserinvoices'/ + invoiceHash, [req.id, 'userid: ' + u.getUserId()]);
+
+  try {
+    const invoice = await u.getUserInvoiceByHash(invoiceHash)
+    res.send(invoice || {})
+  } catch (Err) {
+    logger.log('', [req.id, 'error getting user invoice ' + invoiceHash + ':', Err.message, 'userid:', u.getUserId()]);
+    res.send({});
+  }
+});
+
 router.get('/getuserinvoices', postLimiter, async function (req, res) {
   logger.log('/getuserinvoices', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);

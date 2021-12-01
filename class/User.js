@@ -320,6 +320,11 @@ export class User {
     return result;
   }
 
+  async getUserInvoiceByHash(hash) {
+    const invoices = await this.getUserInvoices();
+    return invoices.find(i => Buffer.from(i['r_hash']).toString('hex') === hash);
+  }
+
   async addAddress(address) {
     await this._redis.set('bitcoin_address_for_' + this._userid, address);
   }
