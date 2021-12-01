@@ -415,6 +415,50 @@ router.get('/getinfo', postLimiter, async function (req, res) {
   });
 });
 
+router.get('/gettxs/:tx_hash', async function (req, res) {
+  const txHash = req.params.tx_hash;
+
+  logger.log('/gettxs/' + txHash, [req.id]);
+  let u = new User(redis, bitcoinclient, lightning);
+  if (!(await u.loadByAuthorization(req.headers.authorization))) {
+    return errorBadAuth(res);
+  }
+  logger.log('/gettxs/' + txHash, [req.id, 'userid: ' + u.getUserId()]);
+
+  if (!(await u.getAddress())) await u.generateAddress(); // onchain addr needed further
+  try {
+    await u.accountForPosibleTxids();
+
+    let tx = await u.getLightningTxByHash(txHash)
+    if (tx) {
+      return res.send(tx)
+    }
+
+    let lockedPayments = await u.getLockedPayments();
+    tx = lockedPayments.find(tx => Buffer.from(tx.r_hash).toString('hex') === hash)
+    if (tx) {
+      return res.send({
+        type: 'paid_invoice',
+        fee: Math.floor(tx.amount * forwardFee) /* feelimit */,
+        value: tx.amount + Math.floor(tx.amount * forwardFee) /* feelimit */,
+        timestamp: tx.timestamp,
+        memo: 'Payment in transition',
+        r_hash: tx.r_hash
+      })
+    }
+
+    tx = await u.getOnchainTxById(txHash);
+    if (tx) {
+      return res.send(tx)
+    }
+
+    res.send({});
+  } catch (Err) {
+    logger.log('', [req.id, 'error gettxs:', Err.message, 'userid:', u.getUserId()]);
+    res.send({});
+  }
+});
+
 router.get('/gettxs', async function (req, res) {
   logger.log('/gettxs', [req.id]);
   let u = new User(redis, bitcoinclient, lightning);
@@ -435,6 +479,7 @@ router.get('/gettxs', async function (req, res) {
         value: locked.amount + Math.floor(locked.amount * forwardFee) /* feelimit */,
         timestamp: locked.timestamp,
         memo: 'Payment in transition',
+        r_hash: locked.r_hash,
       });
     }
     res.send(txs);
