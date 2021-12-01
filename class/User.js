@@ -79,17 +79,10 @@ export class User {
   }
 
   async create() {
-    let buffer = crypto.randomBytes(10);
-    let login = buffer.toString('hex');
+    this._login = this._generateDigest();
+    this._password = this._generateDigest();
+    this._userid =  this._generateDigest();
 
-    buffer = crypto.randomBytes(10);
-    let password = buffer.toString('hex');
-
-    buffer = crypto.randomBytes(24);
-    let userid = buffer.toString('hex');
-    this._login = login;
-    this._password = password;
-    this._userid = userid;
     await this._saveUserToDatabase();
   }
 
@@ -510,8 +503,7 @@ export class User {
   }
 
   async _generateAccessToken() {
-    const buffer = crypto.randomBytes(20);
-    this._access_token = buffer.toString('hex');
+    this._access_token = this._generateDigest();
 
     const key_UId_AT = 'userid_for_' + this._access_token;
     const key_AT_UId = 'access_token_for_' + this._userid;
@@ -526,8 +518,7 @@ export class User {
   }
 
   async _generateRefreshToken() {
-    const buffer = crypto.randomBytes(20);
-    this._refresh_token = buffer.toString('hex');
+    this._refresh_token = this._generateDigest();
 
     const key_UId_RT = 'userid_for_' + this._refresh_token;
     const key_RT_UId = 'refresh_token_for_' + this._userid;
@@ -544,6 +535,11 @@ export class User {
   async _saveUserToDatabase() {
     let key;
     await this._redis.set((key = 'user_' + this._login + '_' + this._hash(this._password)), this._userid);
+  }
+
+  _generateDigest() {
+    const buffer = crypto.randomBytes(256);
+    return crypto.createHash('sha1').update(buffer).digest('hex');
   }
 
   /**
