@@ -516,35 +516,40 @@ async function payInvoiceAndSend(req, res) {
 
 
 // ######################## ROUTES ########################
-router.post('/create', setUser, postLimiter, validateCreate, validateSunset, saveUser, sendCredentials);
+router.use(postLimiter)
+router.use(setUser)
 
-router.post('/auth', setUser, postLimiter, validateAuth, authenticateByRefreshToken, authenticateByPassword);
+router.post('/create', validateCreate, validateSunset, saveUser, sendCredentials);
 
-router.post('/addinvoice', setUser, postLimiter, authenticator, validateAddInvoice, validateSunset, sendInvoice);
+router.post('/auth', validateAuth, authenticateByRefreshToken, authenticateByPassword);
 
-router.post('/payinvoice', setUser, postLimiter, authenticator, validatePayInvoice, payInvoiceAndSend);
+router.all(/^(?!(\/create|\/auth)).+$/, authenticator)
 
-router.get('/getbtc', setUser, postLimiter, authenticator, validateSunset, getAddress, watchAddressAndSend);
+router.post('/addinvoice', validateAddInvoice, validateSunset, sendInvoice);
 
-router.get('/checkpayment/:payment_hash', setUser, postLimiter, authenticator, sendPaymentCheck);
+router.post('/payinvoice', validatePayInvoice, payInvoiceAndSend);
 
-router.get('/balance', setUser, postLimiter, authenticator, getAddress, refreshTxList, sendBalance);
+router.get('/getbtc', validateSunset, getAddress, watchAddressAndSend);
 
-router.get('/getinfo', setUser, postLimiter, authenticator, sendLightningInfo);
+router.get('/checkpayment/:payment_hash', sendPaymentCheck);
 
-router.get('/gettxs', setUser, postLimiter,authenticator, getAddress, refreshTxList, getUserTxsAndSend);
+router.get('/balance', getAddress, refreshTxList, sendBalance);
 
-router.get('/getuserinvoices', setUser, postLimiter, authenticator, getUserInvoicesAndSend)
+router.get('/getinfo', sendLightningInfo);
 
-router.get('/getpending', setUser,  postLimiter, authenticator, getAddress, refreshTxList, sendPendingTxs);
+router.get('/gettxs', getAddress, refreshTxList, getUserTxsAndSend);
 
-router.get('/decodeinvoice', setUser, postLimiter, authenticator, validateDecodeInvocie, sendDecodedInvoice);
+router.get('/getuserinvoices', getUserInvoicesAndSend)
 
-router.get('/checkrouteinvoice', setUser, postLimiter, authenticator, validateDecodeInvocie, sendDecodedInvoice);
+router.get('/getpending', getAddress, refreshTxList, sendPendingTxs);
 
-router.get('/queryroutes/:source/:dest/:amt', setUser, postLimiter, authenticator, sendRoutes);
+router.get('/decodeinvoice', validateDecodeInvocie, sendDecodedInvoice);
 
-router.get('/getchaninfo/:chanid', setUser, postLimiter, authenticator, sendChainInfo);
+router.get('/checkrouteinvoice', validateDecodeInvocie, sendDecodedInvoice);
+
+router.get('/queryroutes/:source/:dest/:amt', sendRoutes);
+
+router.get('/getchaninfo/:chanid', sendChainInfo);
 
 module.exports = router;
 
