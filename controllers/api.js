@@ -524,27 +524,27 @@ router.post('/addinvoice', setUser, postLimiter, authenticator, validateAddInvoi
 
 router.post('/payinvoice', setUser, postLimiter, authenticator, validatePayInvoice, payInvoiceAndSend);
 
-router.get('/getbtc', setUser, authenticator, validateSunset, getAddress, watchAddressAndSend);
+router.get('/getbtc', setUser, postLimiter, authenticator, validateSunset, getAddress, watchAddressAndSend);
 
-router.get('/checkpayment/:payment_hash', setUser, authenticator, sendPaymentCheck);
+router.get('/checkpayment/:payment_hash', setUser, postLimiter, authenticator, sendPaymentCheck);
 
 router.get('/balance', setUser, postLimiter, authenticator, getAddress, refreshTxList, sendBalance);
 
 router.get('/getinfo', setUser, postLimiter, authenticator, sendLightningInfo);
 
-router.get('/gettxs', setUser, authenticator, getAddress, refreshTxList, getUserTxsAndSend);
+router.get('/gettxs', setUser, postLimiter,authenticator, getAddress, refreshTxList, getUserTxsAndSend);
 
 router.get('/getuserinvoices', setUser, postLimiter, authenticator, getUserInvoicesAndSend)
 
-router.get('/getpending', setUser, authenticator, getAddress, refreshTxList, sendPendingTxs);
+router.get('/getpending', setUser,  postLimiter, authenticator, getAddress, refreshTxList, sendPendingTxs);
 
-router.get('/decodeinvoice', setUser, authenticator, validateDecodeInvocie, sendDecodedInvoice);
+router.get('/decodeinvoice', setUser, postLimiter, authenticator, validateDecodeInvocie, sendDecodedInvoice);
 
-router.get('/checkrouteinvoice', setUser, authenticator, validateDecodeInvocie, sendDecodedInvoice);
+router.get('/checkrouteinvoice', setUser, postLimiter, authenticator, validateDecodeInvocie, sendDecodedInvoice);
 
-router.get('/queryroutes/:source/:dest/:amt', setUser, authenticator, sendRoutes);
+router.get('/queryroutes/:source/:dest/:amt', setUser, postLimiter, authenticator, sendRoutes);
 
-router.get('/getchaninfo/:chanid', setUser, authenticator, sendChainInfo);
+router.get('/getchaninfo/:chanid', setUser, postLimiter, authenticator, sendChainInfo);
 
 module.exports = router;
 
