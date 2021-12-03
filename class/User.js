@@ -37,7 +37,7 @@ export class User {
     return this._password;
   }
   getAccessToken() {
-    return this._acess_token;
+    return this._access_token;
   }
   getRefreshToken() {
     return this._refresh_token;
@@ -48,37 +48,41 @@ export class User {
     let access_token = authorization.replace('Bearer ', '');
     let userid = await this._redis.get('userid_for_' + access_token);
 
-    if (userid) {
-      this._userid = userid;
-      return true;
+    if (!userid) {
+      return false
     }
 
-    return false;
+    let refresh_token = await this._redis.get('refresh_token_for_' + userid)
+    if (refresh_token === access_token) {
+      return false
+    }
+
+    this._userid = userid;
+    return true;
   }
 
   async loadByRefreshToken(refresh_token) {
     let userid = await this._redis.get('userid_for_' + refresh_token);
-    if (userid) {
-      this._userid = userid;
-      await this._generateTokens();
-      return true;
+
+    if (!userid) {
+      return false;
     }
 
-    return false;
+    let access_token = await this._redis.get('access_token_for_' + userid)
+    if (access_token === refresh_token) {
+      return false
+    }
+
+    this._userid = userid;
+    await this._generateTokens();
+    return true;
   }
 
   async create() {
-    let buffer = crypto.randomBytes(10);
-    let login = buffer.toString('hex');
+    this._login = this._generateDigest();
+    this._password = this._generateDigest();
+    this._userid =  this._generateDigest();
 
-    buffer = crypto.randomBytes(10);
-    let password = buffer.toString('hex');
-
-    buffer = crypto.randomBytes(24);
-    let userid = buffer.toString('hex');
-    this._login = login;
-    this._password = password;
-    this._userid = userid;
     await this._saveUserToDatabase();
   }
 
@@ -320,6 +324,11 @@ export class User {
     return result;
   }
 
+  async getUserInvoiceByHash(hash) {
+    const invoices = await this.getUserInvoices();
+    return invoices.find(i => Buffer.from(i.r_hash).toString('hex') === hash);
+  }
+
   async addAddress(address) {
     await this._redis.set('bitcoin_address_for_' + this._userid, address);
   }
@@ -331,6 +340,13 @@ export class User {
    * @returns {Promise<Array>}
    */
   async getTxs() {
+    let onchainTx = await this.getOnchainTxs()
+    let lightningTxs = await this.getLightningTxs()
+
+    return [...onchainTx, ...lightningTxs]
+  }
+
+  async getOnchainTxs() {
     const addr = await this.getOrGenerateAddress();
     const targetConfirmations = config.bitcoin.confirmations;
     let txs = await this._listtransactions();
@@ -343,6 +359,16 @@ export class User {
       }
     }
 
+    return result
+  }
+
+  async getOnchainTxById(id) {
+    const txs = await this.getOnchainTxs();
+    return txs.find(tx => id === `${tx.txid}${tx.vout}`);
+  }
+
+  async getLightningTxs() {
+    const result = []
     let range = await this._redis.lrange('txs_for_' + this._userid, 0, -1);
     for (let invoice of range) {
       invoice = JSON.parse(invoice);
@@ -369,15 +395,23 @@ export class User {
       if (invoice.payment_preimage) {
         invoice.payment_preimage = Buffer.from(invoice.payment_preimage, 'hex').toString('hex');
       }
+      let hash = lightningPayReq.decode(invoice.pay_req).tags.find(t => t.tagName === 'payment_hash')
+      invoice.r_hash = Buffer.from(hash.data, 'hex')
       // removing unsued by client fields to reduce size
       delete invoice.payment_error;
       delete invoice.payment_route;
       delete invoice.pay_req;
       delete invoice.decoded;
+
       result.push(invoice);
     }
 
     return result;
+  }
+
+  async getLightningTxByHash(hash) {
+    const txs = await this.getLightningTxs()
+    return txs.find(tx => Buffer.from(tx.r_hash).toString('hex') === hash);
   }
 
   /**
@@ -409,8 +443,11 @@ export class User {
         // now, compacting response a bit
         for (const tx of txs.result) {
           ret.result.push({
+            txid: tx.txid,
+            vout: tx.vout,
             category: tx.category,
             amount: tx.amount,
+            fee: tx.fee,
             confirmations: tx.confirmations,
             address: tx.address,
             time: tx.blocktime || tx.time,
@@ -444,12 +481,15 @@ export class User {
           .filter((tx) => tx.label !== 'external' && !tx.label.includes('openchannel'))
           .map((tx) => {
             const decodedTx = decodeRawHex(tx.raw_tx_hex);
-            decodedTx.outputs.forEach((vout) =>
+            decodedTx.outputs.forEach((vout, i) =>
               outTxns.push({
                 // mark all as received, since external is filtered out
+                txid: tx.hash,
+                vout: i,
                 category: 'receive',
-                confirmations: tx.num_confirmations,
                 amount: Number(vout.value),
+                fee: Math.ceil(decodedTx.fees / decodedTx.vout_sz),
+                confirmations: tx.num_confirmations,
                 address: vout.scriptPubKey.addresses[0],
                 time: tx.time_stamp,
               }),
@@ -481,21 +521,59 @@ export class User {
   }
 
   async _generateTokens() {
-    let buffer = crypto.randomBytes(20);
-    this._acess_token = buffer.toString('hex');
+    await this._invalidateCurrentTokens();
 
-    buffer = crypto.randomBytes(20);
-    this._refresh_token = buffer.toString('hex');
+    await this._generateAccessToken();
+    await this._generateRefreshToken();
+  }
 
-    await this._redis.set('userid_for_' + this._acess_token, this._userid);
-    await this._redis.set('userid_for_' + this._refresh_token, this._userid);
-    await this._redis.set('access_token_for_' + this._userid, this._acess_token);
-    await this._redis.set('refresh_token_for_' + this._userid, this._refresh_token);
+  async _invalidateCurrentTokens() {
+    this._access_token = await this._redis.get('access_token_for_' + this._userid);
+    this._refresh_token = await this._redis.get('refresh_token_for_' + this._userid);
+
+    await this._redis.del('access_token_for_' + this._userid);
+    await this._redis.del('refresh_token_for_' + this._userid);
+    await this._redis.del('userid_for_' + this._access_token);
+    await this._redis.del('userid_for_' + this._refresh_token);
+
+    this._access_token = null
+    this._refresh_token = null
+  }
+
+  async _generateAccessToken() {
+    this._access_token = this._generateDigest();
+
+    const key_UId_AT = 'userid_for_' + this._access_token;
+    const key_AT_UId = 'access_token_for_' + this._userid;
+
+    await this._redis.set(key_UId_AT, this._userid);
+    await this._redis.set(key_AT_UId, this._access_token);
+
+    await this._redis.expire(key_UId_AT, accessTokenLifeTime);
+    await this._redis.expire(key_AT_UId, accessTokenLifeTime);
+  }
+
+  async _generateRefreshToken() {
+    this._refresh_token = this._generateDigest();
+
+    const key_UId_RT = 'userid_for_' + this._refresh_token;
+    const key_RT_UId = 'refresh_token_for_' + this._userid;
+
+    await this._redis.set(key_UId_RT, this._userid);
+    await this._redis.set(key_RT_UId, this._refresh_token);
+
+    await this._redis.expire(key_UId_RT, refreshTokenLifeTime);
+    await this._redis.expire(key_RT_UId, refreshTokenLifeTime);
   }
 
   async _saveUserToDatabase() {
     let key;
     await this._redis.set((key = 'user_' + this._login + '_' + this._hash(this._password)), this._userid);
+  }
+
+  _generateDigest() {
+    const buffer = crypto.randomBytes(256);
+    return crypto.createHash('sha1').update(buffer).digest('hex');
   }
 
   /**
@@ -549,6 +627,8 @@ export class User {
       amount: +decodedInvoice.num_satoshis,
       timestamp: Math.floor(+new Date() / 1000),
     };
+    const hash = lightningPayReq.decode(pay_req).tags.find(t => t.tagName === 'payment_hash')
+    doc.r_hash = Buffer.from(hash.data, 'hex')
 
     return this._redis.rpush('locked_payments_for_' + this._userid, JSON.stringify(doc));
   }

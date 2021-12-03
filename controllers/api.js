@@ -21,6 +21,8 @@ redis.monitor(function (err, monitor) {
 /** GLOBALS */
 global.forwardFee = config.forwardReserveFee || 0.01;
 global.internalFee = config.intraHubFee || 0.003;
+global.accessTokenLifeTime = config.auth?.accessTokenLifeTime || 3600;
+global.refreshTokenLifeTime = config.auth?.refreshTokenLifeTime || 86400;
 /****** END SET FEES FROM CONFIG AT STARTUP ******/
 
 let bitcoinclient = require('../bitcoin');
