@@ -368,7 +368,22 @@ async function getUserInvoicesAndSend(req, res) {
   }
 }
 
+async function getUserInvoiceAndSend(req, res) {
+  const invoiceHash = req.params.invoice_hash;
+  logger.log(`/getuserinvoice/${invoiceHash}`, [req.id, 'userid: ' + req.locals.user.getUserId()]);
+
+  try {
+    const invoice = await req.locals.user.getUserInvoiceByHash(invoiceHash)
+    res.send(invoice || {})
+  } catch (Err) {
+    logger.log('', [req.id, 'error getting user invoice ' + invoiceHash + ':', Err.message, 'userid:', req.locals.user.getUserId()]);
+    res.send({});
+  }
+}
+
 async function getUserTxsAndSend(req, res) {
+  logger.log('/gettxs', [req.id, 'userid: ' + req.locals.user.getUserId()]);
+
   try {
     let txs = await req.locals.user.getTxs();
     let lockedPayments = await req.locals.user.getLockedPayments();
@@ -385,6 +400,41 @@ async function getUserTxsAndSend(req, res) {
   } catch (Err) {
     logger.log('', [req.id, 'error gettxs:', Err.message, 'userid:', req.locals.user.getUserId()]);
     res.send([]);
+  }
+}
+
+async function getUserTxAndSend(req, res) {
+  const txHash = req.params.tx_hash;
+  logger.log(`/gettxs/${txHash}`, [req.id, 'userid: ' + req.locals.user.getUserId()]);
+
+  try {
+    let tx = await req.locals.user.getLightningTxByHash(txHash)
+    if (tx) {
+      return res.send(tx)
+    }
+
+    let lockedPayments = await req.locals.user.getLockedPayments();
+    tx = lockedPayments.find(tx => Buffer.from(tx.r_hash).toString('hex') === hash)
+    if (tx) {
+      return res.send({
+        type: 'paid_invoice',
+        fee: Math.floor(tx.amount * forwardFee) /* feelimit */,
+        value: tx.amount + Math.floor(tx.amount * forwardFee) /* feelimit */,
+        timestamp: tx.timestamp,
+        memo: 'Payment in transition',
+        r_hash: tx.r_hash
+      })
+    }
+
+    tx = await req.locals.user.getOnchainTxById(txHash);
+    if (tx) {
+      return res.send(tx)
+    }
+
+    res.send({});
+  } catch (Err) {
+    logger.log('', [req.id, 'error gettxs:', Err.message, 'userid:', req.locals.user.getUserId()]);
+    res.send({});
   }
 }
 
@@ -539,9 +589,13 @@ router.get('/balance', getAddress, refreshTxList, sendBalance);
 
 router.get('/getinfo', sendLightningInfo);
 
+router.get('/gettxs/:tx_hash', getAddress, refreshTxList, getUserTxAndSend);
+
 router.get('/gettxs', getAddress, refreshTxList, getUserTxsAndSend);
 
 router.get('/getuserinvoices', getUserInvoicesAndSend)
+
+router.get('/getuserinvoices/:invoice_hash', getUserInvoiceAndSend)
 
 router.get('/getpending', getAddress, refreshTxList, sendPendingTxs);
 
