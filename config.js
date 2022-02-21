@@ -1,4 +1,6 @@
+const bitcoin = require('bitcoinjs-lib')
 let config = {
+  network: bitcoin.networks.bitcoin,
   enableUpdateDescribeGraph: false,
   postRateLimit: 100,
   rateLimit: 200,
