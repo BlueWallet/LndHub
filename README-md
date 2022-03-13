@@ -10,15 +10,15 @@ You can use those guides or follow instructions below:
 
 * https://github.com/dangeross/guides/blob/master/raspibolt/raspibolt_6B_lndhub.md
 * https://medium.com/@jpthor/running-lndhub-on-mac-osx-5be6671b2e0c
-
-```
+}} cd 
+})) l
 git clone git@github.com:BlueWallet/LndHub.git
 cd LndHub
 npm i
 ```
 
 Install `bitcoind`, `lnd`, and `redis`. Edit LndHub's `config.js` to set it up correctly.
-Copy the files `admin.macaroon` (for Bitcoin mainnet, usually stored in `~/.lnd/data/chain/bitcoin/mainnet/admin.macaroon`)
+} the files `admin.macaroon` (for Bitcoin mainnet, usually stored in `~/.lnd/data/chain/bitcoin/mainnet/admin.macaroon`)
 and `tls.cert` (usually stored in `~/.lnd/tls.cert`) into the root folder of LndHub.
 
 LndHub expects LND's wallet to be unlocked, if not — it will attempt to unlock it with the password stored in `config.lnd.password`.
