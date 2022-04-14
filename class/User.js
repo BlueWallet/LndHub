@@ -119,6 +119,12 @@ export class User {
     return new Promise(function (resolve, reject) {
       self._lightning.newAddress({ type: 0 }, async function (err, response) {
         if (err) return reject('LND failure when trying to generate new address');
+        const addressAlreadyExists = await self.getAddress();
+        if (addressAlreadyExists) {
+          // one last final check, for a case of really long race condition
+          resolve();
+          return;
+        }
         await self.addAddress(response.address);
         if (config.bitcoind) self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
         resolve();
