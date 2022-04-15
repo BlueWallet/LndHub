@@ -326,28 +326,51 @@ export class User {
     return result;
   }
 
+  async getUserInvoiceByHash(hash) {
+    const invoices = await this.getUserInvoices();
+    return invoices.find(i => Buffer.from(i.r_hash).toString('hex') === hash);
+  }
+
   async addAddress(address) {
     await this._redis.set('bitcoin_address_for_' + this._userid, address);
   }
 
   /**
-   * User's onchain txs that are >= 3 confs
+   * User's onchain txs that are >= configured target confirmations
    * Queries bitcoind RPC.
    *
    * @returns {Promise<Array>}
    */
   async getTxs() {
+    let onchainTx = await this.getOnchainTxs()
+    let lightningTxs = await this.getLightningTxs()
+
+    return [...onchainTx, ...lightningTxs]
+  }
+
+  async getOnchainTxs() {
     const addr = await this.getOrGenerateAddress();
+    const targetConfirmations = config.bitcoin.confirmations;
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations >= 3 && tx.address === addr && tx.category === 'receive') {
+      if (tx.confirmations >= targetConfirmations && tx.address === addr && tx.category === 'receive') {
         tx.type = 'bitcoind_tx';
         result.push(tx);
       }
     }
 
+    return result
+  }
+
+  async getOnchainTxById(id) {
+    const txs = await this.getOnchainTxs();
+    return txs.find(tx => id === `${tx.txid}${tx.vout}`);
+  }
+
+  async getLightningTxs() {
+    const result = []
     let range = await this._redis.lrange('txs_for_' + this._userid, 0, -1);
     for (let invoice of range) {
       invoice = JSON.parse(invoice);
@@ -374,15 +397,23 @@ export class User {
       if (invoice.payment_preimage) {
         invoice.payment_preimage = Buffer.from(invoice.payment_preimage, 'hex').toString('hex');
       }
+      let hash = lightningPayReq.decode(invoice.pay_req).tags.find(t => t.tagName === 'payment_hash')
+      invoice.r_hash = Buffer.from(hash.data, 'hex')
       // removing unsued by client fields to reduce size
       delete invoice.payment_error;
       delete invoice.payment_route;
       delete invoice.pay_req;
       delete invoice.decoded;
+
       result.push(invoice);
     }
 
     return result;
+  }
+
+  async getLightningTxByHash(hash) {
+    const txs = await this.getLightningTxs()
+    return txs.find(tx => Buffer.from(tx.r_hash).toString('hex') === hash);
   }
 
   /**
@@ -414,8 +445,11 @@ export class User {
         // now, compacting response a bit
         for (const tx of txs.result) {
           ret.result.push({
+            txid: tx.txid,
+            vout: tx.vout,
             category: tx.category,
             amount: tx.amount,
+            fee: tx.fee,
             confirmations: tx.confirmations,
             address: tx.address,
             time: tx.blocktime || tx.time,
@@ -449,12 +483,15 @@ export class User {
           .filter((tx) => tx.label !== 'external' && !tx.label.includes('openchannel'))
           .map((tx) => {
             const decodedTx = decodeRawHex(tx.raw_tx_hex);
-            decodedTx.outputs.forEach((vout) =>
+            decodedTx.outputs.forEach((vout, i) =>
               outTxns.push({
                 // mark all as received, since external is filtered out
+                txid: tx.hash,
+                vout: i,
                 category: 'receive',
-                confirmations: tx.num_confirmations,
                 amount: Number(vout.value),
+                fee: Math.ceil(decodedTx.fees / decodedTx.vout_sz),
+                confirmations: tx.num_confirmations,
                 address: vout.scriptPubKey.addresses[0],
                 time: tx.time_stamp,
               }),
@@ -467,17 +504,18 @@ export class User {
   }
 
   /**
-   * Returning onchain txs for user's address that are less than 3 confs
+   * Returning onchain txs for user's address that are less than configured target confirmations
    *
    * @returns {Promise<Array>}
    */
   async getPendingTxs() {
     const addr = await this.getOrGenerateAddress();
+    const targetConfirmations = config.bitcoin.confirmations;
     let txs = await this._listtransactions();
     txs = txs.result;
     let result = [];
     for (let tx of txs) {
-      if (tx.confirmations < 3 && tx.address === addr && tx.category === 'receive') {
+      if (tx.confirmations < targetConfirmations && tx.address === addr && tx.category === 'receive') {
         result.push(tx);
       }
     }
@@ -553,6 +591,8 @@ export class User {
       amount: +decodedInvoice.num_satoshis,
       timestamp: Math.floor(+new Date() / 1000),
     };
+    const hash = lightningPayReq.decode(pay_req).tags.find(t => t.tagName === 'payment_hash')
+    doc.r_hash = Buffer.from(hash.data, 'hex')
 
     return this._redis.rpush('locked_payments_for_' + this._userid, JSON.stringify(doc));
   }
