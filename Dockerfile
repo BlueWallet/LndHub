@@ -18,7 +18,7 @@ COPY . .
 
 # Install dependencies
 RUN npm i
-RUN npm run build
+RUN npm run dockerbuild
 
 # Delete git data as it's not needed inside the container
 RUN rm -rf .git

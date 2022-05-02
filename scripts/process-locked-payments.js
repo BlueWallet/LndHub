@@ -61,35 +61,7 @@ let lightning = require('../lightning');
       }
       // could not find...
 
-      if (daysPassed > 1 / 24 && daysPassed <= 1) {
-        let sendResult;
-        console.log('attempting to pay to route');
-        try {
-          sendResult = await payment.attemptPayToRoute();
-        } catch (_) {
-          console.log(_);
-          console.log('evict lock');
-          await user.unlockFunds(lockedPayment.pay_req);
-          continue;
-        }
-        console.log('sendResult=', sendResult);
-        console.log('payment.getIsPaid() = ', payment.getIsPaid());
-        if (payment.getIsPaid() === true) {
-          console.log('paid successfully');
-          sendResult = payment.processSendPaymentResponse(sendResult); // adds fees
-          console.log('saving paid invoice:', sendResult);
-          await user.savePaidLndInvoice(sendResult);
-          await user.unlockFunds(lockedPayment.pay_req);
-        } else if (payment.getIsPaid() === false) {
-          console.log('not paid, just evict the lock');
-          await user.unlockFunds(lockedPayment.pay_req);
-        } else {
-          console.log('payment is in unknown state');
-        }
-        console.log('sleeping 5 sec...');
-        console.log('-----------------------------------------------------------------------------------');
-        await User._sleep(0);
-      } else if (daysPassed > 1) {
+      if (daysPassed > 1) {
         // could not find in listpayments array; too late to retry
         if (!isPaid) {
           console.log('very old payment, evict the lock');

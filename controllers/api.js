@@ -469,7 +469,7 @@ async function payInvoiceAndSend(req, res) {
 
     logger.log('/payinvoice', [req.id, 'userBalance: ' + userBalance, 'num_satoshis: ' + info.num_satoshis]);
 
-    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * forwardFee)) {
+    if (userBalance >= +info.num_satoshis + Math.floor(info.num_satoshis * forwardFee) + 1) {
       // got enough balance, including 1% of payment amount - reserve for fees
 
       if (identity_pubkey === info.destination) {
