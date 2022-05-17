@@ -35,19 +35,17 @@ associated with corresponding user id.
 | Create Account | POST  | /create | {none} | JSON Auth Data | Create new user account and get credentials |
 | Authorize | POST | /auth  | auth params (login/password or refresh_token) | JSON token data | Authorize user with Oauth. When user use refresh_token to auth, then this refresh_token not available for access once again. Use new refresh_token |
 | Get token | POST | /oauth2/token  | user id, secret, grant_type and scope | token data | Get token data from user id, secret, grant_type and scope |
-| Get BTC Addr | GET | /getbtc  | {none} | Text address | Get user's BTC address to top-up his account |
-| New BTC Addr | POST | /newbtc  | {none} | Text address | Create new BTC address for user. Old addresses should remain valid, so if user accidentaly sends money to old address transaction will be assigned to his account |
+| Get BTC Addr | GET | /getbtc  | {none} | JSON | Get user's BTC address to top-up his account |
 | Get Pending Balance | GET | /getpending  | {none} | JSON | Get information about BTC pending transactions which have less than 3 confirmations |
 | Decode Invoice | GET | /decodeinvoice  | Invoice string | JSON | Decode invoice from invoice string. If invoice is represented as QR-code, fronted device should decode it first |
 | Check Route | GET | /checkroute  | Payment destination | Success | Check if payment destination is available and invoice could be paid |
 | Pay invoice | POST | /payinvoice  | Invoice string | Success | Pay invoice. Before payment invoice should be read and destination checked, also balance sum should be enough |
 | Send coins | POST | /sendcoins  | Payment destination | Success | Just send coins to a specified location (Lightning address) |
 | Get transactions | GET | /gettxs  | Offset, limit | JSON array | Get transactions for a wallet. With load offset at limit |
-| Get transaction | GET | /gettx  | Tx id | JSON | Get tx info by its ID |
 | Get balance| GET | /balance | {none} | int64 | Available unspent internal balance (in Satoshis)
 | Get info | GET | /getinfo | {none} | JSON | Tech info. Fee on transactions for current user (0 for a start), available actual funds on channel, maximum tx size, service status etc.
-| Get info | POST | /addinvoice | JSON | JSON | Create invoice.
-| Get info | GET | /getuserinvoices | {none} | JSON | List of invoices created by user.
+| Create invoice | POST | /addinvoice | JSON | JSON | Create invoice.
+| Get invoices | GET | /getuserinvoices | {none} | JSON | List of invoices created by user.
 
 # API Calls detailed
 
@@ -369,23 +367,6 @@ Response:
             }
         ]
     }
-
-##  GET /gettx
-
-Get info on successful lightning transaction user made. TXID is an internal LndHub identifier,
-no relation to onchain bitcoin txid.
-
-Request:
-
-    {
-        "txid" : 666 // INT
-    }
-    
-Response:
-    {
-    	...          // Transaction object (see below)
-    }
-
    
 ## GET /getbalance
 
