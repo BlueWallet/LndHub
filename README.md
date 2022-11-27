@@ -12,7 +12,7 @@ You can use those guides or follow instructions below:
 * https://medium.com/@jpthor/running-lndhub-on-mac-osx-5be6671b2e0c
 
 ```
-git clone git@github.com:BlueWallet/LndHub.git
+git clone https://github.com:BlueWallet/LndHub.git
 cd LndHub
 npm i
 ```
