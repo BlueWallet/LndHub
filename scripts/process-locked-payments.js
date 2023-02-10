@@ -51,6 +51,13 @@ let lightning = require('../lightning');
         if ((await payment.getPaymentHash()) == sentPayment.payment_hash) {
           console.log('found this payment in listPayments array, so it is paid successfully');
           let sendResult = payment.processSendPaymentResponse({ payment_error: 'already paid' } /* hacky */); // adds fees
+          if (sendResult.decoded.num_satoshis == 0) {
+            // zero sat invoice, get corect sat number from the lockedPayment info
+            sendResult.decoded.num_satoshis = lockedPayment.amount + Math.ceil(lockedPayment.amount * forwardFee);
+            sendResult.decoded.num_msat = sendResult.decoded.num_satoshis * 1000;
+            sendResult.payment_route.total_fees = 0;
+            sendResult.payment_route.total_amt = sendResult.decoded.num_satoshis;
+          }
           console.log('saving paid invoice:', sendResult);
           await user.savePaidLndInvoice(sendResult);
           await user.unlockFunds(lockedPayment.pay_req);
