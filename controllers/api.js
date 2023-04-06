@@ -254,49 +254,54 @@ router.post('/payinvoice', postLimiter, async function (req, res) {
         // this is internal invoice
         // now, receiver add balance
         let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
-        if (!userid_payee) {
-          await lock.releaseLock();
-          return errorGeneralServerError(res);
-        }
 
-        if (await u.getPaymentHashPaid(info.payment_hash)) {
-          // this internal invoice was paid, no sense paying it again
-          await lock.releaseLock();
-          return errorLnd(res);
-        }
+        // receiver is on lndhub
+        if (userid_payee) {
+          if (await u.getPaymentHashPaid(info.payment_hash)) {
+            // this internal invoice was paid, no sense paying it again
+            await lock.releaseLock();
+            return errorLnd(res);
+          }
 
-        let UserPayee = new User(redis, bitcoinclient, lightning);
-        UserPayee._userid = userid_payee; // hacky, fixme
-        await UserPayee.clearBalanceCache();
+          let UserPayee = new User(redis, bitcoinclient, lightning);
+          UserPayee._userid = userid_payee; // hacky, fixme
+          await UserPayee.clearBalanceCache();
 
-        // sender spent his balance:
-        await u.clearBalanceCache();
-        await u.savePaidLndInvoice({
-          timestamp: parseInt(+new Date() / 1000),
-          type: 'paid_invoice',
-          value: +info.num_satoshis + Math.floor(info.num_satoshis * internalFee),
-          fee: Math.floor(info.num_satoshis * internalFee),
-          memo: decodeURIComponent(info.description),
-          pay_req: req.body.invoice,
-        });
-
-        const invoice = new Invo(redis, bitcoinclient, lightning);
-        invoice.setInvoice(req.body.invoice);
-        await invoice.markAsPaidInDatabase();
-
-        // now, faking LND callback about invoice paid:
-        const preimage = await invoice.getPreimage();
-        if (preimage) {
-          subscribeInvoicesCallCallback({
-            state: 'SETTLED',
-            memo: info.description,
-            r_preimage: Buffer.from(preimage, 'hex'),
-            r_hash: Buffer.from(info.payment_hash, 'hex'),
-            amt_paid_sat: +info.num_satoshis,
+          // sender spent his balance:
+          await u.clearBalanceCache();
+          await u.savePaidLndInvoice({
+            timestamp: parseInt(+new Date() / 1000),
+            type: 'paid_invoice',
+            value: +info.num_satoshis + Math.floor(info.num_satoshis * internalFee),
+            fee: Math.floor(info.num_satoshis * internalFee),
+            memo: decodeURIComponent(info.description),
+            pay_req: req.body.invoice,
           });
+
+          const invoice = new Invo(redis, bitcoinclient, lightning);
+          invoice.setInvoice(req.body.invoice);
+          await invoice.markAsPaidInDatabase();
+
+          // now, faking LND callback about invoice paid:
+          const preimage = await invoice.getPreimage();
+          if (preimage) {
+            subscribeInvoicesCallCallback({
+              state: 'SETTLED',
+              memo: info.description,
+              r_preimage: Buffer.from(preimage, 'hex'),
+              r_hash: Buffer.from(info.payment_hash, 'hex'),
+              amt_paid_sat: +info.num_satoshis,
+            });
+          }
+          await lock.releaseLock();
+          return res.send(info);
         }
+
+        // receiving node is this node & receiver is not a lndhub account |
+        // Is payment to node allowed?
+      } else if (!config.allowLightningPaymentToNode) {
         await lock.releaseLock();
-        return res.send(info);
+        return errorPaymentToNodeNotAllowed(res);
       }
 
       // else - regular lightning network payment:
@@ -616,5 +621,13 @@ function errorSunsetAddInvoice(res) {
     error: true,
     code: 11,
     message: 'This LNDHub instance is scheduled to shut down. Withdraw any remaining funds',
+  });
+}
+
+function errorPaymentToNodeNotAllowed(res) {
+  return res.send({
+    error: true,
+    code: 12,
+    message: 'This LNDHub instance does not allow payments other then issued by LNDHub.',
   });
 }
