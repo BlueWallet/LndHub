@@ -314,6 +314,9 @@ router.post('/payinvoice', postLimiter, async function (req, res) {
       call.on('data', async function (payment) {
         // payment callback
         await u.unlockFunds(req.body.invoice);
+
+        if (payment && payment.payment_error) logger.error('/payinvoice', payment);
+
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
           let PaymentShallow = new Paym(false, false, false);
           payment = PaymentShallow.processSendPaymentResponse(payment);
