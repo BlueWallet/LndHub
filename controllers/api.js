@@ -255,8 +255,18 @@ router.post('/payinvoice', postLimiter, async function (req, res) {
         // now, receiver add balance
         let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
 
-        // receiver is on lndhub
-        if (userid_payee) {
+        // receiver is not a lndhub account
+        if (!userid_payee) {
+          // Check if Is payment to node allowed?
+          if (!config.allowLightningPaymentToNode || false) {
+            await lock.releaseLock();
+            return errorPaymentToNodeNotAllowed(res);
+          }
+
+          // Continues at // else - regular lightning network payment:
+
+          // receiver is a lndhub account
+        } else {
           if (await u.getPaymentHashPaid(info.payment_hash)) {
             // this internal invoice was paid, no sense paying it again
             await lock.releaseLock();
@@ -296,12 +306,6 @@ router.post('/payinvoice', postLimiter, async function (req, res) {
           await lock.releaseLock();
           return res.send(info);
         }
-
-        // receiving node is this node & receiver is not a lndhub account |
-        // Is payment to node allowed?
-      } else if (!config.allowLightningPaymentToNode) {
-        await lock.releaseLock();
-        return errorPaymentToNodeNotAllowed(res);
       }
 
       // else - regular lightning network payment:
