@@ -84,6 +84,13 @@ Response is always JSON.
  5             | Lnd route not found
  6             | General server error
  7             | LND failure
+ 8             | Bad arguments
+ 9             | Your previous payment is in transit. Try again in 5 minutes
+ 10            | Payment failed. Does the receiver have enough inbound capacity?
+ 11            | This LNDHub instance is not accepting any more users
+ 11            | This LNDHub instance is scheduled to shut down. Withdraw any remaining funds
+ 12            | This LNDHub instance does not allow self payments other then issued by this LNDHub
+
 
 
 ## POST  /create

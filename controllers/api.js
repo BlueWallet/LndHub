@@ -636,6 +636,6 @@ function errorPaymentToNodeNotAllowed(res) {
   return res.send({
     error: true,
     code: 12,
-    message: 'This LNDHub instance does not allow payments other then issued by LNDHub.',
+    message: 'This LNDHub instance does not allow self payments other then issued by this LNDHub',
   });
 }
