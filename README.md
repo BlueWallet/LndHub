@@ -37,6 +37,17 @@ In config you can set the mode, when it starts & can be edited by the support da
 accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
 ```
 
+### [Feature] Generate Safety On Chain Address
+In combination with Thunderhub we noticed, that an onchain address assigned to a lndhub account
+had the same addess we got from Thunderhub's "Create On Chain Address" functiontionality. Thunderhub
+somehow is caching address, which is normally ok, but in this case not :( The issue is addressed [here](https://github.com/apotdevin/thunderhub/issues/534).
+
+This feature creates an additional address from LND after an onchain address is created and assigned to the user.
+
+```
+generateSafetyOnChainAddress: false, // defaults to false
+```
+
 LndHub
 ======
 
