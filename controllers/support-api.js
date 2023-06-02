@@ -30,9 +30,11 @@ const authenticateUser = (req, res, next) => {
 
 // ######################## DATA ###########################
 
-const supportData = {
-    auth: true,
-    statusCreation: 2,  // 0 ... off, 1 ... always, -1 ... once
+const createResponseData = () => {
+    return {
+        auth: true,
+        statusCreation: config.accountCreationMode
+    }
 }
 
 // ######################## ROUTES ########################
@@ -46,21 +48,22 @@ const postLimiter = rateLimit({
 router.get('/status', postLimiter, authenticateUser, async function (req, res) {
     logger.log('/api/support/status', [req.id])
 
-    res.status(200).send(supportData)
+    res.status(200).send(createResponseData())
 })
 
 router.post('/account-creation', postLimiter, authenticateUser, async function (req, res) {
     logger.log('/api/support/account-creation', [req.id])
 
-    const creation = parseInt(req.body.creation)
-    if (creation < -1 || creation > 1) {
+    const creation = `${req.body.creation}`
+
+    if (!['on', 'off', 'once'].includes(creation)) {
         res.status(400).send({ status: 'error', message: 'invalid data'})
         return
     }
 
-    supportData.statusCreation = creation
+    config.accountCreationMode = creation
 
-    res.status(200).send(supportData)
+    res.status(200).send(createResponseData())
 })
 
 module.exports = router

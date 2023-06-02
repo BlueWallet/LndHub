@@ -6,6 +6,7 @@ let config = {
   intraHubFee: 0.003, // default 0.003
   allowLightningPaymentToNode: false,
   supportDashboardPasswordHash: '',
+  accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
   bitcoind: {
     rpc: 'http://login:password@1.1.1.1:8332/wallet/wallet.dat',
   },
@@ -30,5 +31,7 @@ if (process.env.CONFIG) {
 // Config checks
 if (!(config.supportDashboardPasswordHash)) config.supportDashboardPasswordHash = ''
 if (typeof config.supportDashboardPasswordHash !== 'string') config.supportDashboardPasswordHash = ''
+
+if (!(config.accountCreationMode)) config.accountCreationMode = 'on'
 
 module.exports = config;

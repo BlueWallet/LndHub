@@ -149,9 +149,14 @@ router.post('/create', postLimiter, async function (req, res) {
   
   if (config.sunset) return errorSunset(res);
 
+  if (config.accountCreationMode === 'off') return errorAccountCreationOff(res)
+
   let u = new User(redis, bitcoinclient, lightning);
   await u.create();
   await u.saveMetadata({ partnerid: req.body.partnerid, accounttype: req.body.accounttype, created_at: new Date().toISOString() });
+
+  if (config.accountCreationMode === 'once') config.accountCreationMode = 'off'
+
   res.send({ login: u.getLogin(), password: u.getPassword() });
 });
 
@@ -637,5 +642,13 @@ function errorPaymentToNodeNotAllowed(res) {
     error: true,
     code: 12,
     message: 'This LNDHub instance does not allow self payments other then issued by this LNDHub',
+  });
+}
+
+function errorAccountCreationOff(res) {
+  return res.send({
+    error: true,
+    code: 22,
+    message: 'This LNDHub instance has turned off it\'s account creation.',
   });
 }

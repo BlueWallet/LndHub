@@ -11,8 +11,8 @@ allowLightningPaymentToNode: true // it defaults to false
 
 ### [Feature] Support Dashboard
 As a node runner I would like to:
+- [x] Stop the creation of new accounts
 - [ ] Check the total balance of lndhub
-- [ ] Stop the creation of new accounts
 
 If the Support Dashboard is not turned an, all routes (api and web) are turned off. To turn it on choose a sha265 password. To Create it
 
@@ -26,6 +26,15 @@ console.info(passwordSHA256)
 ```
 supportDashboardPasswordHash: 'e42703b94ce32a831ea363a8924dc0239ca54160a8f3fb2755bdbceb07238a8a'
 // it defaults to '' which means it's turned completly off
+```
+
+### [Feature] Account Creation Mode
+
+By default everyone could open account on our node, what we can't have as a company (KYC), so we added an account creation mode.
+
+In config you can set the mode, when it starts & can be edited by the support dashboard
+```
+accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
 ```
 
 LndHub

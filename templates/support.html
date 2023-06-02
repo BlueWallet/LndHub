@@ -152,6 +152,7 @@
 <script>
     const API_ROUTE = '/api/support'
     const LS_PWD_KEY = 'support_password'
+    let onLogin = false
 
     const updateAuth = (auth) => {
         $('[data-auth=true]').each(function() {
@@ -183,19 +184,25 @@
         console.log(data)
 
         if (data.auth) updateAuth(data.auth)
-        if (data.statusCreation === -1) $('#statusCreation').text('Once')
-        if (data.statusCreation === 0) $('#statusCreation').text('Disabled')
-        if (data.statusCreation === 1) $('#statusCreation').text('Enabled')
+        if (data.statusCreation === 'once') $('#statusCreation').text('Once')
+        if (data.statusCreation === 'off') $('#statusCreation').text('Disabled')
+        if (data.statusCreation === 'on') $('#statusCreation').text('Enabled')
     }
     const onStatusFail = () => {
         console.log('FAIL')
         updateAuth(false)
+        if (onLogin) window.alert('Auth failed!')
+        onLogin = false
     }
 
     $('#btnAuth').click(() => {
         localStorage.setItem(LS_PWD_KEY, $('#inputPassword').val())
+
+        if ($('#inputPassword').val() == '') return
+
         updateData()
         $('#inputPassword').val('')
+        onLogin = true
     })
     $('#btnLogout').click(() => {
         localStorage.setItem(LS_PWD_KEY, '')
@@ -203,13 +210,13 @@
     })
 
     $('#btnAccountEnable').click(() => {
-        updateData(`${API_ROUTE}/account-creation`, { creation: 1 })
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'on' })
     })
     $('#btnAccountDisable').click(() => {
-        updateData(`${API_ROUTE}/account-creation`, { creation: 0 })
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'off' })
     })
     $('#btnAccountOnce').click(() => {
-        updateData(`${API_ROUTE}/account-creation`, { creation: -1 })
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'once' })
     })
 
     $(() => {
