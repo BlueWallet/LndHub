@@ -84,6 +84,47 @@ body {
 	color: #fff;
 	font-size: 13px;
 }
+.hidden {
+	visibility: hidden;
+}
+a.button {
+ display: inline-block;
+ outline: 0;
+ border: 0;
+ cursor: pointer;
+ background-color: #4299e1;
+ border-radius: 4px;
+ padding: 8px 16px;
+ font-size: 16px;
+ font-weight: 700;
+ color: white;
+ line-height: 13px;
+}
+
+input {
+	background-color: #fff;
+	height: 31px;
+	padding: 3px 7px;
+	line-height: normal;
+	border: 1px solid #a6a6a6;
+	border-top-color: #949494;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 rgb(255 255 255 / 50%), 0 1px 0 rgb(0 0 0 / 7%) inset;
+	outline: 0;
+	color: #111;
+	font-size: 13px;
+}
+
+#inputPassword {
+	margin: 15px 0;
+	width: 100%;
+}
+
+input:focus {
+  border-color: #e77600;
+  box-shadow: 0 0 3px 2px rgb(228 121 17 / 50%);
+}
+
 [title~=true], [title~=active] {
   background: #50E3C2;
 }

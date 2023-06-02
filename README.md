@@ -9,6 +9,25 @@ If you want to pay an invoice issued by the node, but not issued "via" LndHub it
 allowLightningPaymentToNode: true // it defaults to false
 ```
 
+### [Feature] Support Dashboard
+As a node runner I would like to:
+- [ ] Check the total balance of lndhub
+- [ ] Stop the creation of new accounts
+
+If the Support Dashboard is not turned an, all routes (api and web) are turned off. To turn it on choose a sha265 password. To Create it
+
+```javascript
+const { createHash } = require('crypto')
+const password = 'gobrrr'
+const passwordSHA256 = createHash('sha256').update(password).digest('hex')
+console.info(passwordSHA256)
+```
+
+```
+supportDashboardPasswordHash: 'e42703b94ce32a831ea363a8924dc0239ca54160a8f3fb2755bdbceb07238a8a'
+// it defaults to '' which means it's turned completly off
+```
+
 LndHub
 ======
 

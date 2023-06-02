@@ -5,6 +5,7 @@ let config = {
   forwardReserveFee: 0.01, // default 0.01
   intraHubFee: 0.003, // default 0.003
   allowLightningPaymentToNode: false,
+  supportDashboardPasswordSHA256: '',
   bitcoind: {
     rpc: 'http://login:password@1.1.1.1:8332/wallet/wallet.dat',
   },
@@ -25,5 +26,9 @@ if (process.env.CONFIG) {
   console.log('using config from env');
   config = JSON.parse(process.env.CONFIG);
 }
+
+// Config checks
+if (!(config.supportDashboardPasswordHash)) config.supportDashboardPasswordHash = ''
+if (typeof config.supportDashboardPasswordHash !== 'string') config.supportDashboardPasswordHash = ''
 
 module.exports = config;
