@@ -1,3 +1,14 @@
+Satoshi Engineering - Extensions
+======
+
+### [Feature] Allow self payment
+Reading the code it seems that LndHub was never supposed to run on a node with other applications on it, which leads to the problem:
+
+If you want to pay an invoice issued by the node, but not issued "via" LndHub it will be denied. To allow this add this to your config:
+```
+allowLightningPaymentToNode: true // it defaults to false
+```
+
 LndHub
 ======
 
