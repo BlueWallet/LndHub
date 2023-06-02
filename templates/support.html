@@ -14,6 +14,8 @@
     <title>LndHub - Support</title>
     <meta content="lightning network, lndhub" name="keywords">
     <meta content="BlueWallet server for the Lightning Network" name="description">
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="holder">
@@ -67,23 +69,32 @@
         </div>
         <div class="scroll">
             <div class="boxes">
-                <div class="box container24">
+                <div class="box container24" data-auth="false">
                     <p class="meta">Account</p>
                     <h3>Authentification</h3>
                     <input type="password" id="inputPassword"><a class="button" id="btnAuth">Auth</a>
                 </div>
-                <div class="box container24 hidden">
+                <div class="box container24" data-auth="true">
                     <p class="meta">Account</p>
-                    <h3>Creation</h3>
-                    <a id="btnAccountCreation">On/Off</a>
-                    <a id="btnAccountOnce">Once</a>
+                    <h3>Authentification</h3>
+                    <div style="height:59px"></div>
+                    <a class="button" id="btnLogout">Logout</a>
                 </div>
-                <div class="box container24 hidden">
+                <div class="box container24" data-auth="true">
+                    <p class="meta">Account</p>
+                    <h3>Creation: <span id="statusCreation">none</span></h3>
+                    <div style="height:20px"></div>
+                    <a class="button" id="btnAccountEnable">Enable</a>
+                    <a class="button" id="btnAccountDisable">Disable</a>
+                    <div style="height:10px"></div>
+                    <a class="button" id="btnAccountOnce">Once</a>
+                </div>
+                <div class="box container24" data-auth="true">
                     <p class="meta">Account</p>
                     <h3># Accounts</h3>
                     <span class="number1">{{num_of_accounts}}</span>
                 </div>
-                <div class="box container24 hidden">
+                <div class="box container24" data-auth="true">
                     <p class="meta">Account</p>
                     <h3># sats</h3>
                     <span class="number1">{{num_of_sats}}</span>
@@ -91,8 +102,8 @@
             </div>
         </div>
 
-        <h3 class="hidden">Accounts</h3>
-        <div class="box container16 hidden">
+        <h3 data-auth="true">Accounts</h3>
+        <div class="box container16" data-auth="true">
             <div class="table">
                 {{#channels}}
                 <a class="decor" href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">
@@ -138,6 +149,75 @@
         <a href="https://t.me/bluewallet" target="_blank">community</a>
     </footer>
 </div>
+<script>
+    const API_ROUTE = '/api/support'
+    const LS_PWD_KEY = 'support_password'
 
+    const updateAuth = (auth) => {
+        $('[data-auth=true]').each(function() {
+            if (auth === false && !$(this).hasClass('hidden')) $(this).addClass('hidden')
+            if (auth === true && $(this).hasClass('hidden')) $(this).removeClass('hidden')
+        })
+        $('[data-auth=false]').each(function() {
+            if (auth === true && !$(this).hasClass('hidden')) $(this).addClass('hidden')
+            if (auth === false && $(this).hasClass('hidden')) $(this).removeClass('hidden')
+        })
+    }
+
+    const updateData = (url = `${API_ROUTE}/status`, data = null) => {
+        const config = {
+            method: (data == null ? 'GET' : 'POST'),
+            dataType: 'json',
+            url,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem(LS_PWD_KEY)}`)
+            },
+        }
+
+        if (data !== null) config.data = data
+
+        $.ajax(config).done(onStatus).fail(onStatusFail)
+    }
+
+    const onStatus = (data) => {
+        console.log(data)
+
+        if (data.auth) updateAuth(data.auth)
+        if (data.statusCreation === -1) $('#statusCreation').text('Once')
+        if (data.statusCreation === 0) $('#statusCreation').text('Disabled')
+        if (data.statusCreation === 1) $('#statusCreation').text('Enabled')
+    }
+    const onStatusFail = () => {
+        console.log('FAIL')
+        updateAuth(false)
+    }
+
+    $('#btnAuth').click(() => {
+        localStorage.setItem(LS_PWD_KEY, $('#inputPassword').val())
+        updateData()
+        $('#inputPassword').val('')
+    })
+    $('#btnLogout').click(() => {
+        localStorage.setItem(LS_PWD_KEY, '')
+        updateData()
+    })
+
+    $('#btnAccountEnable').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 1 })
+    })
+    $('#btnAccountDisable').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 0 })
+    })
+    $('#btnAccountOnce').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: -1 })
+    })
+
+    $(() => {
+        console.log('yes')
+        updateData()
+    })
+
+    updateAuth(false)
+</script>
 </body>
 </html>

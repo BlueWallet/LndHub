@@ -5,7 +5,7 @@ let config = {
   forwardReserveFee: 0.01, // default 0.01
   intraHubFee: 0.003, // default 0.003
   allowLightningPaymentToNode: false,
-  supportDashboardPasswordSHA256: '',
+  supportDashboardPasswordHash: '',
   bitcoind: {
     rpc: 'http://login:password@1.1.1.1:8332/wallet/wallet.dat',
   },

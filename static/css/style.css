@@ -85,14 +85,14 @@ body {
 	font-size: 13px;
 }
 .hidden {
-	visibility: hidden;
+	display: none;
 }
 a.button {
  display: inline-block;
  outline: 0;
  border: 0;
  cursor: pointer;
- background-color: #4299e1;
+ background-color: #68BBE1;
  border-radius: 4px;
  padding: 8px 16px;
  font-size: 16px;
