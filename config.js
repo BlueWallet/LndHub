@@ -7,6 +7,7 @@ let config = {
   allowLightningPaymentToNode: false,
   supportDashboardPasswordHash: '',
   accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
+  generateSafetyOnChainAddress: false,
   bitcoind: {
     rpc: 'http://login:password@1.1.1.1:8332/wallet/wallet.dat',
   },
@@ -33,5 +34,6 @@ if (!(config.supportDashboardPasswordHash)) config.supportDashboardPasswordHash 
 if (typeof config.supportDashboardPasswordHash !== 'string') config.supportDashboardPasswordHash = ''
 
 if (!(config.accountCreationMode)) config.accountCreationMode = 'on'
+if (!(config.generateSafetyOnChainAddress)) config.generateSafetyOnChainAddress = false
 
 module.exports = config;

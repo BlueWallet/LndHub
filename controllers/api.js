@@ -416,6 +416,7 @@ router.get('/balance', postLimiter, async function (req, res) {
     res.send({ BTC: { AvailableBalance: balance } });
   } catch (Error) {
     logger.log('', [req.id, 'error getting balance:', Error, 'userid:', u.getUserId()]);
+    logger.error(Error)
     return errorGeneralServerError(res);
   }
 });

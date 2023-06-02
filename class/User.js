@@ -119,6 +119,12 @@ export class User {
     return new Promise(function (resolve, reject) {
       self._lightning.newAddress({ type: 0 }, async function (err, response) {
         if (err) return reject('LND failure when trying to generate new address');
+
+        // Due Buggy other systems, check Feature description in readme
+        if (config.generateSafetyOnChainAddress) {
+          await self.generateSafetyAddress()
+        }
+
         const addressAlreadyExists = await self.getAddress();
         if (addressAlreadyExists) {
           // one last final check, for a case of really long race condition
@@ -126,6 +132,19 @@ export class User {
           return;
         }
         await self.addAddress(response.address);
+        if (config.bitcoind) self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
+        resolve();
+      });
+    });
+  }
+
+  async generateSafetyAddress() {
+    let self = this;
+
+    return new Promise(function (resolve, reject) {
+      self._lightning.newAddress({ type: 0 }, async function (err, response) {
+        if (err) return reject('LND failure when trying to generate safety address');
+
         if (config.bitcoind) self._bitcoindrpc.request('importaddress', [response.address, response.address, false]);
         resolve();
       });
@@ -593,6 +612,7 @@ export class User {
 
   async getOrGenerateAddress() {
     let addr = await this.getAddress();
+    console.log('addr', addr)
     if (!addr) {
       await this.generateAddress();
       addr = await this.getAddress();
