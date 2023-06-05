@@ -15,7 +15,7 @@
     <meta content="lightning network, lndhub" name="keywords">
     <meta content="BlueWallet server for the Lightning Network" name="description">
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
+    <script src="../static/js/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="holder">
@@ -89,12 +89,12 @@
                     <div style="height:10px"></div>
                     <a class="button" id="btnAccountOnce">Once</a>
                 </div>
-                <div class="box container24" data-auth="true">
+                <div class="box container24 hidden">
                     <p class="meta">Account</p>
                     <h3># Accounts</h3>
                     <span class="number1">{{num_of_accounts}}</span>
                 </div>
-                <div class="box container24" data-auth="true">
+                <div class="box container24 hidden">
                     <p class="meta">Account</p>
                     <h3># sats</h3>
                     <span class="number1">{{num_of_sats}}</span>
@@ -102,8 +102,8 @@
             </div>
         </div>
 
-        <h3 data-auth="true">Accounts</h3>
-        <div class="box container16" data-auth="true">
+        <h3 class="hidden">Accounts</h3>
+        <div class="box container16 hidden">
             <div class="table">
                 {{#channels}}
                 <a class="decor" href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">
@@ -138,11 +138,18 @@
         <p class="meta">Connect via QR code</p>
     </div>
     <img src="/qr" class="qr">
+    <!-- TODO: check this from the original Page
     <div class="container32 nosidepadding">
         <p class="meta">Node URI</p>
         {{#uris}}
         <p class="uri">{{.}}</p>
         {{/uris}}
+    </div>
+    -->
+    <div class="container32 nosidepadding">
+        <p class="meta">Support Dashboard</p>
+        <p class="uri">By <a href="https://satoshiengineering.com/" target="_blank">Satoshi Engineering</a></p>
+        <p class="uri">Fork on <a href="https://github.com/Satoshi-Engineering/LndHub" target="_blank">Github</a></p>
     </div>
     <footer>
         <a href="https://bluewallet.io/lndhub" target="_blank">about</a> | 
