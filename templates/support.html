@@ -205,11 +205,21 @@
         $.ajax(config).done(onStatus).fail(onStatusFail)
     }
 
+    let accountOverviewLoaded = false
     const onStatus = (data) => {
-        console.log(data)
+        //console.log(data)
+
+        if (data.type && data.type === 'accounts') {
+            accountOverviewLoaded = true
+            onUpdateAccountOverview(data)
+            return
+        }
 
         if (data.auth) updateAuth(data.auth)
         if (data.auth === false) return
+
+        // Load Accounting Overview only on page load & successfull auth
+        if (accountOverviewLoaded === false) updateData(`${API_ROUTE}/acccounts`)
 
         if (data.accountCreationMode === 'once') $('#statusCreation').text('Once')
         if (data.accountCreationMode === 'off') $('#statusCreation').text('Disabled')
@@ -220,8 +230,17 @@
         $('#allowLightningPaymentToNode').text(data.allowLightningPaymentToNode)
         $('#accountCreationMode').text(data.accountCreationMode)
         $('#generateSafetyOnChainAddress').text(data.generateSafetyOnChainAddress)
+    }
+    const onStatusFail = () => {
+        console.log('FAIL')
+        updateAuth(false)
+        if (onLogin) window.alert('Auth failed!')
+        onLogin = false
+        accountOverviewLoaded = false
+    }
 
-        $('#numOfAccounts').text(data.numOfAccounts)
+    const onUpdateAccountOverview = (data) => {
+        $('#numOfAccounts').text(data.userIds.length)
         let numOfSats = data.numOfSats.toFixed(0)
         let rightPart = numOfSats.substring(numOfSats.length - 8, numOfSats.length)
         let leftPart = numOfSats.substring(0, numOfSats.length - 8)
@@ -248,12 +267,6 @@
 
         $('#numOfSats').html(`<span class="gray">${partGray}</span>${partWhite}`)
     }
-    const onStatusFail = () => {
-        console.log('FAIL')
-        updateAuth(false)
-        if (onLogin) window.alert('Auth failed!')
-        onLogin = false
-    }
 
     $('#btnAuth').click(() => {
         localStorage.setItem(LS_PWD_KEY, $('#inputPassword').val())
@@ -279,12 +292,12 @@
         updateData(`${API_ROUTE}/account-creation`, { creation: 'once' })
     })
 
+    updateAuth(false)
+
     $(() => {
-        console.log('yes')
         updateData()
     })
 
-    updateAuth(false)
 </script>
 </body>
 </html>

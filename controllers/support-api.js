@@ -36,30 +36,6 @@ const authenticateUser = (req, res, next) => {
         .end()
 }
 
-
-const getAccountOverview = async () => {
-    logger.log('support-api', 'getAccountOverview()')
-
-    let userKeys = await redis.keys('user_*')
-
-    shared.numOfAccounts = userKeys.length
-
-    const userIds = await redis.mget(userKeys)
-    let numOfSats = 0
-
-    await getUserAccount(userIds[0])
-
-    for (let i = 0; i < userIds.length; ++i) {
-        const userId = userIds[i]
-
-        let U = new User(redis, bitcoinclient, lightning)
-        U._userid = userId
-        numOfSats += await U.getBalance()
-    }
-
-    shared.numOfSats = numOfSats
-}
-
 const getUserAccount = async (userid) => {
     let U = new User(redis, bitcoinclient, lightning)
 
@@ -78,14 +54,6 @@ const getUserAccount = async (userid) => {
     }*/
 }
 
-
-
-(async () => {
-    await getAccountOverview()
-})()
-
-setInterval(getAccountOverview, 60000);
-
 // ######################## DATA ###########################
 
 const createResponseData = () => {
@@ -96,8 +64,6 @@ const createResponseData = () => {
         allowLightningPaymentToNode: config.allowLightningPaymentToNode,
         accountCreationMode: config.accountCreationMode,
         generateSafetyOnChainAddress: config.generateSafetyOnChainAddress,
-        numOfAccounts: shared.numOfAccounts,
-        numOfSats: shared.numOfSats,
     }
 }
 
@@ -129,5 +95,29 @@ router.post('/account-creation', postLimiter, authenticateUser, async function (
 
     res.status(200).send(createResponseData())
 })
+
+router.get('/acccounts', postLimiter, authenticateUser, async function (req, res) {
+    logger.log('/acccounts', [req.id])
+
+    let userKeys = await redis.keys('user_*')
+
+    const userIds = await redis.mget(userKeys)
+    let numOfSats = 0
+
+    for (let i = 0; i < userIds.length; ++i) {
+        const userId = userIds[i]
+
+        let U = new User(redis, bitcoinclient, lightning)
+        U._userid = userId
+        numOfSats += await U.getBalance()
+    }
+
+    res.status(200).send({
+        type: 'accounts',
+        numOfSats,
+        userIds,
+    })
+})
+
 
 module.exports = router

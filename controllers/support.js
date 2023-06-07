@@ -7,7 +7,6 @@ const shared = require('../utils/shared')
 const qr = require('qr-image')
 const config = require('../config')
 
-
 router.get('/', function (req, res) {
     logger.log('/support', [req.id]);
     res.setHeader('Content-Type', 'text/html')
