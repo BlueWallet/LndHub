@@ -4,10 +4,12 @@ const fs = require('fs');
 const mustache = require('mustache');
 const lightning = require('../lightning');
 const logger = require('../utils/logger');
+const shared = require('../utils/shared');
+
 const qr = require('qr-image');
 
-let lightningGetInfo = {};
-let lightningListChannels = {};
+shared.lightningGetInfo = {};
+shared.lightningListChannels = {};
 function updateLightning() {
   console.log('updateLightning()');
   try {
@@ -17,7 +19,7 @@ function updateLightning() {
         process.exit(4);
         return;
       }
-      lightningGetInfo = info;
+      shared.lightningGetInfo = info;
     });
 
     lightning.listChannels({}, function (err, response) {
@@ -27,13 +29,13 @@ function updateLightning() {
         return;
       }
       console.log('updated');
-      lightningListChannels = response;
+      shared.lightningListChannels = response;
       let channels = [];
       let max_chan_capacity = -1;
-      for (const channel of lightningListChannels.channels) {
+      for (const channel of shared.lightningListChannels.channels) {
         max_chan_capacity = Math.max(max_chan_capacity, channel.capacity);
       }
-      for (let channel of lightningListChannels.channels) {
+      for (let channel of shared.lightningListChannels.channels) {
         let magic = max_chan_capacity / 100;
         channel.local = channel.local_balance * 1;
         channel.total = channel.capacity * 1;
@@ -46,7 +48,7 @@ function updateLightning() {
           channels.push(channel);
         }
       }
-      lightningListChannels.channels = channels;
+      shared.lightningListChannels.channels = channels;
     });
   } catch (Err) {
     console.log(Err);
@@ -91,13 +93,13 @@ const pubkey2name = {
 
 router.get('/', function (req, res) {
   logger.log('/', [req.id]);
-  if (!lightningGetInfo) {
+  if (!shared.lightningGetInfo) {
     console.error('lnd failure');
     process.exit(3);
   }
   res.setHeader('Content-Type', 'text/html');
   let html = fs.readFileSync('./templates/index.html').toString('utf8');
-  return res.status(200).send(mustache.render(html, Object.assign({}, lightningGetInfo, lightningListChannels)));
+  return res.status(200).send(mustache.render(html, Object.assign({}, shared.lightningGetInfo, shared.lightningListChannels)));
 });
 
 router.get('/qr', function (req, res) {

@@ -33,7 +33,11 @@ const authenticateUser = (req, res, next) => {
 const createResponseData = () => {
     return {
         auth: true,
-        statusCreation: config.accountCreationMode
+        forwardReserveFee: config.forwardReserveFee,
+        intraHubFee: config.intraHubFee,
+        allowLightningPaymentToNode: config.allowLightningPaymentToNode,
+        accountCreationMode: config.accountCreationMode,
+        generateSafetyOnChainAddress: config.generateSafetyOnChainAddress,
     }
 }
 
