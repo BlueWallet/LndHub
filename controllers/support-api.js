@@ -82,7 +82,6 @@ router.get('/acccounts', postLimiter, authenticateUser, async function (req, res
     logger.log('/acccounts', [req.id])
 
     let userKeys = await redis.keys('user_*')
-    console.log(userKeys)
 
     const userIds = await redis.mget(userKeys)
     let numOfSats = 0
