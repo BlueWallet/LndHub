@@ -94,6 +94,19 @@ body {
 	color: #fff;
 	font-size: 13px;
 }
+
+.inv {
+	background-color: #303080;
+}
+ .tx {
+	 background-color: #5b2c83;
+ }
+ .btc {
+	 background-color: #4ab41f;
+ }
+ .loc {
+	 background-color: #a91818;
+ }
 .hidden {
 	display: none;
 }
@@ -138,7 +151,7 @@ input:focus {
 [title~=true], [title~=active] {
   background: #50E3C2;
 }
-[title~=false], [title~=inactive] {
+[title~=false], [title~=inactive], [title~=locked] {
   background: #8E8E8E;
 }
 .label[title~=true]::after  {
@@ -152,6 +165,9 @@ input:focus {
 }
 .label[title~=inactive]::after  {
   content: "inactive";
+}
+.label[title~=locked]::after  {
+	content: "locked";
 }
 .synced {
 	position: absolute;
@@ -186,13 +202,44 @@ input:focus {
 	border-radius: 8px;
 	transition: 0.2s ease-in-out;
 }
+
+.row-narrow {
+	padding: 0 0;
+}
+
 .row:hover {
 	background: #F4F8FB;
 }
 .row .name {
   	padding: 2px 4px 2px 8px;
 }
-.row .name h2 {
+
+ .row .date {
+	 color: gray;
+	 font-size: 14px;
+	 font-weight: 500;
+	 padding: 9px 4px 2px 8px;
+ }
+
+ .row .symbol {
+	 width: 20px;
+	 padding: 5px 2px 2px 8px;
+ }
+
+ .row .amount {
+	 padding: 2px 0px 2px 3px;
+ }
+
+ .row .type {
+	 padding: 7px 0px 0px 11px;
+ }
+
+ .row .user-id {
+	 flex-grow: 1;
+	 padding: 2px 4px 2px 8px;
+ }
+
+.row .name h2, .row .user-id h2, .row .symbol h2, .row .amount h2 {
 	white-space: nowrap;
   	overflow: hidden;
   	text-overflow: ellipsis;
@@ -210,7 +257,7 @@ input:focus {
 .decor {
 	text-decoration : none;
 }
-.name h2 {
+.name h2, .user-id h2, .symbol h2, .amount h2 {
 	color: #000;
 	margin: 0;
 	font-weight: 500;

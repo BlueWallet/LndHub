@@ -67,46 +67,41 @@
                 </g>
             </svg>
         </div>
-        <div class="scroll">
+        <div class="scroll" data-auth="true">
             <div class="boxes">
-                <div class="box box-quarter container24" data-auth="false">
-                    <p class="meta">Authentification</p>
-                    <h3>Logged Out</h3>
-                    <input type="password" id="inputPassword"><a class="button" id="btnAuth">Auth</a>
+                <div class="box box-quarter container24">
+                    <p class="meta">Menu</p>
+                    <h3>Menu</h3>
+                    <div style="height:39px"></div>
+                    <a class="button" id="btnBack">Back</a>
                 </div>
-                <div class="box box-quarter container24" data-auth="true">
-                    <p class="meta">Authentification</p>
-                    <h3>Logged In</h3>
-                    <div style="height:59px"></div>
-                    <a class="button" id="btnLogout">Logout</a>
-                </div>
-                <div class="box box-quarter container24" data-auth="true">
-                    <p class="meta">Account</p>
-                    <h3>Creation: <span id="statusCreation">none</span></h3>
-                    <div style="height:20px"></div>
-                    <a class="button" id="btnAccountEnable">Enable</a>
-                    <a class="button" id="btnAccountDisable">Disable</a>
-                    <div style="height:10px"></div>
-                    <a class="button" id="btnAccountOnce">Once</a>
-                </div>
-                <div class="box box-quarter container24" data-auth="true">
-                    <p class="meta">Accounts</p>
-                    <h3># Accounts</h3>
-                    <span class="number1" id="numOfAccounts">-</span>
+                <div class="box container24">
+                    <p class="meta">User Id</p>
+                    <h3 id="userId"></h3>
+                    <div style="height:10px;"></div>
+                    <p class="meta">On Chain Address</p>
+                    <h3 id="btcAddress"></h3>
                 </div>
             </div>
             <div class="boxes">
-                <div class="box box-half container24" data-auth="true">
+                <div class="box box-quarter container24">
+                    <p class="meta">Transactions</p>
+                    <h3>Invoices / Tx</h3>
+                    <span class="number1" id="numOfTransactions">-</span>
+                </div>
+                <div class="box box-half container24">
                     <p class="meta">Accounts</p>
                     <h3># sats</h3>
                     <span class="number1" id="numOfSats">-</span>&nbsp;BTC
+                    <div></div>
+                    <span class="number1" style="margin-top: 10px;" id="numOfLockedSats">-</span>&nbsp;BTC&nbsp;<span class="label" title="locked"></span>
                 </div>
             </div>
         </div>
 
-        <h3 data-auth="true">Accounts</h3>
+        <h3 data-auth="true">Transactions</h3>
         <div class="box container16" data-auth="true">
-            <div id="userList" class="table">
+            <div id="transactionList" class="table">
             </div>
         </div>
 
@@ -124,14 +119,6 @@
         <p class="uri">{{.}}</p>
         {{/lightningGetInfo.uris}}
     </div>
-    <div class="container32 nosidepadding" data-auth="true">
-        <p class="meta">Config</p>
-        <p class="uri">Forward Reserve Fee: <span id="forwardReserveFee"></span></p>
-        <p class="uri">Intra Hub Fee: <span id="intraHubFee"></span></p>
-        <p class="uri">Allow Payments to Node: <span id="allowLightningPaymentToNode"></span></p>
-        <p class="uri">Account Creation Mode: <span id="accountCreationMode"></span></p>
-        <p class="uri">Generate Safety OnChainAddress: <span id="generateSafetyOnChainAddress"></span></p>
-    </div>
 
     <div class="container32 nosidepadding">
         <p class="meta">Support Dashboard</p>
@@ -139,21 +126,26 @@
         <p class="uri">Fork on <a href="https://github.com/Satoshi-Engineering/LndHub" target="_blank">Github</a></p>
     </div>
     <footer>
-        <a href="https://bluewallet.io/lndhub" target="_blank">about</a> | 
+        <a href="https://bluewallet.io/lndhub" target="_blank">about</a> |
         <a href="https://t.me/bluewallet" target="_blank">community</a>
     </footer>
 </div>
 
-<template id="userRow" class="hidden">
-    <a class="decor" href="/support/account/#id#">
-        <div class="row">
-            <div class="user-id">
-                <h2>#name#</h2>
-                <span class="amount">#capacity#</span>
+<template id="transactionRow" class="hidden">
+    <a class="decor">
+        <div class="row row-narrow">
+            <div class="date">
+                #date#
             </div>
-            <div class="graph hidden"><progress id="progressbar" class="" value="10" max="200" style="width: {{size}}%"></progress></div>
+            <div class="symbol">
+                <h2>#symbol#</h2>
+            </div>
+            <div class="amount">
+                <h2>#name#</h2>
+            </div>
+            <div class="type"><span class="label #typeclass#">#type#</span></div>
             <div class="status hidden"><span class="label right" title="inactive"></span></div>
-            <div class="status"><span class="label right" title="active"></span></div>
+            <div class="status hidden"><span class="label right" title="active"></span></div>
         </div>
     </a>
 </template>
@@ -169,6 +161,7 @@
     }
 
     const createNiceBTC = (sats) => {
+
         let numOfSats = sats.toFixed(0)
 
         let rightPart = numOfSats.substring(numOfSats.length - 8, numOfSats.length)
@@ -198,9 +191,19 @@
         return { partGray, partWhite }
     }
 
+    const formateDate = (d) => {
+        const date = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." +
+            d.getFullYear()
+        const time = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2)
+        return date + ' ' + time
+    }
+
+
     const API_ROUTE = '/api/support'
     const LS_PWD_KEY = 'support_password'
-    let onLogin = false
+    const path = window.location.pathname.split('/')
+    const userId = path[path.length - 1]
+    $('#userId').text(userId)
 
     const updateAuth = (auth) => {
         $('[data-auth=true]').each(function() {
@@ -213,7 +216,10 @@
         })
     }
 
-    const updateData = (url = `${API_ROUTE}/status`, data = null) => {
+    const updateData = () => {
+        const data = null
+        const url = `${API_ROUTE}/account/${userId}`
+
         const config = {
             method: (data == null ? 'GET' : 'POST'),
             dataType: 'json',
@@ -228,71 +234,106 @@
         $.ajax(config).done(onStatus).fail(onStatusFail)
     }
 
-    let accountOverviewLoaded = false
-    const onStatus = (data) => {
-        //console.log(data)
-
-        if (data.type && data.type === 'accounts') {
-            accountOverviewLoaded = true
-            onUpdateAccountOverview(data)
-            return
-        }
-
-        if (data.auth) updateAuth(data.auth)
-        if (data.auth === false) return
-
-        // Load Accounting Overview only on page load & successfull auth
-        if (accountOverviewLoaded === false) updateData(`${API_ROUTE}/acccounts`)
-
-        if (data.accountCreationMode === 'once') $('#statusCreation').text('Once')
-        if (data.accountCreationMode === 'off') $('#statusCreation').text('Disabled')
-        if (data.accountCreationMode === 'on') $('#statusCreation').text('Enabled')
-
-        $('#forwardReserveFee').text(`${(data.forwardReserveFee * 100.0).toFixed(2)} %`)
-        $('#intraHubFee').text(`${(data.intraHubFee * 100.0).toFixed(4)} %`)
-        $('#allowLightningPaymentToNode').text(data.allowLightningPaymentToNode)
-        $('#accountCreationMode').text(data.accountCreationMode)
-        $('#generateSafetyOnChainAddress').text(data.generateSafetyOnChainAddress)
-    }
     const onStatusFail = () => {
         console.log('FAIL')
         updateAuth(false)
-        if (onLogin) window.alert('Auth failed!')
-        onLogin = false
-        accountOverviewLoaded = false
+        window.alert('Auth failed!')
     }
+    const onStatus = (data) => {
+        updateAuth(true)
 
-    const onUpdateAccountOverview = (data) => {
-        $('#numOfAccounts').text(data.userIds.length)
+        $('#btcAddress').text(data.btcAddress)
+        $('#numOfTransactions').text(`${data.userinvoices.length} / ${data.txs.length}`)
 
         let numOfSats = createNiceBTC(data.numOfSats)
         $('#numOfSats').html(`<span class="gray">${numOfSats.partGray}</span>${numOfSats.partWhite}`)
 
-        $('#userList').empty()
+        let numOfLockedSats = 0
+        for (let loc of data.locked) {
+            numOfLockedSats += loc.amount + /* fee limit */ Math.floor(loc.amount * data.forwardReserveFee)
+        }
+        numOfLockedSats = createNiceBTC(numOfLockedSats)
+        $('#numOfLockedSats').html(`<span class="gray">${numOfLockedSats.partGray}</span>${numOfLockedSats.partWhite}`)
 
-        data.userIds.forEach(userId => {
-            let userRow = $('template#userRow').html()
-            userRow = userRow.replace('#name#', userId)
-            userRow = userRow.replace('#id#', userId)
-            userRow = userRow.replace('#capacity#', '')
-            userRow = userRow.replace('#capacity#', '&nbsp;')
-            $('#userList').append(userRow)
+        $('#transactionList').empty()
+
+        let list = []
+
+        for (let tx of data.txs) {
+            if (tx.type === 'bitcoind_tx') { // '[on-chain refill]'
+                list.push({
+                    type: 'btc',
+                    typeName: 'On Chain Refill',
+                    symbol: '+',
+                    value: tx.amount * 100000000,
+                    conf: tx.confirmations,
+                    ts: new Date(tx.time * 1000),
+                })
+            } else {
+                list.push({
+                    type: 'tx',
+                    typeName: 'Transaction',
+                    symbol: '-',
+                    value: tx.value,
+                    fee: tx.fee,
+                    ts: new Date(tx.timestamp * 1000),
+                    memo: tx.memo,
+                })
+            }
+        }
+
+        for (let invo of data.userinvoices) {
+            if (invo && invo.ispaid) {
+                list.push({
+                    type: 'inv',
+                    typeName: 'Invoice',
+                    symbol: '+',
+                    value: invo.amt,
+                    ts: new Date(invo.timestamp * 1000),
+                })
+            }
+        }
+        for (let loc of data.locked) {
+            list.push({
+                type: 'loc',
+                typeName: 'Locked Invoice',
+                symbol: '-',
+                value: loc.amount + /* fee limit */ Math.floor(loc.amount * config.forwardReserveFee),
+                ts: new Date(loc.timestamp * 1000),
+            })
+        }
+
+        list = list.sort((t1, t2) => {
+            if (t1.ts > t2.ts)    return -1;
+            else if (t1.ts < t2.ts) return  1;
+            else return  0;
         })
 
+        console.log(list)
+
+        const options = {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour12: false,
+        }
+
+        list.forEach(item => {
+            const niceBTC = createNiceBTC(item.value)
+
+            let userRow = $('template#transactionRow').html()
+            userRow = userRow.replace('#name#', `<span class="gray">${niceBTC.partGray}</span>${niceBTC.partWhite}`)
+            userRow = userRow.replace('#type#', item.typeName)
+            userRow = userRow.replace('#typeclass#', item.type)
+            userRow = userRow.replace('#symbol#', item.symbol)
+            userRow = userRow.replace('#date#', formateDate(item.ts))
+
+            $('#transactionList').append(userRow)
+        })
     }
 
-    $('#btnAuth').click(() => {
-        localStorage.setItem(LS_PWD_KEY, $('#inputPassword').val())
-
-        if ($('#inputPassword').val() == '') return
-
-        updateData()
-        $('#inputPassword').val('')
-        onLogin = true
-    })
-    $('#btnLogout').click(() => {
-        localStorage.setItem(LS_PWD_KEY, '')
-        updateData()
+    $('#btnBack').click(() => {
+        history.back()
     })
 
     $('#btnAccountEnable').click(() => {
