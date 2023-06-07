@@ -69,18 +69,18 @@
         </div>
         <div class="scroll">
             <div class="boxes">
-                <div class="box container24" data-auth="false">
-                    <p class="meta">Account</p>
-                    <h3>Authentification</h3>
+                <div class="box box-quarter container24" data-auth="false">
+                    <p class="meta">Authentification</p>
+                    <h3>Logged Out</h3>
                     <input type="password" id="inputPassword"><a class="button" id="btnAuth">Auth</a>
                 </div>
-                <div class="box container24" data-auth="true">
-                    <p class="meta">Account</p>
-                    <h3>Authentification</h3>
+                <div class="box box-quarter container24" data-auth="true">
+                    <p class="meta">Authentification</p>
+                    <h3>Logged In</h3>
                     <div style="height:59px"></div>
                     <a class="button" id="btnLogout">Logout</a>
                 </div>
-                <div class="box container24" data-auth="true">
+                <div class="box box-quarter container24" data-auth="true">
                     <p class="meta">Account</p>
                     <h3>Creation: <span id="statusCreation">none</span></h3>
                     <div style="height:20px"></div>
@@ -89,15 +89,17 @@
                     <div style="height:10px"></div>
                     <a class="button" id="btnAccountOnce">Once</a>
                 </div>
-                <div class="box container24 hidden">
-                    <p class="meta">Account</p>
+                <div class="box box-quarter container24" data-auth="true">
+                    <p class="meta">Accounts</p>
                     <h3># Accounts</h3>
-                    <span class="number1">{{num_of_accounts}}</span>
+                    <span class="number1" id="numOfAccounts">-</span>
                 </div>
-                <div class="box container24 hidden">
-                    <p class="meta">Account</p>
+            </div>
+            <div class="boxes">
+                <div class="box box-half container24" data-auth="true">
+                    <p class="meta">Accounts</p>
                     <h3># sats</h3>
-                    <span class="number1">{{num_of_sats}}</span>
+                    <span class="number1" id="numOfSats">-</span>&nbsp;BTC
                 </div>
             </div>
         </div>
@@ -164,6 +166,15 @@
     </footer>
 </div>
 <script>
+    // ----- HELPER FUNCTIONS --- //
+    String.prototype.insert = function(index, string) {
+        if (index > 0) {
+            return this.substring(0, index) + string + this.substring(index, this.length)
+        }
+
+        return string + this;
+    }
+
     const API_ROUTE = '/api/support'
     const LS_PWD_KEY = 'support_password'
     let onLogin = false
@@ -209,6 +220,33 @@
         $('#allowLightningPaymentToNode').text(data.allowLightningPaymentToNode)
         $('#accountCreationMode').text(data.accountCreationMode)
         $('#generateSafetyOnChainAddress').text(data.generateSafetyOnChainAddress)
+
+        $('#numOfAccounts').text(data.numOfAccounts)
+        let numOfSats = data.numOfSats.toFixed(0)
+        let rightPart = numOfSats.substring(numOfSats.length - 8, numOfSats.length)
+        let leftPart = numOfSats.substring(0, numOfSats.length - 8)
+
+        let partWhite = rightPart
+        let partGray = ''
+
+        if (rightPart.length > 3) partWhite = partWhite.insert(partWhite.length - 3, ' ')
+        if (rightPart.length > 6) {
+            partWhite = partWhite.insert(partWhite.length - 7, ' ')
+        } else {
+            partWhite = ' ' + partWhite
+        }
+        if (rightPart.length > 8) {
+            partWhite = partWhite.insert(partWhite.length - 10, '.')
+        }
+        if (rightPart.length === 8) {
+            partGray = '0.'
+        }
+        if (rightPart.length < 8) {
+            partGray = Array(9 - rightPart.length).fill('0').join('')
+            partGray = partGray.insert(1, '.')
+        }
+
+        $('#numOfSats').html(`<span class="gray">${partGray}</span>${partWhite}`)
     }
     const onStatusFail = () => {
         console.log('FAIL')

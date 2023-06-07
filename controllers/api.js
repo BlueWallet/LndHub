@@ -4,6 +4,8 @@ const config = require('../config');
 let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
+const shared = require('../utils/shared');
+
 const MIN_BTC_BLOCK = 670000;
 if (process.env.NODE_ENV !== 'prod') {
   console.log('using config', JSON.stringify(config));
@@ -16,6 +18,8 @@ redis.monitor(function (err, monitor) {
     // console.log('REDIS', JSON.stringify(args));
   });
 });
+
+shared.redis = redis
 
 /****** START SET FEES FROM CONFIG AT STARTUP ******/
 /** GLOBALS */

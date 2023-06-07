@@ -612,7 +612,6 @@ export class User {
 
   async getOrGenerateAddress() {
     let addr = await this.getAddress();
-    console.log('addr', addr)
     if (!addr) {
       await this.generateAddress();
       addr = await this.getAddress();

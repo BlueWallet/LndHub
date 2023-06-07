@@ -46,8 +46,13 @@ body {
 	border-radius: 6px;
 	position: relative;
 }
-.boxes .box {
+.boxes .box-quarter {
 	width: 25%;
+	margin-right: 32px;
+}
+
+.boxes .box-half {
+	width: 50%;
 	margin-right: 32px;
 }
 
@@ -75,6 +80,17 @@ body {
 	margin-top: 32px;
 	display: inline-block;
 }
+ .number2 {
+	 font-size: 20px;
+	 font-weight: 500;
+	 margin-top: 32px;
+	 display: inline-block;
+ }
+
+ .gray {
+	 color: #a4a4a4;
+ }
+
 .right {
 	float: right;
 }
