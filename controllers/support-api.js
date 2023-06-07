@@ -37,7 +37,9 @@ const authenticateUser = (req, res, next) => {
 }
 
 
-const getUserIds = async () => {
+const getAccountOverview = async () => {
+    logger.log('support-api', 'getAccountOverview()')
+
     let userKeys = await redis.keys('user_*')
 
     shared.numOfAccounts = userKeys.length
@@ -62,16 +64,10 @@ const getUserAccount = async (userid) => {
     let U = new User(redis, bitcoinclient, lightning)
 
     U._userid = userid;
-
     /*
         const btcAddress = await u.getOrGenerateAddress()
-
         console.log('\ncalculatedBalance\n================\n', calculatedBalance, await U.getCalculatedBalance());
         console.log('txs:', txs.length, 'userinvoices:', userinvoices.length);
-
-     */
-
-/*
     return {
         btcAddress,
         dbBalance,
@@ -85,10 +81,10 @@ const getUserAccount = async (userid) => {
 
 
 (async () => {
-    await getUserIds()
+    await getAccountOverview()
 })()
 
-setInterval(getUserIds, 60000);
+setInterval(getAccountOverview, 60000);
 
 // ######################## DATA ###########################
 
