@@ -236,7 +236,7 @@ input:focus {
 
  .row .user-id {
 	 flex-grow: 1;
-	 padding: 2px 4px 2px 8px;
+	 padding: 6px 0px 2px 22px;
  }
 
 .row .name h2, .row .user-id h2, .row .symbol h2, .row .amount h2 {

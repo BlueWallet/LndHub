@@ -146,10 +146,12 @@
 
 <template id="userRow" class="hidden">
     <a class="decor" href="/support/account/#id#">
-        <div class="row">
+        <div class="row row-narrow">
+            <div class="amount">
+                <h2>#amount# BTC</h2>
+            </div>
             <div class="user-id">
                 <h2>#name#</h2>
-                <span class="amount">#capacity#</span>
             </div>
             <div class="graph hidden"><progress id="progressbar" class="" value="10" max="200" style="width: {{size}}%"></progress></div>
             <div class="status hidden"><span class="label right" title="inactive"></span></div>
@@ -271,14 +273,16 @@
         $('#userList').empty()
 
         data.userIds.forEach(userId => {
+            const account = data.accounts[userId]
+            const numOfSats = createNiceBTC(account.balance)
+
             let userRow = $('template#userRow').html()
-            userRow = userRow.replace('#name#', userId)
+            userRow = userRow.replace('#name#', account.userName)
             userRow = userRow.replace('#id#', userId)
             userRow = userRow.replace('#capacity#', '')
-            userRow = userRow.replace('#capacity#', '&nbsp;')
+            userRow = userRow.replace('#amount#', `<span class="gray">${numOfSats.partGray}</span>${numOfSats.partWhite}`)
             $('#userList').append(userRow)
         })
-
     }
 
     $('#btnAuth').click(() => {

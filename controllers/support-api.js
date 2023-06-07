@@ -82,22 +82,33 @@ router.get('/acccounts', postLimiter, authenticateUser, async function (req, res
     logger.log('/acccounts', [req.id])
 
     let userKeys = await redis.keys('user_*')
+    console.log(userKeys)
 
     const userIds = await redis.mget(userKeys)
     let numOfSats = 0
+    const accounts = {}
 
     for (let i = 0; i < userIds.length; ++i) {
         const userId = userIds[i]
+        const key = userKeys[i]
+        const userName = key.split('_')[1]
 
         let U = new User(redis, bitcoinclient, lightning)
         U._userid = userId
-        numOfSats += await U.getBalance()
+        const balance = await U.getBalance()
+        numOfSats += balance
+
+        accounts[userId] = {
+            balance,
+            userName,
+        }
     }
 
     res.status(200).send({
         type: 'accounts',
         numOfSats,
         userIds,
+        accounts,
     })
 })
 
