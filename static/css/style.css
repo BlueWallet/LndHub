@@ -46,10 +46,20 @@ body {
 	border-radius: 6px;
 	position: relative;
 }
-.boxes .box-quarter {
-	width: 25%;
+.boxes .box-fifth {
+	width: 20%;
 	margin-right: 32px;
 }
+
+.boxes .box-fifteen {
+	width: 15%;
+	margin-right: 32px;
+}
+
+ .boxes .box-quarter {
+	 width: 25%;
+	 margin-right: 32px;
+ }
 
 .boxes .box-half {
 	width: 50%;
