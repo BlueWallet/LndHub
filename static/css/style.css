@@ -40,6 +40,11 @@ body {
 	display: flex;
 	margin: 40px 0 56px 0;
 }
+
+.boxes-smallmargin {
+	margin: 40px 0 0 0;
+}
+
 .box {
 	background: #fff;
 	box-shadow: 0 1px 4px 0 rgba(0,0,0,.12);
@@ -55,6 +60,11 @@ body {
 	width: 15%;
 	margin-right: 32px;
 }
+
+ .boxes .box-ten {
+	 width: 10%;
+	 margin-right: 32px;
+ }
 
  .boxes .box-quarter {
 	 width: 25%;

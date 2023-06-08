@@ -69,35 +69,32 @@
         </div>
         <div class="scroll" data-auth="true">
             <div class="boxes">
-                <div class="box box-quarter container24">
+                <div class="box box-ten container24">
                     <p class="meta">Menu</p>
                     <h3>Menu</h3>
                     <div style="height:39px"></div>
                     <a class="button" id="btnBack">Back</a>
                 </div>
-                <div class="box container24">
-                    <p class="meta">User Id</p>
-                    <h3 id="userId"></h3>
-                    <div style="height:10px;"></div>
-                    <p class="meta">On Chain Address</p>
-                    <h3 id="btcAddress"></h3>
-                </div>
-            </div>
-            <div class="boxes">
-                <div class="box box-quarter container24">
+                <div class="box box-fifteen container24">
                     <p class="meta">Transactions</p>
                     <h3>Invoices / Tx</h3>
                     <span class="number1" id="numOfTransactions">-</span>
+                </div>
+                <div class="box box-fifteen container24" >
+                    <p class="meta">On Chain Address</p>
+                    <h3 id="btcAddress"></h3>
                 </div>
                 <div class="box box-half container24">
                     <p class="meta">Accounts</p>
                     <h3># sats</h3>
                     <span class="number1" id="numOfSats">-</span>&nbsp;BTC
-                    <div></div>
-                    <span class="number1" style="margin-top: 10px;" id="numOfLockedSats">-</span>&nbsp;BTC&nbsp;<span class="label" title="locked"></span>
+                    <div id="blockLocked">
+                        <span class="number1" style="margin-top: 10px;" id="numOfLockedSats">-</span>&nbsp;BTC&nbsp;<span class="label" title="locked"></span>
+                    </div>
                 </div>
             </div>
         </div>
+
 
         <h3 data-auth="true">Transactions</h3>
         <div class="box container16" data-auth="true">
@@ -251,6 +248,11 @@
         let numOfLockedSats = 0
         for (let loc of data.locked) {
             numOfLockedSats += loc.amount + /* fee limit */ Math.floor(loc.amount * data.forwardReserveFee)
+        }
+        if (numOfLockedSats <= 0) {
+            $('#blockLocked').hide()
+        } else {
+            $('#blockLocked').show()
         }
         numOfLockedSats = createNiceBTC(numOfLockedSats)
         $('#numOfLockedSats').html(`<span class="gray">${numOfLockedSats.partGray}</span>${numOfLockedSats.partWhite}`)
