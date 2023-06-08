@@ -6,6 +6,7 @@ let config = {
   intraHubFee: 0.003, // default 0.003
   allowLightningPaymentToNode: false,
   supportDashboardPasswordHash: '',
+  supportDashboardShowAccounts: false,
   accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
   generateSafetyOnChainAddress: false,
   bitcoind: {
@@ -32,6 +33,7 @@ if (process.env.CONFIG) {
 // Config checks
 if (!(config.supportDashboardPasswordHash)) config.supportDashboardPasswordHash = ''
 if (typeof config.supportDashboardPasswordHash !== 'string') config.supportDashboardPasswordHash = ''
+if (!(config.supportDashboardPasswordHash)) config.supportDashboardShowAccounts = false
 
 if (!(config.accountCreationMode)) config.accountCreationMode = 'on'
 if (!(config.generateSafetyOnChainAddress)) config.generateSafetyOnChainAddress = false

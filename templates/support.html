@@ -101,13 +101,13 @@
                 </div>
             </div>
         </div>
-
+        {{#supportDashboardShowAccounts}}
         <h3 data-auth="true">Accounts</h3>
         <div class="box container16" data-auth="true">
             <div id="userList" class="table">
             </div>
         </div>
-
+        {{/supportDashboardShowAccounts}}
     </div>
 </div>
 
@@ -268,6 +268,7 @@
         let numOfSats = createNiceBTC(data.numOfSats)
         $('#numOfSats').html(`<span class="gray">${numOfSats.partGray}</span>${numOfSats.partWhite}`)
 
+        // {{#supportDashboardShowAccounts}}
         $('#userList').empty()
 
         data.userIds.forEach(userId => {
@@ -281,6 +282,7 @@
             userRow = userRow.replace('#amount#', `<span class="gray">${numOfSats.partGray}</span>${numOfSats.partWhite}`)
             $('#userList').append(userRow)
         })
+        // {{/supportDashboardShowAccounts}}
     }
 
     $('#btnAuth').click(() => {

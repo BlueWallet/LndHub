@@ -90,7 +90,8 @@ router.get('/acccounts', postLimiter, authenticateUser, async function (req, res
     for (let i = 0; i < userIds.length; ++i) {
         const userId = userIds[i]
         const key = userKeys[i]
-        const userName = key.split('_')[1]
+        let userName = key.split('_')[1]
+        userName = userName.substring(0, 4) + Array(20 - 8).fill('x').join('') + userName.substring(userName.length - 4)
 
         let U = new User(redis, bitcoinclient, lightning)
         U._userid = userId

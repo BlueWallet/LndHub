@@ -7,6 +7,8 @@ const shared = require('../utils/shared')
 const qr = require('qr-image')
 const config = require('../config')
 
+shared.supportDashboardShowAccounts = config.supportDashboardShowAccounts
+
 router.get('/', function (req, res) {
     logger.log('/support', [req.id]);
     res.setHeader('Content-Type', 'text/html')
@@ -16,6 +18,8 @@ router.get('/', function (req, res) {
 })
 
 router.get('/account/:userId', function (req, res) {
+    if (!config.supportDashboardShowAccounts) return res.status(200).send('not activated in config')
+
     logger.log('/account', [req.id])
     res.setHeader('Content-Type', 'text/html')
     let html = fs.readFileSync('./templates/account.html').toString('utf8')

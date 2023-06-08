@@ -10,9 +10,8 @@ allowLightningPaymentToNode: true // it defaults to false
 ```
 
 ### [Feature] Support Dashboard
-As a node runner I would like to:
-- [x] Stop the creation of new accounts
-- [ ] Check the total balance of lndhub
+
+![](doc/img/support_dashboard.png)
 
 If the Support Dashboard is not turned an, all routes (api and web) are turned off. To turn it on choose a sha265 password. To Create it
 
@@ -38,6 +37,7 @@ accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
 ```
 
 ### [Feature] Generate Safety On Chain Address
+
 In combination with Thunderhub we noticed, that an onchain address assigned to a lndhub account
 had the same addess we got from Thunderhub's "Create On Chain Address" functiontionality. Thunderhub
 somehow is caching address, which is normally ok, but in this case not :( The issue is addressed [here](https://github.com/apotdevin/thunderhub/issues/534).
@@ -47,6 +47,20 @@ This feature creates an additional address from LND after an onchain address is 
 ```
 generateSafetyOnChainAddress: false, // defaults to false
 ```
+
+### [Feature] Check account balance, bc1 address
+
+To make the support dashboard even more powerfull, it is possible to show a list of accounts and
+a detailed view of the accounts.
+
+If it's turned off, no account data is published to the dashboard & and the detail route is turned off!
+
+```
+generateSafetyOnChainAddress: false, // defaults to false
+```
+
+![](doc/img/account_list.png)
+![](doc/img/account_detail.png)
 
 LndHub
 ======
