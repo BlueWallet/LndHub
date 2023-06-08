@@ -45,7 +45,7 @@ somehow is caching address, which is normally ok, but in this case not :( The is
 This feature creates an additional address from LND after an onchain address is created and assigned to the user.
 
 ```
-generateSafetyOnChainAddress: false, // defaults to false
+generateSafetyOnChainAddress: true, // defaults to false
 ```
 
 ### [Feature] Check account balance, bc1 address
@@ -56,7 +56,7 @@ a detailed view of the accounts.
 If it's turned off, no account data is published to the dashboard & and the detail route is turned off!
 
 ```
-generateSafetyOnChainAddress: false, // defaults to false
+supportDashboardShowAccounts: true, // defaults to false
 ```
 
 ![](doc/img/account_list.png)
