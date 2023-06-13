@@ -112,34 +112,7 @@
 </div>
 
 <div class="sidebar container32">
-    <div>
-        <p class="meta">Connect via QR code</p>
-    </div>
-    <img src="/qr" class="qr">
-    <div class="container32 nosidepadding">
-        <p class="meta">Node URI</p>
-        {{#lightningGetInfo.uris}}
-        <p class="uri">{{.}}</p>
-        {{/lightningGetInfo.uris}}
-    </div>
-    <div class="container32 nosidepadding" data-auth="true">
-        <p class="meta">Config</p>
-        <p class="uri">Forward Reserve Fee: <span id="forwardReserveFee"></span></p>
-        <p class="uri">Intra Hub Fee: <span id="intraHubFee"></span></p>
-        <p class="uri">Allow Payments to Node: <span id="allowLightningPaymentToNode"></span></p>
-        <p class="uri">Account Creation Mode: <span id="accountCreationMode"></span></p>
-        <p class="uri">Generate Safety OnChainAddress: <span id="generateSafetyOnChainAddress"></span></p>
-    </div>
-
-    <div class="container32 nosidepadding">
-        <p class="meta">Support Dashboard</p>
-        <p class="uri">By <a href="https://satoshiengineering.com/" target="_blank">Satoshi Engineering</a></p>
-        <p class="uri">Fork on <a href="https://github.com/Satoshi-Engineering/LndHub" target="_blank">Github</a></p>
-    </div>
-    <footer>
-        <a href="https://bluewallet.io/lndhub" target="_blank">about</a> | 
-        <a href="https://t.me/bluewallet" target="_blank">community</a>
-    </footer>
+    {{{sidebar}}}
 </div>
 
 <template id="userRow" class="hidden">

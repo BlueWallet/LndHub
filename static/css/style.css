@@ -94,6 +94,14 @@ body {
 	color: #000;
 	font-weight: 500;
 }
+ .config {
+	 margin: 0;
+	 padding-bottom: 6px;
+	 font-size: 13px;
+	 color: #000;
+	 font-weight: 500;
+ }
+
 .number1 {
 	font-size: 30px;
 	font-weight: 500;
@@ -114,7 +122,13 @@ body {
 	color: #fff;
 	font-size: 13px;
 }
-
+ .config-label {
+	 background: #68BBE1;
+	 color: white;
+	 padding: 2px 4px;
+	 border-radius: 4px;
+	 font-size: 13px;
+ }
 .inv {
 	background-color: #33a400;
 }
