@@ -4,6 +4,8 @@ const config = require('../config');
 let express = require('express');
 let router = express.Router();
 let logger = require('../utils/logger');
+const shared = require('../utils/shared');
+
 const MIN_BTC_BLOCK = 670000;
 if (process.env.NODE_ENV !== 'prod') {
   console.log('using config', JSON.stringify(config));
@@ -16,6 +18,8 @@ redis.monitor(function (err, monitor) {
     // console.log('REDIS', JSON.stringify(args));
   });
 });
+
+shared.redis = redis
 
 /****** START SET FEES FROM CONFIG AT STARTUP ******/
 /** GLOBALS */
@@ -149,9 +153,14 @@ router.post('/create', postLimiter, async function (req, res) {
   
   if (config.sunset) return errorSunset(res);
 
+  if (config.accountCreationMode === 'off') return errorAccountCreationOff(res)
+
   let u = new User(redis, bitcoinclient, lightning);
   await u.create();
   await u.saveMetadata({ partnerid: req.body.partnerid, accounttype: req.body.accounttype, created_at: new Date().toISOString() });
+
+  if (config.accountCreationMode === 'once') config.accountCreationMode = 'off'
+
   res.send({ login: u.getLogin(), password: u.getPassword() });
 });
 
@@ -254,49 +263,58 @@ router.post('/payinvoice', postLimiter, async function (req, res) {
         // this is internal invoice
         // now, receiver add balance
         let userid_payee = await u.getUseridByPaymentHash(info.payment_hash);
+
+        // receiver is not a lndhub account
         if (!userid_payee) {
-          await lock.releaseLock();
-          return errorGeneralServerError(res);
-        }
+          // Check if Is payment to node allowed?
+          if (!config.allowLightningPaymentToNode || false) {
+            await lock.releaseLock();
+            return errorPaymentToNodeNotAllowed(res);
+          }
 
-        if (await u.getPaymentHashPaid(info.payment_hash)) {
-          // this internal invoice was paid, no sense paying it again
-          await lock.releaseLock();
-          return errorLnd(res);
-        }
+          // Continues at // else - regular lightning network payment:
 
-        let UserPayee = new User(redis, bitcoinclient, lightning);
-        UserPayee._userid = userid_payee; // hacky, fixme
-        await UserPayee.clearBalanceCache();
+          // receiver is a lndhub account
+        } else {
+          if (await u.getPaymentHashPaid(info.payment_hash)) {
+            // this internal invoice was paid, no sense paying it again
+            await lock.releaseLock();
+            return errorLnd(res);
+          }
 
-        // sender spent his balance:
-        await u.clearBalanceCache();
-        await u.savePaidLndInvoice({
-          timestamp: parseInt(+new Date() / 1000),
-          type: 'paid_invoice',
-          value: +info.num_satoshis + Math.floor(info.num_satoshis * internalFee),
-          fee: Math.floor(info.num_satoshis * internalFee),
-          memo: decodeURIComponent(info.description),
-          pay_req: req.body.invoice,
-        });
+          let UserPayee = new User(redis, bitcoinclient, lightning);
+          UserPayee._userid = userid_payee; // hacky, fixme
+          await UserPayee.clearBalanceCache();
 
-        const invoice = new Invo(redis, bitcoinclient, lightning);
-        invoice.setInvoice(req.body.invoice);
-        await invoice.markAsPaidInDatabase();
-
-        // now, faking LND callback about invoice paid:
-        const preimage = await invoice.getPreimage();
-        if (preimage) {
-          subscribeInvoicesCallCallback({
-            state: 'SETTLED',
-            memo: info.description,
-            r_preimage: Buffer.from(preimage, 'hex'),
-            r_hash: Buffer.from(info.payment_hash, 'hex'),
-            amt_paid_sat: +info.num_satoshis,
+          // sender spent his balance:
+          await u.clearBalanceCache();
+          await u.savePaidLndInvoice({
+            timestamp: parseInt(+new Date() / 1000),
+            type: 'paid_invoice',
+            value: +info.num_satoshis + Math.floor(info.num_satoshis * internalFee),
+            fee: Math.floor(info.num_satoshis * internalFee),
+            memo: decodeURIComponent(info.description),
+            pay_req: req.body.invoice,
           });
+
+          const invoice = new Invo(redis, bitcoinclient, lightning);
+          invoice.setInvoice(req.body.invoice);
+          await invoice.markAsPaidInDatabase();
+
+          // now, faking LND callback about invoice paid:
+          const preimage = await invoice.getPreimage();
+          if (preimage) {
+            subscribeInvoicesCallCallback({
+              state: 'SETTLED',
+              memo: info.description,
+              r_preimage: Buffer.from(preimage, 'hex'),
+              r_hash: Buffer.from(info.payment_hash, 'hex'),
+              amt_paid_sat: +info.num_satoshis,
+            });
+          }
+          await lock.releaseLock();
+          return res.send(info);
         }
-        await lock.releaseLock();
-        return res.send(info);
       }
 
       // else - regular lightning network payment:
@@ -305,6 +323,9 @@ router.post('/payinvoice', postLimiter, async function (req, res) {
       call.on('data', async function (payment) {
         // payment callback
         await u.unlockFunds(req.body.invoice);
+
+        if (payment && payment.payment_error) logger.error('/payinvoice', payment);
+
         if (payment && payment.payment_route && payment.payment_route.total_amt_msat) {
           let PaymentShallow = new Paym(false, false, false);
           payment = PaymentShallow.processSendPaymentResponse(payment);
@@ -329,6 +350,7 @@ router.post('/payinvoice', postLimiter, async function (req, res) {
         payment_request: req.body.invoice,
         amt: info.num_satoshis, // amt is used only for 'tip' invoices
         fee_limit: { fixed: Math.floor(info.num_satoshis * forwardFee) + 1 },
+        allow_self_payment: (config.allowLightningPaymentToNode || false),
       };
       try {
         await u.lockFunds(req.body.invoice, info);
@@ -398,6 +420,7 @@ router.get('/balance', postLimiter, async function (req, res) {
     res.send({ BTC: { AvailableBalance: balance } });
   } catch (Error) {
     logger.log('', [req.id, 'error getting balance:', Error, 'userid:', u.getUserId()]);
+    logger.error(Error)
     return errorGeneralServerError(res);
   }
 });
@@ -616,5 +639,21 @@ function errorSunsetAddInvoice(res) {
     error: true,
     code: 11,
     message: 'This LNDHub instance is scheduled to shut down. Withdraw any remaining funds',
+  });
+}
+
+function errorPaymentToNodeNotAllowed(res) {
+  return res.send({
+    error: true,
+    code: 12,
+    message: 'This LNDHub instance does not allow self payments other then issued by this LNDHub',
+  });
+}
+
+function errorAccountCreationOff(res) {
+  return res.send({
+    error: true,
+    code: 22,
+    message: 'This LNDHub instance has turned off it\'s account creation.',
   });
 }

@@ -9,11 +9,13 @@
     <meta content="http://lndhub.io" property="og:url">
     <meta content="lndhub.io" property="og:title">
     <meta content="BlueWallet server for the Lightning Network" property="og:description">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <link rel=icon href=../static/img/favicon.png>
-    <title>LndHub - BlueWallet Lightning</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel=icon href=/static/img/favicon.png>
+    <title>LndHub - Support</title>
     <meta content="lightning network, lndhub" name="keywords">
     <meta content="BlueWallet server for the Lightning Network" name="description">
+
+    <script src="/static/js/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="holder">
@@ -65,57 +67,37 @@
                 </g>
             </svg>
         </div>
-        <div class="scroll">
-        <div class="boxes">
-            <div class="box box-quarter container24">
-                <p class="meta">Channels</p>
-                <h3>Active</h3>
-                <span class="number1">{{num_active_channels}}</span>
+        <div class="scroll" data-auth="true">
+            <div class="boxes">
+                <div class="box box-ten container24">
+                    <p class="meta">Menu</p>
+                    <h3>Menu</h3>
+                    <div style="height:39px"></div>
+                    <a class="button" id="btnBack">Back</a>
+                </div>
+                <div class="box box-fifteen container24">
+                    <p class="meta">Transactions</p>
+                    <h3>Invoices / Tx</h3>
+                    <span class="number1" id="numOfTransactions">-</span>
+                </div>
+                <div class="box box-fifteen container24" >
+                    <p class="meta">On Chain Address</p>
+                    <h3 id="btcAddress"></h3>
+                </div>
+                <div class="box box-half container24">
+                    <p class="meta">Accounts</p>
+                    <h3># sats</h3>
+                    <span class="number1" id="numOfSats">-</span>&nbsp;BTC
+                    <div id="blockLocked">
+                        <span class="number1" style="margin-top: 10px;" id="numOfLockedSats">-</span>&nbsp;BTC&nbsp;<span class="label" title="locked"></span>
+                    </div>
+                </div>
             </div>
-            <div class="box box-quarter container24">
-                <p class="meta">Channels</p>
-                <h3>Pending</h3>
-                <span class="number1">{{num_pending_channels}}</span>
-            </div>
-            <div class="box box-quarter container24">
-                <p class="meta">Connected</p>
-                <h3>Peers</h3>
-                <span class="number1">{{num_peers}}</span>
-            </div>
-            <div class="box box-quarter container24">
-                <p class="meta">Block</p>
-                <h3>Height</h3>
-                <span class="label right synced" title="{{synced_to_chain}}"></span>
-                <span class="number1">{{block_height}}</span>
-            </div>
-        </div>
         </div>
 
-        <h3>Channels</h3>
-        <div class="box container16">
-            <div class="table">
-                {{#channels}}
-                <a class="decor" href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">
-                    <div class="row">
-                        <div class="name">
-                            {{#name}}
-                            <h2>{{name}}</h2>
-                            {{/name}}
-                            {{^name}}
-                            <h2>{{remote_pubkey}}</h2>
-                            {{/name}}
-                            <span class="amount">{{capacity_btc}} BTC</span>
-                        </div>
-                        <div class="graph"><progress id="progressbar" class="" value="{{local}}" max="{{total}}" style="width: {{size}}%"></progress></div>
-                        {{^active}}
-                        <div class="status"><span class="label right" title="inactive"></span></div>
-                        {{/active}} 
-                        {{#active}}
-                        <div class="status"><span class="label right" title="active"></span></div>
-                        {{/active}}                          
-                    </div>
-                </a>
-                {{/channels}}
+        <h3 data-auth="true">Transactions</h3>
+        <div class="box container16" data-auth="true">
+            <div id="transactionList" class="table">
             </div>
         </div>
 
@@ -129,15 +111,248 @@
     <img src="/qr" class="qr">
     <div class="container32 nosidepadding">
         <p class="meta">Node URI</p>
-        {{#uris}}
+        {{#lightningGetInfo.uris}}
         <p class="uri">{{.}}</p>
-        {{/uris}}
+        {{/lightningGetInfo.uris}}
+    </div>
+
+    <div class="container32 nosidepadding">
+        <p class="meta">Support Dashboard</p>
+        <p class="uri">By <a href="https://satoshiengineering.com/" target="_blank">Satoshi Engineering</a></p>
+        <p class="uri">Fork on <a href="https://github.com/Satoshi-Engineering/LndHub" target="_blank">Github</a></p>
     </div>
     <footer>
-        <a href="https://bluewallet.io/lndhub" target="_blank">about</a> | 
+        <a href="https://bluewallet.io/lndhub" target="_blank">about</a> |
         <a href="https://t.me/bluewallet" target="_blank">community</a>
     </footer>
 </div>
 
+<template id="transactionRow" class="hidden">
+    <a class="decor">
+        <div class="row row-narrow">
+            <div class="date">
+                #date#
+            </div>
+            <div class="symbol">
+                <h2>#symbol#</h2>
+            </div>
+            <div class="amount">
+                <h2>#name#</h2>
+            </div>
+            <div class="type"><span class="label #typeclass#">#type#</span></div>
+            <div class="status hidden"><span class="label right" title="inactive"></span></div>
+            <div class="status hidden"><span class="label right" title="active"></span></div>
+        </div>
+    </a>
+</template>
+
+<script>
+    // ----- HELPER FUNCTIONS --- //
+    String.prototype.insert = function(index, string) {
+        if (index > 0) {
+            return this.substring(0, index) + string + this.substring(index, this.length)
+        }
+
+        return string + this;
+    }
+
+    const createNiceBTC = (sats) => {
+
+        let numOfSats = sats.toFixed(0)
+
+        let rightPart = numOfSats.substring(numOfSats.length - 8, numOfSats.length)
+        let leftPart = numOfSats.substring(0, numOfSats.length - 8)
+
+        let partWhite = rightPart
+        let partGray = ''
+
+        if (rightPart.length > 3) partWhite = partWhite.insert(partWhite.length - 3, ' ')
+        if (rightPart.length > 6) partWhite = partWhite.insert(partWhite.length - 7, ' ')
+        if (rightPart.length === 3 || rightPart.length === 6) partWhite = ' ' + partWhite
+
+        if (rightPart.length > 8) {
+            partWhite = partWhite.insert(partWhite.length - 10, '.')
+        }
+        if (rightPart.length === 8) {
+            partGray = '0.'
+        }
+        if (rightPart.length < 8) {
+            partGray = Array(9 - rightPart.length).fill('0').join('')
+            partGray = partGray.insert(1, '.')
+
+            if (partGray.length > 4) partGray = partGray.insert(4, ' ')
+            if (partGray.length > 8) partGray = partGray.insert(8, ' ')
+        }
+
+        return { partGray, partWhite }
+    }
+
+    const formateDate = (d) => {
+        const date = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." +
+            d.getFullYear()
+        const time = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2)
+        return date + ' ' + time
+    }
+
+
+    const API_ROUTE = '/api/support'
+    const LS_PWD_KEY = 'support_password'
+    const path = window.location.pathname.split('/')
+    const userId = path[path.length - 1]
+    $('#userId').text(userId)
+
+    const updateAuth = (auth) => {
+        $('[data-auth=true]').each(function() {
+            if (auth === false && !$(this).hasClass('hidden')) $(this).addClass('hidden')
+            if (auth === true && $(this).hasClass('hidden')) $(this).removeClass('hidden')
+        })
+        $('[data-auth=false]').each(function() {
+            if (auth === true && !$(this).hasClass('hidden')) $(this).addClass('hidden')
+            if (auth === false && $(this).hasClass('hidden')) $(this).removeClass('hidden')
+        })
+    }
+
+    const updateData = () => {
+        const data = null
+        const url = `${API_ROUTE}/account/${userId}`
+
+        const config = {
+            method: (data == null ? 'GET' : 'POST'),
+            dataType: 'json',
+            url,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem(LS_PWD_KEY)}`)
+            },
+        }
+
+        if (data !== null) config.data = data
+
+        $.ajax(config).done(onStatus).fail(onStatusFail)
+    }
+
+    const onStatusFail = () => {
+        console.log('FAIL')
+        updateAuth(false)
+        window.alert('Auth failed!')
+    }
+    const onStatus = (data) => {
+        updateAuth(true)
+
+        $('#btcAddress').text(data.btcAddress)
+        $('#numOfTransactions').text(`${data.userinvoices.length} / ${data.txs.length}`)
+
+        let numOfSats = createNiceBTC(data.numOfSats)
+        $('#numOfSats').html(`<span class="gray">${numOfSats.partGray}</span>${numOfSats.partWhite}`)
+
+        let numOfLockedSats = 0
+        for (let loc of data.locked) {
+            numOfLockedSats += loc.amount + /* fee limit */ Math.floor(loc.amount * data.forwardReserveFee)
+        }
+        if (numOfLockedSats <= 0) {
+            $('#blockLocked').hide()
+        } else {
+            $('#blockLocked').show()
+        }
+        numOfLockedSats = createNiceBTC(numOfLockedSats)
+        $('#numOfLockedSats').html(`<span class="gray">${numOfLockedSats.partGray}</span>${numOfLockedSats.partWhite}`)
+
+        $('#transactionList').empty()
+
+        let list = []
+
+        for (let tx of data.txs) {
+            if (tx.type === 'bitcoind_tx') { // '[on-chain refill]'
+                list.push({
+                    type: 'btc',
+                    typeName: 'On Chain Refill',
+                    symbol: '<span style="color: #FF9900;">+</span>',
+                    value: tx.amount * 100000000,
+                    conf: tx.confirmations,
+                    ts: new Date(tx.time * 1000),
+                })
+            } else {
+                list.push({
+                    type: 'tx',
+                    typeName: 'Outgoing Payment',
+                    symbol: '-',
+                    value: tx.value,
+                    fee: tx.fee,
+                    ts: new Date(tx.timestamp * 1000),
+                    memo: tx.memo,
+                })
+            }
+        }
+
+        for (let invo of data.userinvoices) {
+            if (invo && invo.ispaid) {
+                list.push({
+                    type: 'inv',
+                    typeName: 'Incoming Payment',
+                    symbol: '<span style="color: #33a400;">+</span>',
+                    value: invo.amt,
+                    ts: new Date(invo.timestamp * 1000),
+                })
+            }
+        }
+        for (let loc of data.locked) {
+            list.push({
+                type: 'loc',
+                typeName: 'Payment in Transit (Locked Invoice)',
+                symbol: '-',
+                value: loc.amount + /* fee limit */ Math.floor(loc.amount * config.forwardReserveFee),
+                ts: new Date(loc.timestamp * 1000),
+            })
+        }
+
+        list = list.sort((t1, t2) => {
+            if (t1.ts > t2.ts)    return -1;
+            else if (t1.ts < t2.ts) return  1;
+            else return  0;
+        })
+
+        console.log(list)
+
+        const options = {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour12: false,
+        }
+
+        list.forEach(item => {
+            const niceBTC = createNiceBTC(item.value)
+
+            let userRow = $('template#transactionRow').html()
+            userRow = userRow.replace('#name#', `<span class="gray">${niceBTC.partGray}</span>${niceBTC.partWhite} BTC`)
+            userRow = userRow.replace('#type#', item.typeName)
+            userRow = userRow.replace('#typeclass#', item.type)
+            userRow = userRow.replace('#symbol#', item.symbol)
+            userRow = userRow.replace('#date#', formateDate(item.ts))
+
+            $('#transactionList').append(userRow)
+        })
+    }
+
+    $('#btnBack').click(() => {
+        history.back()
+    })
+
+    $('#btnAccountEnable').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'on' })
+    })
+    $('#btnAccountDisable').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'off' })
+    })
+    $('#btnAccountOnce').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'once' })
+    })
+
+    updateAuth(false)
+
+    $(() => {
+        updateData()
+    })
+
+</script>
 </body>
 </html>

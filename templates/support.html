@@ -9,11 +9,13 @@
     <meta content="http://lndhub.io" property="og:url">
     <meta content="lndhub.io" property="og:title">
     <meta content="BlueWallet server for the Lightning Network" property="og:description">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <link rel=icon href=../static/img/favicon.png>
-    <title>LndHub - BlueWallet Lightning</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel=icon href=/static/img/favicon.png>
+    <title>LndHub - Support</title>
     <meta content="lightning network, lndhub" name="keywords">
     <meta content="BlueWallet server for the Lightning Network" name="description">
+
+    <script src="/static/js/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="holder">
@@ -66,78 +68,226 @@
             </svg>
         </div>
         <div class="scroll">
-        <div class="boxes">
-            <div class="box box-quarter container24">
-                <p class="meta">Channels</p>
-                <h3>Active</h3>
-                <span class="number1">{{num_active_channels}}</span>
-            </div>
-            <div class="box box-quarter container24">
-                <p class="meta">Channels</p>
-                <h3>Pending</h3>
-                <span class="number1">{{num_pending_channels}}</span>
-            </div>
-            <div class="box box-quarter container24">
-                <p class="meta">Connected</p>
-                <h3>Peers</h3>
-                <span class="number1">{{num_peers}}</span>
-            </div>
-            <div class="box box-quarter container24">
-                <p class="meta">Block</p>
-                <h3>Height</h3>
-                <span class="label right synced" title="{{synced_to_chain}}"></span>
-                <span class="number1">{{block_height}}</span>
-            </div>
-        </div>
-        </div>
-
-        <h3>Channels</h3>
-        <div class="box container16">
-            <div class="table">
-                {{#channels}}
-                <a class="decor" href="https://1ml.com/node/{{remote_pubkey}}" target="_blank">
-                    <div class="row">
-                        <div class="name">
-                            {{#name}}
-                            <h2>{{name}}</h2>
-                            {{/name}}
-                            {{^name}}
-                            <h2>{{remote_pubkey}}</h2>
-                            {{/name}}
-                            <span class="amount">{{capacity_btc}} BTC</span>
-                        </div>
-                        <div class="graph"><progress id="progressbar" class="" value="{{local}}" max="{{total}}" style="width: {{size}}%"></progress></div>
-                        {{^active}}
-                        <div class="status"><span class="label right" title="inactive"></span></div>
-                        {{/active}} 
-                        {{#active}}
-                        <div class="status"><span class="label right" title="active"></span></div>
-                        {{/active}}                          
-                    </div>
-                </a>
-                {{/channels}}
+            <div class="boxes">
+                <div class="box box-quarter container24" data-auth="false">
+                    <p class="meta">Authentification</p>
+                    <h3>Logged Out</h3>
+                    <input type="password" id="inputPassword"><a class="button" id="btnAuth">Auth</a>
+                </div>
+                <div class="box box-fifteen container24" data-auth="true">
+                    <p class="meta">Authentification</p>
+                    <h3>Logged In</h3>
+                    <div style="height:38px"></div>
+                    <a class="button" id="btnLogout">Logout</a>
+                </div>
+                <div class="box box-fifth container24" data-auth="true">
+                    <p class="meta">Account Creation</p>
+                    <h3 id="statusCreation">none</h3>
+                    <div style="height:5px;"></div>
+                    <a class="button" id="btnAccountEnable">Enable</a>
+                    <a class="button" id="btnAccountDisable">Disable</a>
+                    <div style="height:5px;"></div>
+                    <a class="button" id="btnAccountOnce">Once</a>
+                </div>
+                <div class="box box-fifteen container24" data-auth="true">
+                    <p class="meta">Accounts</p>
+                    <h3># Accounts</h3>
+                    <span class="number1" id="numOfAccounts">-</span>
+                </div>
+                <div class="box box-half container24" data-auth="true">
+                    <p class="meta">Accounts</p>
+                    <h3># sats</h3>
+                    <span class="number1" id="numOfSats">-</span>&nbsp;BTC
+                </div>
             </div>
         </div>
-
+        {{#supportDashboardShowAccounts}}
+        <h3 data-auth="true">Accounts</h3>
+        <div class="box container16" data-auth="true">
+            <div id="userList" class="table">
+            </div>
+        </div>
+        {{/supportDashboardShowAccounts}}
     </div>
 </div>
 
 <div class="sidebar container32">
-    <div>
-        <p class="meta">Connect via QR code</p>
-    </div>
-    <img src="/qr" class="qr">
-    <div class="container32 nosidepadding">
-        <p class="meta">Node URI</p>
-        {{#uris}}
-        <p class="uri">{{.}}</p>
-        {{/uris}}
-    </div>
-    <footer>
-        <a href="https://bluewallet.io/lndhub" target="_blank">about</a> | 
-        <a href="https://t.me/bluewallet" target="_blank">community</a>
-    </footer>
+    {{{sidebar}}}
 </div>
 
+<template id="userRow" class="hidden">
+    <a class="decor" href="/support/account/#id#">
+        <div class="row row-narrow">
+            <div class="amount">
+                <h2>#amount# BTC</h2>
+            </div>
+            <div class="user-id">
+                <h2>#name#</h2>
+            </div>
+            <div class="graph hidden"><progress id="progressbar" class="" value="10" max="200" style="width: {{size}}%"></progress></div>
+            <div class="status hidden"><span class="label right" title="inactive"></span></div>
+            <div class="status"><span class="label right" title="active"></span></div>
+        </div>
+    </a>
+</template>
+
+<script>
+    // ----- HELPER FUNCTIONS --- //
+    String.prototype.insert = function(index, string) {
+        if (index > 0) {
+            return this.substring(0, index) + string + this.substring(index, this.length)
+        }
+
+        return string + this;
+    }
+
+    const createNiceBTC = (sats) => {
+        let numOfSats = sats.toFixed(0)
+
+        let rightPart = numOfSats.substring(numOfSats.length - 8, numOfSats.length)
+        let leftPart = numOfSats.substring(0, numOfSats.length - 8)
+
+        let partWhite = rightPart
+        let partGray = ''
+
+        if (rightPart.length > 3) partWhite = partWhite.insert(partWhite.length - 3, ' ')
+        if (rightPart.length > 6) partWhite = partWhite.insert(partWhite.length - 7, ' ')
+        if (rightPart.length === 3 || rightPart.length === 6) partWhite = ' ' + partWhite
+
+        if (rightPart.length > 8) {
+            partWhite = partWhite.insert(partWhite.length - 10, '.')
+        }
+        if (rightPart.length === 8) {
+            partGray = '0.'
+        }
+        if (rightPart.length < 8) {
+            partGray = Array(9 - rightPart.length).fill('0').join('')
+            partGray = partGray.insert(1, '.')
+
+            if (partGray.length > 4) partGray = partGray.insert(4, ' ')
+            if (partGray.length > 8) partGray = partGray.insert(8, ' ')
+        }
+
+        return { partGray, partWhite }
+    }
+
+    const API_ROUTE = '/api/support'
+    const LS_PWD_KEY = 'support_password'
+    let onLogin = false
+
+    const updateAuth = (auth) => {
+        $('[data-auth=true]').each(function() {
+            if (auth === false && !$(this).hasClass('hidden')) $(this).addClass('hidden')
+            if (auth === true && $(this).hasClass('hidden')) $(this).removeClass('hidden')
+        })
+        $('[data-auth=false]').each(function() {
+            if (auth === true && !$(this).hasClass('hidden')) $(this).addClass('hidden')
+            if (auth === false && $(this).hasClass('hidden')) $(this).removeClass('hidden')
+        })
+    }
+
+    const updateData = (url = `${API_ROUTE}/status`, data = null) => {
+        const config = {
+            method: (data == null ? 'GET' : 'POST'),
+            dataType: 'json',
+            url,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem(LS_PWD_KEY)}`)
+            },
+        }
+
+        if (data !== null) config.data = data
+
+        $.ajax(config).done(onStatus).fail(onStatusFail)
+    }
+
+    let accountOverviewLoaded = false
+    const onStatus = (data) => {
+        //console.log(data)
+
+        if (data.type && data.type === 'accounts') {
+            accountOverviewLoaded = true
+            onUpdateAccountOverview(data)
+            return
+        }
+
+        if (data.auth) updateAuth(data.auth)
+        if (data.auth === false) return
+
+        // Load Accounting Overview only on page load & successfull auth
+        if (accountOverviewLoaded === false) updateData(`${API_ROUTE}/acccounts`)
+
+        if (data.accountCreationMode === 'once') $('#statusCreation').text('Once')
+        if (data.accountCreationMode === 'off') $('#statusCreation').text('Disabled')
+        if (data.accountCreationMode === 'on') $('#statusCreation').text('Enabled')
+
+        $('#forwardReserveFee').text(`${(data.forwardReserveFee * 100.0).toFixed(2)} %`)
+        $('#intraHubFee').text(`${(data.intraHubFee * 100.0).toFixed(4)} %`)
+        $('#allowLightningPaymentToNode').text(data.allowLightningPaymentToNode)
+        $('#accountCreationMode').text(data.accountCreationMode)
+        $('#generateSafetyOnChainAddress').text(data.generateSafetyOnChainAddress)
+    }
+    const onStatusFail = () => {
+        console.log('FAIL')
+        updateAuth(false)
+        if (onLogin) window.alert('Auth failed!')
+        onLogin = false
+        accountOverviewLoaded = false
+    }
+
+    const onUpdateAccountOverview = (data) => {
+        $('#numOfAccounts').text(data.userIds.length)
+
+        let numOfSats = createNiceBTC(data.numOfSats)
+        $('#numOfSats').html(`<span class="gray">${numOfSats.partGray}</span>${numOfSats.partWhite}`)
+
+        // {{#supportDashboardShowAccounts}}
+        $('#userList').empty()
+
+        data.userIds.forEach(userId => {
+            const account = data.accounts[userId]
+            const numOfSats = createNiceBTC(account.balance)
+
+            let userRow = $('template#userRow').html()
+            userRow = userRow.replace('#name#', account.userName)
+            userRow = userRow.replace('#id#', userId)
+            userRow = userRow.replace('#capacity#', '')
+            userRow = userRow.replace('#amount#', `<span class="gray">${numOfSats.partGray}</span>${numOfSats.partWhite}`)
+            $('#userList').append(userRow)
+        })
+        // {{/supportDashboardShowAccounts}}
+    }
+
+    $('#btnAuth').click(() => {
+        localStorage.setItem(LS_PWD_KEY, $('#inputPassword').val())
+
+        if ($('#inputPassword').val() == '') return
+
+        updateData()
+        $('#inputPassword').val('')
+        onLogin = true
+    })
+    $('#btnLogout').click(() => {
+        localStorage.setItem(LS_PWD_KEY, '')
+        updateData()
+    })
+
+    $('#btnAccountEnable').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'on' })
+    })
+    $('#btnAccountDisable').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'off' })
+    })
+    $('#btnAccountOnce').click(() => {
+        updateData(`${API_ROUTE}/account-creation`, { creation: 'once' })
+    })
+
+    updateAuth(false)
+
+    $(() => {
+        updateData()
+    })
+
+</script>
 </body>
 </html>

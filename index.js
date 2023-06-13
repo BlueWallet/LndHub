@@ -45,6 +45,10 @@ app.use(bodyParser.json(null)); // parse application/json
 
 app.use('/static', express.static('static'));
 app.use(require('./controllers/api'));
+if (config.supportDashboardPasswordHash !== '') {
+  app.use('/support', require('./controllers/support'))
+  app.use('/api/support', require('./controllers/support-api'))
+}
 app.use(require('./controllers/website'));
 
 const bindHost = process.env.HOST || '0.0.0.0';

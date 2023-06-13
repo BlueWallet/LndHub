@@ -1,3 +1,67 @@
+Satoshi Engineering - Extensions
+======
+
+### [Feature] Allow self payment
+Reading the code it seems that LndHub was never supposed to run on a node with other applications on it, which leads to the problem:
+
+If you want to pay an invoice issued by the node, but not issued "via" LndHub it will be denied. To allow this add this to your config:
+```
+allowLightningPaymentToNode: true // it defaults to false
+```
+
+### [Feature] Support Dashboard
+
+![](doc/img/support_dashboard.png)
+
+If the Support Dashboard is not turned an, all routes (api and web) are turned off. To turn it on choose a sha265 password. To Create it
+
+```javascript
+const { createHash } = require('crypto')
+const password = 'gobrrr'
+const passwordSHA256 = createHash('sha256').update(password).digest('hex')
+console.info(passwordSHA256)
+```
+
+```
+supportDashboardPasswordHash: 'e42703b94ce32a831ea363a8924dc0239ca54160a8f3fb2755bdbceb07238a8a'
+// it defaults to '' which means it's turned completly off
+```
+
+### [Feature] Account Creation Mode
+
+By default everyone could open account on our node, what we can't have as a company (KYC), so we added an account creation mode.
+
+In config you can set the mode, when it starts & can be edited by the support dashboard
+```
+accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
+```
+
+### [Feature] Generate Safety On Chain Address
+
+In combination with Thunderhub we noticed, that an onchain address assigned to a lndhub account
+had the same addess we got from Thunderhub's "Create On Chain Address" functiontionality. Thunderhub
+somehow is caching address, which is normally ok, but in this case not :( The issue is addressed [here](https://github.com/apotdevin/thunderhub/issues/534).
+
+This feature creates an additional address from LND after an onchain address is created and assigned to the user.
+
+```
+generateSafetyOnChainAddress: true, // defaults to false
+```
+
+### [Feature] Check account balance, bc1 address
+
+To make the support dashboard even more powerfull, it is possible to show a list of accounts and
+a detailed view of the accounts.
+
+If it's turned off, no account data is published to the dashboard & and the detail route is turned off!
+
+```
+supportDashboardShowAccounts: true, // defaults to false
+```
+
+![](doc/img/account_list.png)
+![](doc/img/account_detail.png)
+
 LndHub
 ======
 

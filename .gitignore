@@ -2,23 +2,28 @@
 
 admin.macaroon
 tls.cert
+doc/devnotes.md
 build/
 logs/
 
 # dependencies
 /node_modules
 node_modules/
+
 # misc
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .idea/
 
+# Docker Dev
+docker-compose.yml
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# OSX# OSX
-#
+# OSX
 .DS_Store

@@ -4,6 +4,11 @@ let config = {
   rateLimit: 200,
   forwardReserveFee: 0.01, // default 0.01
   intraHubFee: 0.003, // default 0.003
+  allowLightningPaymentToNode: false,
+  supportDashboardPasswordHash: '',
+  supportDashboardShowAccounts: false,
+  accountCreationMode: 'on', // 'on', 'off', 'once' ... defaults to 'on'
+  generateSafetyOnChainAddress: false,
   bitcoind: {
     rpc: 'http://login:password@1.1.1.1:8332/wallet/wallet.dat',
   },
@@ -24,5 +29,13 @@ if (process.env.CONFIG) {
   console.log('using config from env');
   config = JSON.parse(process.env.CONFIG);
 }
+
+// Config checks
+if (!(config.supportDashboardPasswordHash)) config.supportDashboardPasswordHash = ''
+if (typeof config.supportDashboardPasswordHash !== 'string') config.supportDashboardPasswordHash = ''
+if (!(config.supportDashboardShowAccounts)) config.supportDashboardShowAccounts = false
+
+if (!(config.accountCreationMode)) config.accountCreationMode = 'on'
+if (!(config.generateSafetyOnChainAddress)) config.generateSafetyOnChainAddress = false
 
 module.exports = config;

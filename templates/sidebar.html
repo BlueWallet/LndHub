@@ -1,0 +1,24 @@
+<div>
+    <p class="meta">Connect via QR code</p>
+</div>
+<img src="/qr" class="qr">
+<div class="nosidepadding">
+    <p class="meta">Node URI</p>
+    {{#lightningGetInfo.uris}}
+    <p class="uri">{{.}}</p>
+    {{/lightningGetInfo.uris}}
+</div>
+<div class="" data-auth="true">
+    <p class="meta">Config</p>
+    <p class="config">Forward Reserve Fee: <span id="forwardReserveFee" class="config-label" ></span></p>
+    <p class="config">Intra Hub Fee: <span id="intraHubFee" class="config-label" ></span></p>
+    <p class="config">Allow Payments to Node: <span id="allowLightningPaymentToNode" class="config-label" ></span></p>
+    <p class="config">Account Creation Mode: <span id="accountCreationMode" class="config-label" ></span></p>
+    <p class="config">Safety OnChainAddress: <span id="generateSafetyOnChainAddress" class="config-label" ></span></p>
+</div>
+<footer>
+    <p class="uri">Dashboard by <a href="https://satoshiengineering.com/" target="_blank">Sat. Eng.</a> |
+        Fork on <a href="https://github.com/Satoshi-Engineering/LndHub" target="_blank">Github</a></p>
+    <p class="uri"><a href="https://bluewallet.io/lndhub" target="_blank">about</a> |
+    <a href="https://t.me/bluewallet" target="_blank">community</a></p>
+</footer>
