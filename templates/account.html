@@ -95,7 +95,6 @@
             </div>
         </div>
 
-
         <h3 data-auth="true">Transactions</h3>
         <div class="box container16" data-auth="true">
             <div id="transactionList" class="table">
@@ -266,7 +265,7 @@
                 list.push({
                     type: 'btc',
                     typeName: 'On Chain Refill',
-                    symbol: '+',
+                    symbol: '<span style="color: #FF9900;">+</span>',
                     value: tx.amount * 100000000,
                     conf: tx.confirmations,
                     ts: new Date(tx.time * 1000),
@@ -274,7 +273,7 @@
             } else {
                 list.push({
                     type: 'tx',
-                    typeName: 'Transaction',
+                    typeName: 'Outgoing Payment',
                     symbol: '-',
                     value: tx.value,
                     fee: tx.fee,
@@ -288,8 +287,8 @@
             if (invo && invo.ispaid) {
                 list.push({
                     type: 'inv',
-                    typeName: 'Invoice',
-                    symbol: '+',
+                    typeName: 'Incoming Payment',
+                    symbol: '<span style="color: #33a400;">+</span>',
                     value: invo.amt,
                     ts: new Date(invo.timestamp * 1000),
                 })
@@ -298,7 +297,7 @@
         for (let loc of data.locked) {
             list.push({
                 type: 'loc',
-                typeName: 'Locked Invoice',
+                typeName: 'Payment in Transit (Locked Invoice)',
                 symbol: '-',
                 value: loc.amount + /* fee limit */ Math.floor(loc.amount * config.forwardReserveFee),
                 ts: new Date(loc.timestamp * 1000),
@@ -324,7 +323,7 @@
             const niceBTC = createNiceBTC(item.value)
 
             let userRow = $('template#transactionRow').html()
-            userRow = userRow.replace('#name#', `<span class="gray">${niceBTC.partGray}</span>${niceBTC.partWhite}`)
+            userRow = userRow.replace('#name#', `<span class="gray">${niceBTC.partGray}</span>${niceBTC.partWhite} BTC`)
             userRow = userRow.replace('#type#', item.typeName)
             userRow = userRow.replace('#typeclass#', item.type)
             userRow = userRow.replace('#symbol#', item.symbol)
