@@ -190,8 +190,12 @@ router.post('/addinvoice', postLimiter, async function (req, res) {
 
   const invoice = new Invo(redis, bitcoinclient, lightning);
   const r_preimage = invoice.makePreimageHex();
+  const invoice_args = { memo: req.body.memo, value: req.body.amt, expiry: 3600 * 24, r_preimage: Buffer.from(r_preimage, 'hex').toString('base64') };
+  if (req.body.description_hash) {
+    invoice_args.description_hash = Buffer.from(req.body.description_hash, 'hex').toString('base64')
+  }
   lightning.addInvoice(
-    { memo: req.body.memo, value: req.body.amt, expiry: 3600 * 24, r_preimage: Buffer.from(r_preimage, 'hex').toString('base64') },
+    invoice_args,
     async function (err, info) {
       if (err) return errorLnd(res);
 
