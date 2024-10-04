@@ -37,7 +37,7 @@ export class User {
     return this._password;
   }
   getAccessToken() {
-    return this._acess_token;
+    return this._access_token;
   }
   getRefreshToken() {
     return this._refresh_token;
@@ -48,37 +48,41 @@ export class User {
     let access_token = authorization.replace('Bearer ', '');
     let userid = await this._redis.get('userid_for_' + access_token);
 
-    if (userid) {
-      this._userid = userid;
-      return true;
+    if (!userid) {
+      return false
     }
 
-    return false;
+    let refresh_token = await this._redis.get('refresh_token_for_' + userid)
+    if (refresh_token === access_token) {
+      return false
+    }
+
+    this._userid = userid;
+    return true;
   }
 
   async loadByRefreshToken(refresh_token) {
     let userid = await this._redis.get('userid_for_' + refresh_token);
-    if (userid) {
-      this._userid = userid;
-      await this._generateTokens();
-      return true;
+
+    if (!userid) {
+      return false;
     }
 
-    return false;
+    let access_token = await this._redis.get('access_token_for_' + userid)
+    if (access_token === refresh_token) {
+      return false
+    }
+
+    this._userid = userid;
+    await this._generateTokens();
+    return true;
   }
 
   async create() {
-    let buffer = crypto.randomBytes(10);
-    let login = buffer.toString('hex');
+    this._login = this._generateDigest();
+    this._password = this._generateDigest();
+    this._userid =  this._generateDigest();
 
-    buffer = crypto.randomBytes(10);
-    let password = buffer.toString('hex');
-
-    buffer = crypto.randomBytes(24);
-    let userid = buffer.toString('hex');
-    this._login = login;
-    this._password = password;
-    this._userid = userid;
     await this._saveUserToDatabase();
   }
 
@@ -485,21 +489,59 @@ export class User {
   }
 
   async _generateTokens() {
-    let buffer = crypto.randomBytes(20);
-    this._acess_token = buffer.toString('hex');
+    await this._invalidateCurrentTokens();
 
-    buffer = crypto.randomBytes(20);
-    this._refresh_token = buffer.toString('hex');
+    await this._generateAccessToken();
+    await this._generateRefreshToken();
+  }
 
-    await this._redis.set('userid_for_' + this._acess_token, this._userid);
-    await this._redis.set('userid_for_' + this._refresh_token, this._userid);
-    await this._redis.set('access_token_for_' + this._userid, this._acess_token);
-    await this._redis.set('refresh_token_for_' + this._userid, this._refresh_token);
+  async _invalidateCurrentTokens() {
+    this._access_token = await this._redis.get('access_token_for_' + this._userid);
+    this._refresh_token = await this._redis.get('refresh_token_for_' + this._userid);
+
+    await this._redis.del('access_token_for_' + this._userid);
+    await this._redis.del('refresh_token_for_' + this._userid);
+    await this._redis.del('userid_for_' + this._access_token);
+    await this._redis.del('userid_for_' + this._refresh_token);
+
+    this._access_token = null
+    this._refresh_token = null
+  }
+
+  async _generateAccessToken() {
+    this._access_token = this._generateDigest();
+
+    const key_UId_AT = 'userid_for_' + this._access_token;
+    const key_AT_UId = 'access_token_for_' + this._userid;
+
+    await this._redis.set(key_UId_AT, this._userid);
+    await this._redis.set(key_AT_UId, this._access_token);
+
+    await this._redis.expire(key_UId_AT, accessTokenLifeTime);
+    await this._redis.expire(key_AT_UId, accessTokenLifeTime);
+  }
+
+  async _generateRefreshToken() {
+    this._refresh_token = this._generateDigest();
+
+    const key_UId_RT = 'userid_for_' + this._refresh_token;
+    const key_RT_UId = 'refresh_token_for_' + this._userid;
+
+    await this._redis.set(key_UId_RT, this._userid);
+    await this._redis.set(key_RT_UId, this._refresh_token);
+
+    await this._redis.expire(key_UId_RT, refreshTokenLifeTime);
+    await this._redis.expire(key_RT_UId, refreshTokenLifeTime);
   }
 
   async _saveUserToDatabase() {
     let key;
     await this._redis.set((key = 'user_' + this._login + '_' + this._hash(this._password)), this._userid);
+  }
+
+  _generateDigest() {
+    const buffer = crypto.randomBytes(256);
+    return crypto.createHash('sha1').update(buffer).digest('hex');
   }
 
   /**
