@@ -52,5 +52,6 @@ const bindPort = process.env.PORT || 3000;
 
 let server = app.listen(bindPort, bindHost, function () {
   logger.log('BOOTING UP', 'Listening on ' + bindHost + ':' + bindPort);
+  logger.log('using GroundControl', process.env.GROUNDCONTROL);
 });
 module.exports = server;

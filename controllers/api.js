@@ -1,5 +1,5 @@
 import { User, Lock, Paym, Invo } from '../class/';
-import Frisbee from 'frisbee';
+import fetch from 'node-fetch';
 const config = require('../config');
 let express = require('express');
 let router = express.Router();
@@ -92,21 +92,16 @@ const subscribeInvoicesCallCallback = async function (response) {
     console.log('payment', LightningInvoiceSettledNotification.hash, 'was paid, posting to GroundControl...');
     const baseURI = process.env.GROUNDCONTROL;
     if (!baseURI) return;
-    const _api = new Frisbee({ baseURI: baseURI });
-    const apiResponse = await _api.post(
-      '/lightningInvoiceGotSettled',
-      Object.assign(
-        {},
-        {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json',
-          },
-          body: LightningInvoiceSettledNotification,
-        },
-      ),
-    );
-    console.log('GroundControl:', apiResponse.originalResponse.status);
+
+    const apiResponse = await fetch(`${baseURI}/lightningInvoiceGotSettled`, {
+      method: 'POST',
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(LightningInvoiceSettledNotification),
+    });
+    console.log('Groundcontrol apiResponse=', apiResponse);
   }
 };
 let subscribeInvoicesCall = lightning.subscribeInvoices({});
@@ -146,7 +141,7 @@ router.post('/create', postLimiter, async function (req, res) {
         (!req.body.partnerid || (typeof req.body.partnerid === 'string' || req.body.partnerid instanceof String))
         && (!req.body.accounttype || (typeof req.body.accounttype === 'string' || req.body.accounttype instanceof String))
       ) ) return errorBadArguments(res);
-  
+
   if (config.sunset) return errorSunset(res);
 
   let u = new User(redis, bitcoinclient, lightning);
