@@ -18,6 +18,9 @@ let config = {
     url: '1.1.1.1:10009',
     password: '',
   },
+  bitcoin: {
+    confirmations: 3,
+  },
 };
 
 if (process.env.CONFIG) {
