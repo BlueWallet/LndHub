@@ -27,7 +27,7 @@
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
-    "express": "^4.17.1",
+    "express": "^4.21.2",
     "express-rate-limit": "^5.4.1",
     "helmet": "^4.6.0",
     "ioredis": "^4.27.10",
