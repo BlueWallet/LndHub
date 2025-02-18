@@ -448,7 +448,7 @@ export class User {
         transactions
           .filter((tx) => tx.label !== 'external' && !tx.label.includes('openchannel'))
           .map((tx) => {
-            const decodedTx = decodeRawHex(tx.raw_tx_hex);
+            const decodedTx = decodeRawHex(tx.raw_tx_hex, config.network);
             decodedTx.outputs.forEach((vout) =>
               outTxns.push({
                 // mark all as received, since external is filtered out
