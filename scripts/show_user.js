@@ -43,8 +43,8 @@ let lightning = require('../lightning');
       console.log('+', new BigNumber(tx.amount).multipliedBy(100000000).toNumber(), '[on-chain refill]');
       calculatedBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
     } else {
-      console.log('-', +tx.value, new Date(tx.timestamp * 1000).toString(), tx.memo, '; preimage:', tx.payment_preimage || '');
-      calculatedBalance -= +tx.value;
+      console.log('-', +tx.amt, new Date(tx.timestamp * 1000).toString(), tx.memo, '; preimage:', tx.payment_preimage || '');
+      calculatedBalance -= +tx.amt;
     }
   }
 

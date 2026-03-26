@@ -174,7 +174,7 @@ export class User {
         // topup
         calculatedBalance += new BigNumber(tx.amount).multipliedBy(100000000).toNumber();
       } else {
-        calculatedBalance -= +tx.value;
+        calculatedBalance -= +tx.amt;
       }
     }
 
@@ -356,10 +356,10 @@ export class User {
       // for internal invoices it might not have properties `payment_route`  and `decoded`...
       if (invoice.payment_route) {
         invoice.fee = +invoice.payment_route.total_fees;
-        invoice.value = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
+        invoice.amt = +invoice.payment_route.total_fees + +invoice.payment_route.total_amt;
         if (invoice.payment_route.total_amt_msat && invoice.payment_route.total_amt_msat / 1000 !== +invoice.payment_route.total_amt) {
           // okay, we have to account for MSAT
-          invoice.value =
+          invoice.amt =
             +invoice.payment_route.total_fees +
             Math.max(parseInt(invoice.payment_route.total_amt_msat / 1000), +invoice.payment_route.total_amt) +
             1; // extra sat to cover for msats, as external layer (clients) dont have that resolution
