@@ -427,7 +427,7 @@ router.get('/gettxs', postLimiter, async function (req, res) {
       txs.push({
         type: 'paid_invoice',
         fee: Math.floor(locked.amount * forwardFee) /* feelimit */,
-        value: locked.amount + Math.floor(locked.amount * forwardFee) /* feelimit */,
+        amt: locked.amount + Math.floor(locked.amount * forwardFee) /* feelimit */,
         timestamp: locked.timestamp,
         memo: 'Payment in transition',
       });
