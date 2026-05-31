@@ -182,6 +182,7 @@ export class User {
     for (let paym of lockedPayments) {
       // locked payments are processed in scripts/process-locked-payments.js
       calculatedBalance -= +paym.amount + /* feelimit */ Math.floor(paym.amount * forwardFee);
+    }););
     }
 
     return calculatedBalance;
